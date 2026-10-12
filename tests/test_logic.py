@@ -106,6 +106,12 @@ class TrackerAndDigitsTest(unittest.TestCase):
         crop = farm._crop(img("field_power_63099.png"), farm.POWER_BOX)
         self.assertEqual(len(segment_number(crop)), 5)                # 63,099 → 쉼표 빼고 5글자
 
+    def test_yeonggi_remaining(self):
+        from bot.yeonggi import parse_remaining
+        left = parse_remaining(img("yeonggi_progress.png"), 705, 981)     # 화면에 '9분 57초'
+        self.assertIsNotNone(left)
+        self.assertTrue(500 <= left <= 600, left)
+
     def test_skill_count(self):
         from bot2.rewards import read_skill_count
         self.assertEqual(read_skill_count(img("achievement_open.png")), 26)

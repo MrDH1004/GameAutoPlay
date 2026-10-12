@@ -8,6 +8,27 @@ import time
 log = logging.getLogger(__name__)
 
 
+def parse_remaining(frame, px, py):
+    """모래시계 아이콘 (px, py) 주변 글자에서 남은 시간(초)."""
+    import re
+    try:
+        from bot2.farm import _binarize, _ocr
+    except ImportError:
+        return None
+    h, w = frame.shape[:2]
+    x0, x1 = max(0, int(px - 0.04 * w)), min(w, int(px + 0.04 * w))
+    y0, y1 = max(0, int(py - 0.01 * h)), min(h, int(py + 0.05 * h))
+    crop = frame[y0:y1, x0:x1]
+    for img, sc in ((crop, 3), (_binarize(crop, 170), 3), (crop, 2)):
+        t = _ocr(img, sc).replace(" ", "")
+        hh = re.search(r"(\d+)시간", t)
+        mm = re.search(r"(\d+)분", t)
+        ss = re.search(r"(\d+)초", t)
+        if hh or mm or ss:
+            return (int(hh.group(1)) * 3600 if hh else 0) + (int(mm.group(1)) * 60 if mm else 0) +                 (int(ss.group(1)) if ss else 0)
+    return None
+
+
 class YeonggiTask:
     def __init__(self, bot, cfg):
         self.bot = bot
@@ -107,9 +128,20 @@ class YeonggiTask:
         time.sleep(0.5)                 # 화면 전환 애니메이션
         return self.bot.window.grab()
 
+    def _remaining(self, frame, prog):
+        """진행 표시(모래시계) 아래의 남은 시간('9분 57초', '1시간 20분')을 초로. 못 읽으면 None."""
+        return parse_remaining(frame, prog.x, prog.y)
+
     def _start_next(self, frame):
-        if self._find(frame, "progress"):
-            log.info("영기 수련 진행 중 → %d초 뒤 다시 확인", self.interval)
+        prog = self._find(frame, "progress")
+        if prog:
+            left = self._remaining(frame, prog)
+            if left:
+                wait = max(self.interval, min(left + 15, 6 * 3600))
+                self.next_check = time.monotonic() + wait
+                log.info("영기 수련 진행 중 (남은 시간 %d분) → %d분 뒤 다시 확인", left // 60, wait // 60)
+            else:
+                log.info("영기 수련 진행 중 → %d초 뒤 다시 확인", self.interval)
             return
 
         # 노드 우상단에 빨간 점이 있는 노드만 수련할 수 있다 (점이 없으면 조건 미달/개방 대기)
