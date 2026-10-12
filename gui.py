@@ -98,6 +98,8 @@ SETTING_FIELDS = [
     ("toggle", ("rewards", "enabled"), "보상 자동 받기", "1시간마다 우편함·업적·길라잡이 보상의 '받기' 버튼만 누름"),
     ("toggle", ("hp", "enabled"), "HP 낮으면 물약", "체력 45% 아래면 물약 단축키(Ctrl+2/Ctrl+1)"),
     ("toggle", ("preset", "enabled"), "보스면 도술 프리셋 전환", "보스 체력바가 보이면 2 보스, 끝나면 1 일반 프리셋"),
+    ("toggle", ("potion_shop", "enabled"), "물약 자동 구매", "HP 물약 50개 미만이면 하루 1회 자동 구매 (위 버튼으로 수동 구매는 언제든)"),
+    ("int", ("potion_shop", "buy_below"), "물약 구매 기준", (1, 249, "개 미만")),
     ("toggle", ("enhance", "enabled"), "도술 계열 강화 (실험)", "재료가 충분하면 파멸·저격 계열 강화 (골드 소모, 강화 후 화면 미검증)"),
     ("toggle", ("yeonggi", "enabled"), "영기 수련 자동 진행", "주기적으로 메뉴를 열어 빨간 점 노드를 수련"),
     ("toggle", ("mission", "enabled"), "임무 화면(J) 폴백", "퀘스트가 막히면 본편→서사→일일→주간 순으로 진행"),
@@ -374,7 +376,11 @@ class Window(QMainWindow):
         self.btn_stop = QPushButton("■  정지")
         self.btn_stop.setObjectName("stop")
         self.btn_stop.clicked.connect(self.stop)
-        for b in (self.btn_start, self.btn_pause, self.btn_stop):
+        self.btn_potion = QPushButton("🧪  물약 구매")
+        self.btn_potion.setToolTip("타바로 성 잡화 상점으로 가서 2단 체력 회복 물약을 한도까지 구매")
+        self.btn_potion.clicked.connect(self.buy_potion)
+        self._pending_potion = False
+        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion):
             b.setMinimumHeight(42)
             row.addWidget(b)
         return row
@@ -678,6 +684,19 @@ class Window(QMainWindow):
         self.session_total = 0.0
         self._set_running(True)
 
+    def buy_potion(self):
+        """물약 구매 요청. 실행 중이면 다음 틱에, 정지 상태면 시작한 뒤 바로 구매."""
+        bot = self.thread.bot if self.thread else None
+        if bot and getattr(bot, "potion_shop", None):
+            bot.potion_shop.requested = True
+            if bot.paused:
+                self.toggle_pause()
+            logging.info("물약 구매 요청 (버튼)")
+        else:
+            self._pending_potion = True
+            logging.info("물약 구매 요청 (버튼) → 매크로 시작")
+            self.start()
+
     def stop(self):
         if self.thread and self.thread.bot:
             self.thread.bot.stop_event.set()
@@ -722,6 +741,9 @@ class Window(QMainWindow):
         th = self.thread
         bot = th.bot if th else None
         self._refresh_extra(bot)
+        if self._pending_potion and bot and getattr(bot, "potion_shop", None):
+            bot.potion_shop.requested = True
+            self._pending_potion = False
         if not th:
             self.lbl_state.setText("정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")

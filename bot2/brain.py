@@ -21,6 +21,7 @@ from .notify import Notifier
 from .rewards import RewardTask
 from .preset import PresetSwitcher
 from .enhance import EnhanceTask
+from .shop import PotionShop
 from .farm import BotDriver
 from .safety import DeathBook, hp_ratio
 from . import selfcheck
@@ -72,6 +73,8 @@ class Bot:
             self.rewards.next_at = time.monotonic() + float(rw.get("first_delay", 120))
             self.rewards.on_new_skill = lambda a, b: self.notifier.send(
                 f"새 도술 {b - a}개 습득 ({a}→{b}). 도술 조합/프리셋을 다시 보세요.", key="skill")
+        ps = config.get("potion_shop") or {}
+        self.potion_shop = PotionShop(self, ps) if ps.get("enabled", True) else None
         en = config.get("enhance") or {}
         self.enhance = EnhanceTask(self, en) if en.get("enabled") else None
         if self.enhance:
@@ -429,6 +432,16 @@ class Bot:
                         self._farm_until = max(self._farm_until, now + 600)
         if self._want_hunt:
             self._ensure_hunt(snap, now)
+            return
+        if self.potion_shop and not self.dry_run and not self._verify and self.potion_shop.due(snap, now):
+            try:
+                self.potion_shop.run(now)
+            finally:
+                self._idle_since = None
+                self._moving_since = None
+                if self.farm:
+                    self.farm.need_travel = True      # 사냥터 모드면 다시 사냥터로
+                    self.farm.next_try = 0.0
             return
         if (self.enhance and self.enhance.due(now) and snap.state in ("IDLE", "COMBAT")
                 and not self._verify and not self.dry_run):

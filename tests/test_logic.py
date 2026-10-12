@@ -112,6 +112,17 @@ class TrackerAndDigitsTest(unittest.TestCase):
         self.assertIsNotNone(left)
         self.assertTrue(500 <= left <= 600, left)
 
+    def test_potion_count(self):
+        from bot2.shop import read_potion_count
+        self.assertEqual(read_potion_count(img("potion_ctrl1_250.png")), 250)     # 물약이 Ctrl+1 칸에 있을 때
+
+    def test_shop_templates(self):
+        from bot2.rewards import _seen, _tpl
+        self.assertTrue(_seen(img("shop_open.png"), _tpl("shop_title.png"), (0, 0, 480, 90)))
+        self.assertTrue(_seen(img("shop_qty.png"), _tpl("shop_qty_title.png"), (760, 340, 1160, 420)))
+        self.assertTrue(_seen(img("map_saved_list.png"), _tpl("map_saved_potion.png"), (100, 130, 410, 900)))
+        self.assertFalse(_seen(img("field_power_63099.png"), _tpl("shop_title.png"), (0, 0, 480, 90)))
+
     def test_skill_count(self):
         from bot2.rewards import read_skill_count
         self.assertEqual(read_skill_count(img("achievement_open.png")), 26)
