@@ -43,6 +43,18 @@ def drag(x1, y1, x2, y2, steps=10):
     mark_self_input()
 
 
+def hotkey(combo):
+    """'ctrl+2' 같은 조합 키. 단일 키면 press와 같다."""
+    keys = [k.strip() for k in combo.lower().split("+") if k.strip()]
+    mark_self_input()
+    for k in keys[:-1]:
+        pydirectinput.keyDown(k)
+    pydirectinput.press(keys[-1])
+    for k in reversed(keys[:-1]):
+        pydirectinput.keyUp(k)
+    mark_self_input()
+
+
 def press(key):
     mark_self_input()
     pydirectinput.press(key)

@@ -77,6 +77,17 @@ class ScreenTest(unittest.TestCase):
         self.assertFalse(nav.map_open(img("field_power_63099.png")))
 
 
+class HpTest(unittest.TestCase):
+    def test_hp_ratio(self):
+        from bot2.safety import hp_ratio
+        self.assertGreater(hp_ratio(img("field_power_63099.png")), 0.95)     # 29,766/29,766
+        self.assertAlmostEqual(hp_ratio(img("field_hp_95.png")), 0.95, delta=0.04)
+        self.assertEqual(hp_ratio(img("map_open.png")), 0.0)
+        f = img("field_power_63099.png")
+        f[945:965, 958:1085] = (27, 16, 10)          # 바 오른쪽 절반을 빈 칸 색으로
+        self.assertAlmostEqual(hp_ratio(f), 0.5, delta=0.03)
+
+
 class FarmPickTest(unittest.TestCase):
     def setUp(self):
         class FakeBot:

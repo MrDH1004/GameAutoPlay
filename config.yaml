@@ -201,3 +201,12 @@ notify:
     webhook: ""
   min_gap: 20          # 같은 종류 알림 최소 간격(초)
   report_hour: 9       # 매일 이 시각(0~23)에 일일 리포트. 끄려면 null
+
+# ===== 체력 관리 =====
+# 하단 체력 바를 읽어 낮으면 물약 단축키를 누른다 (목록을 번갈아 사용). 하단 Ctrl+1/Ctrl+2 칸이 물약.
+hp:
+  enabled: true
+  potion_keys: ["ctrl+2", "ctrl+1"]
+  potion_below: 0.45      # HP가 이 비율 아래면 물약
+  potion_gap: 6.0         # 물약 최소 간격(초)
+  danger_below: 0.2       # 이 아래면 위험 알림

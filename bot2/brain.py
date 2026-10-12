@@ -18,7 +18,7 @@ from bot.yeonggi import YeonggiTask
 
 from .farm import FarmTask, read_power
 from .notify import Notifier
-from .safety import DeathBook
+from .safety import DeathBook, hp_ratio
 from . import selfcheck
 from .mission import MissionTask
 from .perception import Perceiver
@@ -71,6 +71,15 @@ class Bot:
         self._power_at = 0.0
         self.started_wall = time.time()
         self.selfcheck = ""
+        hp = config.get("hp") or {}
+        self.hp_cfg = hp
+        self._potion_at = 0.0
+        self._potion_idx = 0
+        self._potion_check = None       # (확인 시각, 누를 때 HP, 키)
+        self._potion_miss = 0
+        self._potion_warned = 0.0
+        self._low_hp_warned = 0.0
+        self.hp = None
         self._seen_known = False        # 필드/대화/전투 등 아는 화면을 한 번이라도 봤는지
         self._ui_warned = False
         self._run_t0 = time.monotonic()
@@ -142,6 +151,45 @@ class Bot:
             return
         self._check_user()
         actions.drag(sx1, sy1, sx2, sy2)
+
+    def _hotkey(self, label, combo):
+        if self.dry_run:
+            log.info("[dry-run] %s → %s 예정", label, combo)
+            return
+        self._check_user()
+        actions.hotkey(combo)
+
+    def _watch_hp(self, snap, now):
+        """전투 중 HP가 낮으면 물약 키를 누른다. 아주 낮으면 알림."""
+        c = self.hp_cfg
+        if not c.get("enabled", True) or snap.state not in ("COMBAT", "IDLE", "MOVING"):
+            return
+        self.hp = hp_ratio(snap.frame)
+        if self.hp <= 0.0:              # 바를 못 찾음(가려짐 등) → 판단하지 않음
+            return
+        if self._potion_check and now >= self._potion_check[0]:
+            _, before, key = self._potion_check
+            self._potion_check = None
+            if self.hp > before + 0.03:
+                self._potion_miss = 0
+            else:
+                self._potion_miss += 1
+                if self._potion_miss >= 3 and now - self._potion_warned > 600:
+                    self._potion_warned = now
+                    log.warning("물약을 %d번 눌러도 HP가 오르지 않음 → 물약이 없거나 다른 키일 수 있음", self._potion_miss)
+                    self.notifier.send("물약 부족 가능 (눌러도 HP가 오르지 않음)", snap.frame, key="potion")
+        keys = c.get("potion_keys") or []
+        if keys and self.hp < c.get("potion_below", 0.45) and now - self._potion_at > c.get("potion_gap", 6.0):
+            key = keys[self._potion_idx % len(keys)]
+            log.info("HP %.0f%% → 물약 %s", self.hp * 100, key)
+            self._hotkey("물약", key)
+            self._potion_at = now
+            self._potion_idx += 1
+            self._potion_check = (now + 2.5, self.hp, key)
+        if self.hp < c.get("danger_below", 0.2) and now - self._low_hp_warned > 60:
+            self._low_hp_warned = now
+            log.warning("HP 위험 %.0f%%", self.hp * 100)
+            self.notifier.send(f"HP 위험 {self.hp * 100:.0f}% (출처: {self._source})", snap.frame, key="hp")
 
     def _press(self, label, key):
         if self.dry_run:
@@ -578,6 +626,7 @@ class Bot:
             self._on_stall(snap, now)
             return
 
+        self._watch_hp(snap, now)
         if state == "DEAD":
             self._on_dead(snap, now)
         elif state == "DIALOG":

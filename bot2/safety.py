@@ -11,6 +11,8 @@ import os
 import time
 from datetime import datetime
 
+import numpy as np
+
 log = logging.getLogger(__name__)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -77,3 +79,23 @@ def load_history(limit=500):
             except ValueError:
                 pass
     return out[-limit:]
+
+
+# ---------- HP ----------
+HP_ROW = 956                 # 하단 체력 바 가운데 줄 (1920x1080 기준)
+HP_X0, HP_X1 = 835, 1080     # 체력 바 왼쪽/오른쪽 끝
+
+
+def hp_ratio(frame):
+    """하단 체력 바의 채워진 비율 (0~1). 바 색은 초록→청록 그라데이션. 필드 화면에서만 의미가 있다."""
+    h, w = frame.shape[:2]
+    sx, sy = w / 1920.0, h / 1080.0
+    y = int(HP_ROW * sy)
+    rows = frame[max(0, y - 2):y + 3, int(HP_X0 * sx) - 2:int(HP_X1 * sx) + 3].astype(int)
+    b, g, r = rows[..., 0], rows[..., 1], rows[..., 2]
+    fill = ((g > 150) & (g - b > 90)).any(axis=0)      # 초록~연두 (BGR에서 B가 낮음). 흰 글자·빈 바는 제외
+    xs = np.where(fill)[0]
+    if len(xs) == 0:
+        return 0.0
+    span = (HP_X1 - HP_X0) * sx
+    return float(min(1.0, max(0.0, (xs.max() - 2) / span)))
