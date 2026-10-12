@@ -90,6 +90,27 @@ class ScreenTest(unittest.TestCase):
         self.assertFalse(nav.map_open(img("field_power_63099.png")))
 
 
+class TrackerAndDigitsTest(unittest.TestCase):
+    def test_tracker_text_mask_static(self):
+        from bot2.perception import text_mask_diff, tracker_text_mask
+        f = img("field_power_63099.png")
+        a = tracker_text_mask(f, [0.80, 0.05, 0.155, 0.40])
+        self.assertEqual(text_mask_diff(a, a.copy()), 0.0)
+        same = tracker_text_mask(img("field_hp_95.png"), [0.80, 0.05, 0.155, 0.40])    # 배경만 다르고 목록은 같음
+        self.assertLess(text_mask_diff(a, same), 0.3)
+        other = tracker_text_mask(img("field_windowed_upscaled.png"), [0.80, 0.05, 0.155, 0.40])   # 목록이 다름
+        self.assertGreater(text_mask_diff(a, other), 0.3)
+
+    def test_digit_segments(self):
+        from bot2.digits import segment_number
+        crop = farm._crop(img("field_power_63099.png"), farm.POWER_BOX)
+        self.assertEqual(len(segment_number(crop)), 5)                # 63,099 → 쉼표 빼고 5글자
+
+    def test_skill_count(self):
+        from bot2.rewards import read_skill_count
+        self.assertEqual(read_skill_count(img("achievement_open.png")), 26)
+
+
 class HpTest(unittest.TestCase):
     def test_hp_ratio(self):
         from bot2.safety import hp_ratio

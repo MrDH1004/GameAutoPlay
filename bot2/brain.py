@@ -70,6 +70,8 @@ class Bot:
         self.rewards = RewardTask(BotDriver(self), rw) if rw.get("enabled", True) else None
         if self.rewards:
             self.rewards.next_at = time.monotonic() + float(rw.get("first_delay", 120))
+            self.rewards.on_new_skill = lambda a, b: self.notifier.send(
+                f"새 도술 {b - a}개 습득 ({a}→{b}). 도술 조합/프리셋을 다시 보세요.", key="skill")
         en = config.get("enhance") or {}
         self.enhance = EnhanceTask(self, en) if en.get("enabled") else None
         if self.enhance:
@@ -479,8 +481,8 @@ class Bot:
         progressing = (snap.state in ("MOVING", "COMBAT") or snap.world_motion > self.motion_threshold)
         nudge = float(self.quest_cfg.get("nudge_minutes", 5)) * 60
         if (progressing and snap.state == "COMBAT" and nudge > 0 and self.quest_cfg.get("enabled", True)
-                and not self._verify and now - max(self._click_at, self._run_t0) > nudge):
-            # 자동 사냥이 계속 몹을 잡으면 정지 상태가 안 생겨 퀘스트를 영영 안 누르게 된다 → 주기적으로 다시 누른다 (퀘스트 목록 영역은 반투명이라 변화 감지를 믿을 수 없음)
+                and not self._verify and now - max(self._click_at, self._tracker_at, self._run_t0) > nudge):
+            # 자동 사냥이 계속 몹을 잡으면 정지 상태가 안 생겨 퀘스트를 영영 안 누르게 된다 → 주기적으로 다시 누른다 (퀘스트 목록 글자가 바뀌는 중이면 진행 중으로 보고 누르지 않음)
             log.info("퀘스트 진행 없이 전투만 %.0f분째 → 퀘스트 다시 누름", nudge / 60)
             self._click_quest(snap, now)
             return

@@ -38,6 +38,26 @@ class Snapshot:
         return "IDLE"
 
 
+def tracker_text_mask(frame, region):
+    """퀘스트 목록의 글자(흰색/노란색)만 남긴 마스크. 배경(반투명 너머의 전투 화면)은 무시한다."""
+    area, _, _ = crop_ratio(frame, region)
+    a = area.astype(np.int16)
+    b, g, r = a[..., 0], a[..., 1], a[..., 2]
+    white = (b > 215) & (g > 215) & (r > 215)
+    yellow = (r > 210) & (g > 160) & (b < 110)
+    return (white | yellow).astype(np.uint8)
+
+
+def text_mask_diff(a, b, min_pixels=200):
+    """두 글자 마스크의 차이 (0=같음, 1=완전히 다름). 1~2px 흔들림은 팽창으로 흡수. 글자가 거의 없으면 0."""
+    if int(a.sum()) + int(b.sum()) < 2 * min_pixels:
+        return 0.0
+    k = np.ones((5, 5), np.uint8)
+    ad, bd = cv2.dilate(a, k), cv2.dilate(b, k)
+    kept = (int((a & bd).sum()) + int((b & ad).sum())) / 2
+    return float(1 - kept / max((int(a.sum()) + int(b.sum())) / 2, 1))
+
+
 def _thumb(frame, region, width=96):
     area, _, _ = crop_ratio(frame, region)
     gray = cv2.cvtColor(area, cv2.COLOR_BGR2GRAY)
@@ -89,10 +109,10 @@ class Perceiver:
             snap.auto_on = float(np.mean((r > 200) & (g > 120) & (b < 130)) * 100) > ah.get("on_percent", 5.0)
 
         qt = c.get("quest_tracker") or {}
-        sig = _thumb(frame, qt.get("signature_region", [0.78, 0.05, 0.2, 0.4]))
+        sig = tracker_text_mask(frame, qt.get("text_region", [0.80, 0.05, 0.155, 0.40]))
         if self._tracker_prev is not None and self._tracker_prev.shape == sig.shape:
-            snap.tracker_changed = float(np.mean(cv2.absdiff(sig, self._tracker_prev))) > \
-                qt.get("signature_threshold", 6.0)
+            # 목록 배경이 반투명이라 화면 평균 차이는 전투 중 계속 '변함'으로 나온다 → 글자 마스크만 비교
+            snap.tracker_changed = text_mask_diff(sig, self._tracker_prev) > qt.get("text_threshold", 0.3)
         self._tracker_prev = sig
 
         world = _thumb(frame, idle.get("region", [0.3, 0.25, 0.4, 0.5]), 160)

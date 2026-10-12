@@ -79,7 +79,14 @@ def read_power(frame):
     """필드 화면에서 내 전투력(숫자)을 읽는다. 원본/이진화 여러 번 읽어 다수결. 못 읽으면 None.
     창 모드(작은 글씨)에서는 원본 OCR이 숫자를 틀리게 읽어 이진화 결과가 더 정확하다."""
     from collections import Counter
+    global _power_reads
     crop = _crop(frame, POWER_BOX)
+    book = _digit_book()
+    _power_reads += 1
+    if book.complete and _power_reads % 10:          # 0~9 템플릿이 다 있으면 OCR 없이 (10번에 1번은 OCR로 교차 확인)
+        v = book.read(crop)
+        if v:
+            return v
     votes = Counter()
     tries = [(crop, 2), (crop, 3)] + [(_binarize(crop, t), 3) for t in (150, 190)]
     for img, scale in tries:
@@ -88,7 +95,24 @@ def read_power(frame):
             votes[int(m.group(1).replace(",", ""))] += 1
         if votes and votes.most_common(1)[0][1] >= 2:
             break
-    return votes.most_common(1)[0][0] if votes else None
+    if not votes:
+        return None
+    value, n = votes.most_common(1)[0]
+    if n >= 2:
+        book.learn(crop, value)                      # 확실히 읽은 값으로 숫자 템플릿을 배운다
+    return value
+
+
+_power_reads = 0
+_book = None
+
+
+def _digit_book():
+    global _book
+    if _book is None:
+        from .digits import DigitBook
+        _book = DigitBook("power")
+    return _book
 
 
 SLOT_X = (1565, 1646, 1727, 1808)          # 몬스터 아이콘 4칸의 왼쪽 x (1920 기준)

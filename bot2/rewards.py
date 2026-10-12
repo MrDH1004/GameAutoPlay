@@ -3,13 +3,16 @@
 모두 '받기' 버튼만 누른다 (구매/강화/소모 버튼은 누르지 않는다). 받을 게 없으면 버튼을 눌러도 아무 일도 없다.
 좌표는 1920x1080 기준 (Driver가 실제 화면에 맞춘다).
 """
+import json
 import logging
 import os
+import re
+from collections import Counter
 
 import cv2
 import numpy as np
 
-from .farm import ROOT, GuideNav, StopRequested, _crop
+from .farm import ROOT, GuideNav, StopRequested, _binarize, _crop, _ocr
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +39,43 @@ def _seen(img, tpl, box, thr=0.8):
     return mx > thr
 
 
+STATE_FILE = os.path.join(ROOT, "logs", "state.json")
+
+
+def read_skill_count(frame):
+    """업적 '성장' 탭의 '도술을 N개 습득해 보세요' 진행도에서 지금 배운 도술 수. 못 찾으면 None."""
+    from tools.ocr import read_text
+    try:
+        lines = read_text(_crop(frame, (380, 160, 1400, 930)), scale=1.5)
+    except Exception:  # noqa: BLE001
+        return None
+    row = next((l for l in lines if re.search(r"도술을\s*\d+\s*개", l["text"])), None)
+    if not row:
+        return None
+    y = int(160 + row["y"] + 36)                     # 설명 줄 바로 아래 진행 막대의 'n/m'
+    crop = _crop(frame, (830, y - 16, 960, y + 14))
+    votes = Counter()
+    for img, sc in ((crop, 2), (crop, 3), (_binarize(crop, 170), 3), (_binarize(crop, 200), 3)):
+        m = re.search(r"(\d+)\s*[/!]\s*(\d+)", _ocr(img, sc))
+        if m:
+            votes[int(m.group(1))] += 1
+    return votes.most_common(1)[0][0] if votes else None
+
+
+def _load_state():
+    try:
+        with open(STATE_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_state(st):
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+
+
 class RewardTask:
     def __init__(self, drv, cfg):
         self.drv = drv
@@ -46,6 +86,7 @@ class RewardTask:
         self.t_mail = _tpl("mail_title.png")
         self.t_achv = _tpl("achv_title.png")
         self.count = 0
+        self.on_new_skill = None        # 콜백(이전 수, 지금 수)
 
     def due(self, now):
         return now >= self.next_at
@@ -82,16 +123,32 @@ class RewardTask:
             if not _seen(self.drv.shot(), self.t_achv, (0, 0, 400, 90)):
                 self.drv.key("esc")                 # 메뉴만 열린 상태면 닫는다
             return False
-        for xy in ACHV_TABS:
+        for i, xy in enumerate(ACHV_TABS):
             self.drv.click(*xy)
             self.drv.sleep(0.9)
             self.drv.click(*ACHV_CLAIM)
             self.drv.sleep(1.5)
             self.drv.click(*POPUP_DISMISS)
             self.drv.sleep(0.6)
+            if i == 0:
+                self._check_skills()
         self.drv.click(*BACK)
         self.drv.sleep(1.0)
         return True
+
+    def _check_skills(self):
+        """새로 배운 도술이 있으면 알린다 (업적 '도술 익히기' 진행도 비교)."""
+        n = read_skill_count(self.drv.shot())
+        if n is None:
+            return
+        st = _load_state()
+        before = st.get("skills")
+        if before is not None and n > before:
+            log.warning("새 도술 %d개 습득 (%d → %d) → 스킬 추천/프리셋 재검토 권장", n - before, before, n)
+            if self.on_new_skill:
+                self.on_new_skill(before, n)
+        st["skills"] = n
+        _save_state(st)
 
     def run(self, now, power=None):
         """한 번 돌린다. 끝나면 필드로 돌아와 있어야 한다."""
