@@ -11,3 +11,6 @@ bridge/
 samples/
 gui_settings.json
 *.log
+build/
+dist/
+*.spec

@@ -17,8 +17,8 @@ os.chdir(ROOT)
 
 
 def _ensure_admin():
-    if ctypes.windll.shell32.IsUserAnAdmin():
-        return
+    if ctypes.windll.shell32.IsUserAnAdmin() or getattr(sys, "frozen", False):
+        return          # exe는 매니페스트(--uac-admin)로 이미 관리자 권한을 요청한다
     exe = sys.executable
     pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
     if os.path.exists(pyw):

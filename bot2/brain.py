@@ -71,6 +71,9 @@ class Bot:
         self._power_at = 0.0
         self.started_wall = time.time()
         self.selfcheck = ""
+        self._seen_known = False        # 필드/대화/전투 등 아는 화면을 한 번이라도 봤는지
+        self._ui_warned = False
+        self._run_t0 = time.monotonic()
         self._hunt_check = 0.0
         self._last_map_close = 0.0
 
@@ -561,6 +564,13 @@ class Bot:
         if state != "OVERLAY":
             self._overlay_since = None
             self._overlay_esc = 0
+        if state != "OVERLAY":
+            self._seen_known = True
+        elif not self._seen_known and not self._ui_warned and now - self._run_t0 > 180:
+            self._ui_warned = True
+            log.warning("시작 후 3분 동안 아는 화면(필드 HUD 등)을 한 번도 인식하지 못함 → 게임 업데이트로 UI가 바뀌었거나 해상도 문제일 수 있음")
+            self._save_screen(snap.frame, "unknown_ui")
+            self.notifier.send("아는 화면을 인식하지 못함 (게임 UI 변경 가능성)", snap.frame, key="ui")
         if state in ("MOVING", "COMBAT", "DIALOG", "DEAD") or snap.world_motion > self.motion_threshold:
             self._last_progress = now
             self._stalls = 0
@@ -586,6 +596,7 @@ class Bot:
                  self.stop_key, self.pause_key, "  [dry-run]" if self.dry_run else "")
         interval = self.cfg.get("loop_interval", 0.5)
         _, self.selfcheck = selfcheck.run_all(self.cfg)
+        self._run_t0 = time.monotonic()
         self.notifier.start_commands(self.handle_command)
         self.notifier.send("매크로 시작 (" + self.selfcheck + ")", key="start")
         time.sleep(2.0)
