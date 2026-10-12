@@ -65,6 +65,7 @@ class Bot:
         self.farm = FarmTask(self, fm) if (self.farm_mode or self.farm_fallback) else None
         self._farm_until = 0.0
         self._gate_check = 0.0
+        self._tracker_at = 0.0
         rw = config.get("rewards") or {}
         self.rewards = RewardTask(BotDriver(self), rw) if rw.get("enabled", True) else None
         if self.rewards:
@@ -473,7 +474,16 @@ class Bot:
         if self._run_yeonggi_if_due(snap, now):
             return
 
+        if snap.tracker_changed:
+            self._tracker_at = now
         progressing = (snap.state in ("MOVING", "COMBAT") or snap.world_motion > self.motion_threshold)
+        nudge = float(self.quest_cfg.get("nudge_minutes", 5)) * 60
+        if (progressing and snap.state == "COMBAT" and nudge > 0 and self.quest_cfg.get("enabled", True)
+                and not self._verify and now - max(self._click_at, self._tracker_at, self._run_t0) > nudge):
+            # 자동 사냥이 계속 몹을 잡으면 '정지'가 안 생겨 퀘스트를 영영 안 누르게 된다 → 퀘스트 목록도 그대로면 다시 누른다
+            log.info("퀘스트 진행 없이 전투만 %.0f분째 → 퀘스트 다시 누름", nudge / 60)
+            self._click_quest(snap, now)
+            return
         if progressing:
             self._idle_since = None
             if self._verify and not self._verify["ok"]:
@@ -686,6 +696,13 @@ class Bot:
         self.notifier.start_commands(self.handle_command)
         self.notifier.send("매크로 시작 (" + self.selfcheck + ")", key="start")
         time.sleep(2.0)
+        if self.cfg.get("focus_on_start", True) and not self.dry_run and self.window.locate():
+            try:            # 제어판 창이 앞에 뜨므로 시작할 때 한 번만 게임 창을 앞으로 가져온다
+                from tools.bridge_ops import focus_game
+                if focus_game(self.window):
+                    log.info("게임 창을 맨 앞으로 가져옴")
+            except Exception as e:  # noqa: BLE001
+                log.debug("게임 창 포커스 실패: %s", e)
         self.activity.ignore_until_now()   # 실행 직전의 입력(브리지 포커스 등)은 사용자 조작이 아님
         waiting_logged = False
         while True:

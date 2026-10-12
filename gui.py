@@ -877,7 +877,10 @@ def main():
     app.setStyleSheet(QSS)
     win = Window()
     win.show()
-    QTimer.singleShot(800, win.show_changelog_if_new)
+    if "--autostart" in sys.argv:
+        logging.info("업데이트 내용은 설정 탭의 '버전 정보'에서 볼 수 있습니다")
+    else:
+        QTimer.singleShot(800, win.show_changelog_if_new)     # 자동 시작 때는 팝업이 게임 창 포커스를 뺏으므로 생략
     if "--autostart" in sys.argv:
         QTimer.singleShot(1500, win.start)
     sys.exit(app.exec())
