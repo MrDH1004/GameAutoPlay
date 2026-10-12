@@ -1,0 +1,178 @@
+# ===== 게임 창 =====
+# 창 제목의 일부 (대소문자 무시, 부분 일치). 런처/브라우저 창과 구분하기 위해 프로세스 이름도 확인.
+window_title: "도깨비의세계"
+process_name: "dokkaebi.exe"
+
+# ===== 루프 =====
+loop_interval: 0.5        # 화면 확인 주기 (초)
+match_threshold: 0.85     # 템플릿 매칭 기본 임계값 (0~1, 높을수록 엄격)
+
+# ===== 사용자 조작 감지 =====
+# 게임 안에서 사용자가 마우스/키보드를 조작하면 멈추고, 이 시간(초) 동안 조작이 없으면 다시 진행
+user_idle_resume: 120
+
+# ===== 멈춤 감지 =====
+# 1순위: auto_indicator 템플릿이 있으면 "자동 진행 중" 표시가 보이는지로 판단
+# 2순위: 없으면 idle_region 영역의 화면 변화량으로 판단
+idle:
+  auto_indicator: auto_running.png   # 하단 중앙 "자동 이동 중" 표시. 없으면 무시됨
+  indicator_region: [0.35, 0.65, 0.3, 0.1] # [x, y, w, h] 화면 비율
+  region: [0.3, 0.25, 0.4, 0.5]      # 변화량 감지 영역 (캐릭터 주변)
+  diff_threshold: 2.5                # 평균 픽셀 차이가 이 값보다 크면 "움직이는 중"
+  seconds: 6                         # 이 시간 이상 멈추면 퀘스트 클릭
+
+# ===== 필드 화면 판별 =====
+# 이 표시(우하단 설정 톱니바퀴)가 보일 때만 퀘스트를 클릭한다. 메뉴/컷신 중 오클릭 방지.
+field_indicator:
+  template: field_hud.png
+  region: [0.75, 0.85, 0.15, 0.15]
+
+# ===== 전투 판별 =====
+# 상단 중앙 대상 몬스터 체력 바의 ⚔ 아이콘. 보이면 전투 중 → 퀘스트 클릭/영기 수련 보류
+combat_indicator:
+  templates: [combat_target.png, combat_boss.png]   # 일반 몬스터 / 보스
+  region: [0.35, 0.04, 0.3, 0.06]
+
+# ===== 오른쪽 퀘스트 목록 =====
+quest_tracker:
+  enabled: true                      # false면 퀘스트 클릭은 하지 않음 (영기 수련만 등)
+  template: main_quest_icon.png      # 메인 퀘스트 노란 (!) 아이콘
+  search_region: [0.78, 0.12, 0.2, 0.4]
+  click_offset: [100, 0]             # 아이콘 오른쪽의 퀘스트 이름을 클릭 (픽셀)
+  click: [0.865, 0.199]              # 아이콘을 못 찾으면 이 비율 좌표 클릭 (메인 퀘스트 제목)
+  candidates:                        # v2: 메인 퀘스트 줄 후보 (비율 좌표). 트래커 스크롤 상태에 따라 y가 달라진다
+    - [0.863, 0.139]                 # 스크롤된 목표 줄 ("...로 이동하기")
+    - [0.865, 0.199]
+    - [0.863, 0.241]
+  cooldown: 8                        # 퀘스트 클릭 후 최소 대기 (초)
+  max_retries: 4                     # 연속 클릭해도 진행 안 되면 일시정지 + 알림
+  scan:
+    enabled: true
+    region: [0.78, 0.06, 0.2, 0.40]   # 트래커 영역 (비율)
+    max_pages: 8
+    page_notches: 36                  # 한 페이지당 휠 칸 수 (1칸 ≈ 3px)
+  verify_seconds: 7                  # v2: 클릭 후 이 시간 안에 진행(이동/전투/목록 변화)이 없으면 실패로 센다
+
+# ===== 영기 수련 자동 진행 =====
+# interval마다 필드에서 ☰ → 영기 수련을 열어, 진행 중이 아니면 왼쪽부터 0/1 노드를 수련 시작
+yeonggi:
+  enabled: true
+  interval: 180            # 확인 주기 (초)
+  retry_delay: 30          # 화면 열기에 실패했을 때 다시 시도할 때까지 (초)
+  max_tries: 6             # 한 번에 시도할 노드 수
+  node_threshold: 0.8      # "0/1" 노드 인식 임계값 (노드 배경이 조금씩 달라 기본값보다 낮춤)
+  templates:
+    menu_button: menu_button.png       # 필드 우상단 ☰
+    menu_entry: menu_yeonggi.png       # 메뉴 안 '영기 수련'
+    title: yg_title.png                # 영기 수련 화면 제목
+    back: yg_back.png                  # 왼쪽 위 뒤로가기
+    progress: yg_progress.png          # 하단 모래시계 (진행 중 표시)
+    node_empty: yg_node_empty.png      # (미사용) 노드의 "0/1"
+    node_ready: yg_node_ready.png      # 노드 우상단 빨간 점 = 수련 가능한 노드
+    train: yg_train.png                # 팝업 '수련' 버튼
+    impossible: yg_impossible.png      # "현재 수련이 불가능합니다."
+    close: yg_close.png                # 팝업 X
+  regions:                             # [x, y, w, h] 화면 비율 (생략하면 전체 검색)
+    menu_button: [0.9, 0.0, 0.1, 0.1]
+    title: [0.0, 0.0, 0.2, 0.08]
+    back: [0.0, 0.0, 0.06, 0.08]
+    progress: [0.3, 0.85, 0.2, 0.15]
+    node_empty: [0.0, 0.2, 1.0, 0.55]
+    node_ready: [0.0, 0.2, 1.0, 0.65]    # 위쪽 아이콘/내기 수련 버튼의 빨간 점은 제외
+    close: [0.3, 0.05, 0.5, 0.4]
+
+# ===== 팝업 처리 (위에서부터 우선순위) =====
+# action: click(템플릿 위치 클릭, 기본값) | key(키 입력)
+popups:
+  - name: 대화 넘기기
+    template: dialog_skip.png          # 대화 우상단 "넘기기 ESC" 버튼
+    region: [0.9, 0.0, 0.1, 0.15]
+  - name: 대화 다음
+    template: dialog_next.png
+  - name: 퀘스트 완료/보상
+    template: reward.png
+  - name: 퀘스트 수락
+    template: accept.png
+  - name: 컷신 스킵
+    template: cutscene_skip.png
+    action: key
+    key: esc
+  - name: 부활
+    template: revive.png
+    after_delay: 3
+
+popup_after_delay: 1.0     # 팝업 처리 후 기본 대기 (초)
+
+# ===== 단축키 =====
+hotkeys:
+  stop: F12      # 매크로 종료
+  pause: F11     # 일시정지 / 재개
+
+# ===== v2 (run.py) 전용 =====
+death:
+  template: death_title.png          # "사망 상태" 제목
+  region: [0.4, 0.0, 0.25, 0.1]
+  free_buttons: [death_leave.png, death_base_revive.png]   # 나가기 / 거점 이동 후 부활. 유료 '즉시 부활'은 템플릿에 넣지 않는다
+  button_region: [0.3, 0.9, 0.45, 0.1]
+  button_threshold: 0.8
+  streak_limit: 3        # streak_window초 안에 이만큼 죽으면 일시정지
+  streak_window: 600
+  block_seconds: 1800    # 사망한 퀘스트(임무 탭)를 이 시간 동안 중단하고 다른 퀘스트를 진행
+  retry: 3.0
+overlay:
+  grace: 8.0         # 필드가 아닌 화면을 이만큼 기다린 뒤
+  max_esc: 3         # ESC를 최대 이 횟수만큼 눌러 보고, 그래도 안 되면 일시정지
+  esc_gap: 4.0
+autohunt:
+  region: [0.851, 0.922, 0.0167, 0.0315]   # 하단 T 슬롯 'AUTO' 글자. 주황색이면 켜짐, 회색이면 꺼짐
+  on_percent: 5.0
+  after_move: true       # 자동 이동이 끝나면 자동 사냥(T)을 켠다
+  min_move: 3.0          # 이만큼(초) 이상 이동한 뒤에만 '이동 종료'로 본다
+  end_delay: 1.5         # 이동 표시가 이만큼(초) 사라져 있어야 종료로 본다 (깜빡임 방지)
+
+# ===== 임무 화면(J) 자동 진행: 본편 우선, 트래커 클릭이 막히면 서사 → 일일 → 주간 =====
+mission:
+  enabled: true
+  after_fails: 2          # 트래커 클릭이 이만큼 연속 실패하면 임무 화면을 연다
+  cooldown: 90            # 임무 화면 확인 최소 간격(초)
+  skip_seconds: 600       # 진행 못 한 탭을 건너뛰는 시간
+  badge_threshold: 0.85
+  templates:
+    title: ms_title.png        # 임무 화면 제목
+    auto: ms_auto.png          # '자동 진행'
+    accept: ms_accept.png      # 일일 '수락'
+    ok_badge: ms_ok.png        # 초록 '적합' 배지 ('위험'은 템플릿이 없어 선택/수락되지 않는다)
+  regions:
+    title: [0.0, 0.0, 0.15, 0.08]
+    auto: [0.6, 0.9, 0.4, 0.1]
+    accept: [0.6, 0.9, 0.4, 0.1]
+    list: [0.1, 0.18, 0.8, 0.75]
+
+# ===== v2: NPC 대화 스킵 =====
+dialog:
+  method: click    # click = 넘기기 버튼 클릭, key = ESC 키
+  key: esc
+  gap: 0.6         # 연속 스킵 최소 간격(초). 대화가 끝난 직후 ESC가 필드에서 메뉴를 여는 것을 막는다
+
+# ===== 트래커 스캔(OCR): 첫 클릭이 막히면 목록을 스크롤하며 읽어 다른 퀘스트를 고른다 =====
+
+# ===== 퀘스트 수락 화면(세계지도 '진행 가능한 임무') =====
+map_accept:
+  title: map_title.png            # 세계지도 제목
+  title_region: [0.03, 0.0, 0.2, 0.08]
+  button: map_accept.png          # 우하단 '수락'
+  go_button: ms_auto.png          # 수락 뒤 같은 자리에 생기는 '자동 진행' (옆의 '포기'는 누르지 않음)
+  button_region: [0.75, 0.9, 0.25, 0.1]
+  gap: 3.0
+
+# ===== 사냥터 고정(앵벌) 모드 =====
+# 켜면 퀘스트(본편/임무)는 건드리지 않고, 내 전투력에 맞는 사냥터(farm_spots.json)로 걸어가 자동 사냥(T)만 유지한다.
+# DB는 python -m tools.farm_scan "지역이름" 배너x 배너y 로 만든다 (세계지도 몬스터 전투력을 읽음).
+farm:
+  enabled: false            # true면 퀘스트 없이 사냥터만 (앵벌 전용)
+  fallback_when_blocked: true   # 퀘스트 모드에서 사망으로 모든 퀘스트가 막히면 안전 사냥터에서 사냥
+  spots_file: farm_spots.json
+  margin: 0.9               # 몬스터 전투력이 (내 전투력 x margin) 이하인 사냥터 중 가장 센 곳을 고른다
+  reselect_minutes: 15      # 이 주기로 전투력을 다시 읽어 사냥터를 올리거나 내린다
+  upgrade_gain: 1.15        # 더 센 사냥터가 지금보다 이 배수 이상일 때만 올라간다 (잦은 이동 방지)
+  death_ban_minutes: 60     # 사망한 사냥터를 제외하는 시간
