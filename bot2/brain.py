@@ -128,6 +128,7 @@ class Bot:
         self._last_death_click = 0.0
         self._want_hunt = False
         self._death_misses = 0
+        self._death_open = False        # 이번 사망 화면을 이미 기록했는지 (화면이 남아 다시 누를 때 중복 기록 방지)
         self._deaths = []
         self._hunt_tries = 0
         self._hunt_press_at = 0.0
@@ -264,6 +265,10 @@ class Bot:
             if m:
                 log.info("사망 → %s 클릭 (일치도 %.2f)", tpl, m.score)
                 self._click_frame("사망 복귀", m.x, m.y)
+                if self._death_open:
+                    log.info("같은 사망 화면이 아직 남아 있음 → 다시 클릭만 함 (사망 1회로 셈)")
+                    return
+                self._death_open = True
                 self._want_hunt = True          # 복귀 후 자동 사냥으로 전환
                 self._hunt_tries = 0
                 self._hunt_press_at = 0.0
@@ -752,6 +757,8 @@ class Bot:
         self._watch_hp(snap, now)
         if self.preset and not self.dry_run and self.preset.tick(snap, now):
             return
+        if state not in ("DEAD", "OVERLAY"):
+            self._death_open = False
         if state == "DEAD":
             self._on_dead(snap, now)
         elif state == "DIALOG":
