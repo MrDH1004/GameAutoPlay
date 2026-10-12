@@ -128,6 +128,21 @@ class TrackerAndDigitsTest(unittest.TestCase):
         self.assertEqual(read_skill_count(img("achievement_open.png")), 26)
 
 
+class DeathRetryTest(unittest.TestCase):
+    def test_base_revive_button_and_quest_name(self):
+        import types
+        from bot2.brain import Bot
+        safety.DEATH_LOG = os.path.join(ROOT, "logs", "_test_deaths.jsonl")
+        b = Bot(config(), dry_run=True)
+        b._save_screen = lambda f, p: None
+        f = img("death_base_revive.png")
+        b._on_dead(types.SimpleNamespace(frame=f, state="DEAD"), 100)
+        self.assertIsNotNone(b._retry_quest)                 # 1번째 사망 → 같은 퀘스트 재도전
+        self.assertIn("길목을 막는 요귀", b._quest_name or "")
+        self.assertFalse(b.mission.is_blocked("본편"))
+        os.remove(safety.DEATH_LOG)
+
+
 class HpTest(unittest.TestCase):
     def test_hp_ratio(self):
         from bot2.safety import hp_ratio

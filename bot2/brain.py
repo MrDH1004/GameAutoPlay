@@ -6,6 +6,7 @@
 """
 import logging
 import os
+import re
 import threading
 import time
 import winsound
@@ -66,6 +67,8 @@ class Bot:
         self.farm = FarmTask(self, fm) if (self.farm_mode or self.farm_fallback) else None
         self._farm_until = 0.0
         self._gate_check = 0.0
+        self._retry_quest = None        # 사망 후 재도전할 퀘스트 {'source', 'at'}
+        self._quest_name = None         # 마지막으로 읽은 진행 중 퀘스트 제목
         self._tracker_at = 0.0
         rw = config.get("rewards") or {}
         self.rewards = RewardTask(BotDriver(self), rw) if rw.get("enabled", True) else None
@@ -269,9 +272,23 @@ class Bot:
                 self._death_secs, n = self.deathbook.record(self._source if not self.farm_mode else "사냥터",
                                                             self.power, shot)
                 self.notifier.send(f"사망 ({self._source}, 최근 {n}회째) → 무료 복귀", snap.frame, key="death")
-                if self.farm:
-                    self.farm.on_death(now)          # 더 낮은 사냥터로 (사냥터 모드/폴백 둘 다)
-                if not self.farm_mode:
+                retry_limit = int(d.get("retry_limit", 3))
+                if self.farm_mode:
+                    self.farm.on_death(now)          # 사냥터 모드: 더 낮은 사냥터로
+                elif d.get("policy", "retry") == "retry" and n <= retry_limit:
+                    # 하던 퀘스트를 기억해 두고, 거점에서 부활한 뒤 같은 퀘스트를 다시 누른다
+                    self._quest_name = self._read_quest_name(snap.frame) or self._quest_name
+                    self._retry_quest = {"source": self._source, "at": now + float(d.get("retry_delay", 6))}
+                    self._want_hunt = False
+                    log.info("사망 → 거점 부활 후 같은 퀘스트 재도전 (%s '%s', %d/%d회)", self._source,
+                             self._quest_name or "?", n, retry_limit)
+                else:
+                    if self.farm:
+                        self.farm.on_death(now)
+                    log.info("같은 퀘스트에서 %d번 사망 → 재도전 대신 다른 퀘스트로 전환", n)
+                    if d.get("policy", "retry") == "retry":     # 중단 시간은 재도전 횟수를 넘긴 뒤부터 30분, 60분…
+                        self._death_secs = min(float(d.get("block_seconds", 1800)) * 2 ** max(0, n - retry_limit - 1),
+                                               float(d.get("max_block_seconds", 14400)))
                     self._block_current_quest(now)
                 self.stats["deaths"] += 1
                 self._deaths = [t for t in self._deaths if now - t < d.get("streak_window", 600)] + [now]
@@ -284,6 +301,35 @@ class Bot:
         log.warning("사망 화면인데 무료 복귀 버튼을 찾지 못함 (%d회)", self._death_misses)
         if self._death_misses == 3:
             self._alert("사망 화면의 복귀 버튼을 모름 (유료 '즉시 부활'은 누르지 않음)", snap.frame)
+
+    def _read_quest_name(self, frame):
+        """오른쪽 퀘스트 목록 맨 위 퀘스트 제목 (예: '[5장] 길목을 막는 요귀'). 못 읽으면 None."""
+        try:
+            from .farm import _crop, _ocr
+            txt = _ocr(_crop(frame, (1540, 105, 1830, 240)), 2)
+        except Exception:  # noqa: BLE001
+            return None
+        m = re.search(r"\[[^\]]{1,8}\][^\[\n]{1,30}", txt)
+        return m.group(0).strip() if m else None
+
+    def _retry_after_revive(self, snap, now):
+        """거점 부활 뒤: 같은 출처의 퀘스트를 다시 누른다 (본편=트래커 클릭, 그 외=임무 화면에서 그 탭)."""
+        r = self._retry_quest
+        if now < r["at"] or snap.state not in ("IDLE", "MOVING", "COMBAT"):
+            return
+        self._retry_quest = None
+        src = r["source"]
+        log.info("퀘스트 재도전: %s '%s'", src, self._quest_name or "?")
+        self.notifier.send(f"부활 후 퀘스트 재도전: {self._quest_name or src}", key="retry")
+        self._fails = 0
+        self._verify = None
+        if src == "본편" or not self.mission:
+            self._click_quest(snap, now)
+        else:
+            ok = self.mission.run(now, prefer=src)
+            if ok and self.mission.last_tab:
+                self._source = self.mission.last_tab
+            self._click_at = time.monotonic()
 
     def _block_current_quest(self, now):
         """사망한 퀘스트(진행 중이던 임무 탭)를 한동안 멈추고, 복귀 후 다른 퀘스트로 전환한다."""
@@ -430,6 +476,9 @@ class Bot:
                     log.info("전투력 게이트: '%s'는 전투력이 오를 때까지 보류 (10분 뒤 재확인)", src)
                     if self.farm_fallback and src == "본편":
                         self._farm_until = max(self._farm_until, now + 600)
+        if self._retry_quest:
+            self._retry_after_revive(snap, now)
+            return
         if self._want_hunt:
             self._ensure_hunt(snap, now)
             return

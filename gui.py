@@ -109,6 +109,7 @@ SETTING_FIELDS = [
     ("float", ("farm", "margin"), "사냥터 허용 비율 (몬스터/내 전투력)", (0.3, 1.5, "배")),
     ("int", ("farm", "reselect_minutes"), "사냥터 재선택 주기", (1, 240, "분")),
     ("int", ("stall", "minutes"), "멈춤으로 보는 시간", (1, 240, "분")),
+    ("int", ("death", "retry_limit"), "사망 후 같은 퀘스트 재도전 횟수", (0, 20, "회")),
     ("int", ("death", "gate_deaths"), "전투력 게이트 사망 횟수", (1, 20, "회")),
     ("int", ("user_idle_resume",), "직접 조작 후 재개 대기", (5, 1800, "초")),
     ("float", ("loop_interval",), "화면 확인 주기", (0.1, 3.0, "초")),

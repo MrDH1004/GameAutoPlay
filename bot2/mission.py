@@ -119,7 +119,7 @@ class MissionTask:
         return False
 
     # ---------- 본체 ----------
-    def run(self, now):
+    def run(self, now, prefer=None):
         """필드에서 호출. 성공(진행 시작)하면 True. 끝나면 임무 화면은 닫혀 있어야 한다."""
         self.next_ok = now + self.cfg.get("cooldown", 90)
         if self.bot.dry_run:
@@ -134,7 +134,8 @@ class MissionTask:
 
         ok = False
         try:
-            for name, x in TABS:
+            tabs = sorted(TABS, key=lambda t: t[0] != prefer) if prefer else TABS   # 재도전할 탭을 먼저
+            for name, x in tabs:
                 if self.is_blocked(name):
                     log.info("[%s] 탭은 차단 중이라 건너뜀", name)
                     continue
