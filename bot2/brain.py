@@ -16,8 +16,12 @@ from bot.vision import Matcher, save_image
 from bot.window import GameWindow
 from bot.yeonggi import YeonggiTask
 
-from .farm import FarmTask, read_power
+from .farm import GUIDE_CLOSE, FarmTask, read_power
 from .notify import Notifier
+from .rewards import RewardTask
+from .preset import PresetSwitcher
+from .enhance import EnhanceTask
+from .farm import BotDriver
 from .safety import DeathBook, hp_ratio
 from . import selfcheck
 from .mission import MissionTask
@@ -61,6 +65,17 @@ class Bot:
         self.farm = FarmTask(self, fm) if (self.farm_mode or self.farm_fallback) else None
         self._farm_until = 0.0
         self._gate_check = 0.0
+        rw = config.get("rewards") or {}
+        self.rewards = RewardTask(BotDriver(self), rw) if rw.get("enabled", True) else None
+        if self.rewards:
+            self.rewards.next_at = time.monotonic() + float(rw.get("first_delay", 120))
+        en = config.get("enhance") or {}
+        self.enhance = EnhanceTask(self, en) if en.get("enabled") else None
+        if self.enhance:
+            self.enhance.next_at = time.monotonic() + 300
+        self._gone_since = None
+        pc = config.get("preset") or {}
+        self.preset = PresetSwitcher(self, pc) if pc.get("enabled") else None
         self.deathbook = DeathBook(config.get("death") or {})
         self.notifier = Notifier(config.get("notify"))
         st = config.get("stall") or {}
@@ -365,6 +380,12 @@ class Bot:
             self._press("지도 닫기", "m")
             self._overlay_since = None
             return
+        if self.farm and now - self._last_map_close > 4.0 and self.farm.guide.is_open(snap.frame):
+            log.info("열려 있는 길라잡이 화면을 닫음")
+            self._last_map_close = now
+            self._click_frame("길라잡이 닫기", *GUIDE_CLOSE)
+            self._overlay_since = None
+            return
         if self._try_map_accept(snap, now):
             self._overlay_since = None          # 수락 화면은 ESC로 닫지 않는다 (수락 없이 닫히는 것 방지)
             return
@@ -405,6 +426,20 @@ class Bot:
                         self._farm_until = max(self._farm_until, now + 600)
         if self._want_hunt:
             self._ensure_hunt(snap, now)
+            return
+        if (self.enhance and self.enhance.due(now) and snap.state in ("IDLE", "COMBAT")
+                and not self._verify and not self.dry_run):
+            try:
+                self.enhance.run(now)
+            finally:
+                self._idle_since = None
+            return
+        if (self.rewards and self.rewards.due(now) and snap.state in ("IDLE", "COMBAT")
+                and not self._verify and not self.dry_run):
+            try:
+                self.rewards.run(now, self.power)
+            finally:
+                self._idle_since = None
             return
         if self._need_switch and snap.state in ("IDLE", "MOVING"):
             self._need_switch = False
@@ -627,6 +662,8 @@ class Bot:
             return
 
         self._watch_hp(snap, now)
+        if self.preset and not self.dry_run and self.preset.tick(snap, now):
+            return
         if state == "DEAD":
             self._on_dead(snap, now)
         elif state == "DIALOG":
@@ -687,6 +724,15 @@ class Bot:
                 if not waiting_logged:
                     log.info("게임 창이 없거나 맨 앞에 있지 않아 대기 중...")
                     waiting_logged = True
+                if not self.window.locate():
+                    self._gone_since = self._gone_since or time.monotonic()
+                    if time.monotonic() - self._gone_since > 60 and not getattr(self, "_gone_warned", False):
+                        self._gone_warned = True
+                        log.warning("게임 창이 1분 넘게 없음 (게임이 꺼졌거나 튕겼을 수 있음)")
+                        self.notifier.send("게임 창이 1분 넘게 없음 (튕김/종료?)", key="gone")
+                else:
+                    self._gone_since = None
+                    self._gone_warned = False
                 if self.cfg.get("yield_only_game_input", True):
                     self.activity.ignore_until_now(0.3)   # 다른 창에서 한 조작은 게임 조작으로 치지 않는다
                 self._idle_since = self._verify = None

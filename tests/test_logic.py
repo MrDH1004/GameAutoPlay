@@ -69,6 +69,19 @@ class ScreenTest(unittest.TestCase):
         self.assertIsNotNone(hit)
         self.assertGreater(hit.x, 1700)
 
+    def test_read_power_windowed(self):
+        self.assertEqual(farm.read_power(img("field_windowed_upscaled.png")), 66537)    # 1360x768 창 모드 확대
+
+    def test_menu_titles(self):
+        from bot2.rewards import _seen, _tpl
+        box = (0, 0, 400, 90)
+        self.assertTrue(_seen(img("mail_open.png"), _tpl("mail_title.png"), box))
+        self.assertTrue(_seen(img("achievement_open.png"), _tpl("achv_title.png"), box))
+        self.assertTrue(_seen(img("dosul_open.png"), _tpl("dosul_title.png"), box))
+        self.assertTrue(_seen(img("enhance_no_material.png"), _tpl("growth_title.png"), box))
+        self.assertFalse(_seen(img("field_power_63099.png"), _tpl("mail_title.png"), box))
+        self.assertFalse(_seen(img("mail_open.png"), _tpl("achv_title.png"), box))
+
     def test_map_open(self):
         class D(farm.Driver):
             pass
@@ -96,12 +109,26 @@ class FarmPickTest(unittest.TestCase):
 
             def _alert(self, *a):
                 pass
-        self.t = farm.FarmTask(FakeBot(), {"margin": 0.9})
+        self.t = farm.FarmTask(FakeBot(), {"margin": 0.9, "travel": "map"})
+        self.g = farm.FarmTask(FakeBot(), {"margin": 0.9})
 
     def test_pick_by_power(self):
         self.assertEqual(self.t.pick(63099, 0)["power"], 51000)
         self.assertLessEqual(self.t.pick(30000, 0)["power"], 27000)
         self.assertEqual(self.t.pick(100000, 0)["power"], 84500)
+
+    def test_guide_ladder(self):
+        self.assertEqual(self.g.pick(66537, 0)["name"], "안개 기슭 지하 동굴")
+        self.assertEqual(self.g.pick(80000, 0)["name"], "산신의 영역 1")
+        self.assertEqual(self.g.pick(170000, 0)["power"], 150000)
+
+    def test_guide_screen(self):
+        class D(farm.Driver):
+            pass
+        g = farm.GuideNav(D())
+        self.assertTrue(g.is_open(img("guide_open.png")))
+        self.assertFalse(g.is_open(img("field_power_63099.png")))
+        self.assertEqual(farm.read_number(img("guide_open.png"), farm.GUIDE_REC_BOX), 51000)
 
     def test_death_steps_down(self):
         self.t.current = self.t.pick(63099, 0)

@@ -175,6 +175,8 @@ map_accept:
 farm:
   enabled: false            # true면 퀘스트 없이 사냥터만 (앵벌 전용)
   fallback_when_blocked: true   # 퀘스트 모드에서 사망으로 모든 퀘스트가 막히면 안전 사냥터에서 사냥
+  travel: guide            # guide = 길라잡이(F5) 추천 사냥터 무료 순간이동, map = 세계지도 걸어가기(farm_spots.json)
+  claim_minutes: 30        # 길라잡이 사냥터 미션 보상(권장 전투력 달성) 확인 주기
   spots_file: farm_spots.json
   margin: 0.9               # 몬스터 전투력이 (내 전투력 x margin) 이하인 사냥터 중 가장 센 곳을 고른다
   reselect_minutes: 15      # 이 주기로 전투력을 다시 읽어 사냥터를 올리거나 내린다
@@ -210,3 +212,29 @@ hp:
   potion_below: 0.45      # HP가 이 비율 아래면 물약
   potion_gap: 6.0         # 물약 최소 간격(초)
   danger_below: 0.2       # 이 아래면 위험 알림
+
+# ===== 공짜 보상 자동 받기 =====
+# 우편함 '모두 받기'(4개 탭), 업적 '모두 받기'(5개 탭), 길라잡이 사냥터 미션 '보상 받기'. 받기 버튼만 누른다.
+rewards:
+  enabled: true
+  interval_minutes: 60
+  first_delay: 120        # 시작 후 처음 받기까지 (초)
+  mail: true
+  achievements: true
+  guide: true
+
+# ===== 보스 도술 프리셋 자동 전환 =====
+# 보스 체력바가 보이면 도술 화면(K)에서 보스 프리셋으로, 보스가 안 보이면 일반 프리셋으로 바꾼다 (전환에 약 4초).
+preset:
+  enabled: true
+  normal: 1               # 도술 프리셋 번호 (1 일반)
+  boss: 2                 # (2 보스)
+  boss_seconds: 3         # 보스가 이만큼 보이면 전환
+  normal_seconds: 60      # 보스가 이만큼 안 보이면 일반으로
+
+# ===== 도술 계열 강화 (선택, 기본 꺼짐) =====
+# 성장(U) → 도술 → 계열 선택 → 자동 등록 → 재료가 충분할 때만 강화 (골드 소모). 강화 뒤 화면은 미검증.
+enhance:
+  enabled: false
+  styles: ["파멸", "저격"]   # 주력 계열 (일반 프리셋=파멸, 보스 프리셋=저격)
+  interval_minutes: 180

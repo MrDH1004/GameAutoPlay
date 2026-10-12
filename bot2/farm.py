@@ -76,13 +76,19 @@ def _crop(img, box):
 
 
 def read_power(frame):
-    """필드 화면에서 내 전투력(숫자)을 읽는다. 못 읽으면 None."""
-    for scale in (2, 3, 4):
-        txt = _ocr(_crop(frame, POWER_BOX), scale)
-        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{4,})", txt)
+    """필드 화면에서 내 전투력(숫자)을 읽는다. 원본/이진화 여러 번 읽어 다수결. 못 읽으면 None.
+    창 모드(작은 글씨)에서는 원본 OCR이 숫자를 틀리게 읽어 이진화 결과가 더 정확하다."""
+    from collections import Counter
+    crop = _crop(frame, POWER_BOX)
+    votes = Counter()
+    tries = [(crop, 2), (crop, 3)] + [(_binarize(crop, t), 3) for t in (150, 190)]
+    for img, scale in tries:
+        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{4,})", _ocr(img, scale))
         if m:
-            return int(m.group(1).replace(",", ""))
-    return None
+            votes[int(m.group(1).replace(",", ""))] += 1
+        if votes and votes.most_common(1)[0][1] >= 2:
+            break
+    return votes.most_common(1)[0][0] if votes else None
 
 
 SLOT_X = (1565, 1646, 1727, 1808)          # 몬스터 아이콘 4칸의 왼쪽 x (1920 기준)
@@ -395,6 +401,12 @@ class FarmTask:
         self.upgrade_gain = float(cfg.get("upgrade_gain", 1.15))
         self.ban_secs = float(cfg.get("death_ban_minutes", 60)) * 60
         self.nav = MapNav(BotDriver(bot), cfg)
+        self.guide = GuideNav(BotDriver(bot))
+        self.use_guide = cfg.get("travel", "guide") == "guide"     # guide = 길라잡이 무료 순간이동, map = 세계지도 걸어가기
+        if self.use_guide:
+            self.db = {"regions": {}, "spots": guide_spots()}
+        self.claim_every = float(cfg.get("claim_minutes", 30)) * 60
+        self.next_claim = 0.0
         self.banned = {}                 # 사냥터 id → 해제 시각
         self.current = None
         self.power = None
@@ -439,7 +451,8 @@ class FarmTask:
         """한 사냥터로 이동. 빨간 몬스터(나보다 강함)면 제외하고 다음 후보로 최대 3번 시도."""
         for _ in range(3):
             self.status = f"이동 중: {spot.get('name') or spot['id']}"
-            ok = self.nav.travel(self.db, spot, red_check=True)
+            ok = (self.guide.travel(spot) if spot.get("guide")
+                  else self.nav.travel(self.db, spot, red_check=True))
             if ok == "red":
                 self.banned[spot["id"]] = now + self.ban_secs
                 log.warning("'%s' 몬스터가 나보다 강함(빨강) → 제외", spot.get("name") or spot["id"])
@@ -456,7 +469,20 @@ class FarmTask:
                 return True
             break
         self.nav.close_map()
+        self.guide.close()
         return False
+
+    def maybe_claim(self, snap, now):
+        """길라잡이 사냥터 미션 보상(권장 전투력 달성)을 주기적으로 받는다."""
+        if now < self.next_claim or snap.state not in ("IDLE", "COMBAT") or not self.power:
+            return
+        self.next_claim = now + self.claim_every
+        try:
+            n = self.guide.claim_rewards(self.power)
+            if n:
+                log.info("길라잡이 보상 %d개 받음", n)
+        except StopRequested:
+            pass
 
     def tick(self, snap, now):
         """필드 화면에서 호출. 필요하면 사냥터를 정해 이동한다."""
@@ -506,3 +532,115 @@ class FarmTask:
             if self.fails >= 3:
                 self.bot._alert("사냥터로 이동하지 못함 (세계지도 화면 확인 필요)")
                 self.fails = 0
+
+
+# ---------- 길라잡이(F5) 추천 사냥터: 무료 순간이동 ----------
+# 길라잡이 → 추천 사냥터 화면의 노드 좌표 (1920x1080). 권장 전투력 = 그 사냥터 몬스터 전투력.
+GUIDE_ICON = (1408, 42)                  # 상단 F5 아이콘
+GUIDE_GO = (1322, 865)                   # '사냥터 바로가기'
+GUIDE_CLAIM = (1322, 790)                # '보상 받기' (사냥터 미션: 그 사냥터 권장 전투력 달성)
+GUIDE_REC_BOX = (1195, 428, 1300, 460)   # 오른쪽 '권장' 숫자
+GUIDE_CLOSE = (1485, 195)
+GUIDE_NODES = [
+    ("안개 기슭 1", 37000, (547, 800)),
+    ("안개 기슭 2", 38500, (675, 800)),
+    ("안개 기슭 지하 동굴", 51000, (803, 800)),
+    ("산신의 영역 1", 68000, (931, 800)),
+    ("산신의 영역 2", 84500, (1060, 747)),
+    ("산신의 영역 지하 동굴 1", 94500, (1007, 623)),
+    ("산신의 영역 지하 동굴 2", 110000, (879, 623)),
+    ("황무지 마을 1", 135000, (751, 623)),
+    ("황무지 마을 2", 150000, (623, 623)),
+    ("우물 동굴 1", 170000, (494, 562)),
+    ("우물 동굴 2", 215000, (547, 447)),
+    ("음산한 폐광 1", 260000, (675, 447)),
+    ("음산한 폐광 2", 290000, (803, 447)),
+    ("독기 지대 1", 310000, (931, 447)),
+    ("독기 지대 2", 335000, (1060, 393)),
+]
+
+
+def guide_spots():
+    return [{"id": f"g{i:02d}", "region": "길라잡이", "name": n, "power": p, "node": list(xy), "guide": True}
+            for i, (n, p, xy) in enumerate(GUIDE_NODES, 1)]
+
+
+def read_number(frame, box):
+    for scale in (3, 2, 4):
+        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{4,})", _ocr(_crop(frame, box), scale))
+        if m:
+            return int(m.group(1).replace(",", ""))
+    return None
+
+
+class GuideNav:
+    """길라잡이 화면으로 사냥터 순간이동(무료)과 사냥터 미션 보상 수령."""
+
+    def __init__(self, drv):
+        self.drv = drv
+        self._tpl = cv2.imdecode(np.fromfile(os.path.join(ROOT, "templates", "guide_title.png"), dtype=np.uint8),
+                                 cv2.IMREAD_COLOR)
+
+    def is_open(self, img=None):
+        img = img if img is not None else self.drv.shot()
+        area = _crop(img, (840, 160, 1080, 230))
+        if area.shape[0] < self._tpl.shape[0] or area.shape[1] < self._tpl.shape[1]:
+            return False
+        _, mx, _, _ = cv2.minMaxLoc(cv2.matchTemplate(area, self._tpl, cv2.TM_CCOEFF_NORMED))
+        return mx > 0.8
+
+    def open(self):
+        if self.is_open():
+            return True
+        self.drv.click(*GUIDE_ICON)
+        for _ in range(6):
+            self.drv.sleep(0.6)
+            if self.is_open():
+                return True
+        return False
+
+    def close(self):
+        if self.is_open():
+            self.drv.click(*GUIDE_CLOSE)
+            self.drv.sleep(0.8)
+
+    def select(self, spot):
+        """노드를 누르고 오른쪽 권장 전투력이 맞는지 확인."""
+        self.drv.click(*spot["node"])
+        self.drv.sleep(1.0)
+        rec = read_number(self.drv.shot(), GUIDE_REC_BOX)
+        if rec != spot["power"]:
+            log.warning("길라잡이: '%s' 선택 확인 실패 (권장 %s, 기대 %s)", spot["name"], rec, spot["power"])
+            return False
+        return True
+
+    def travel(self, spot):
+        if not self.open():
+            log.warning("길라잡이 화면이 열리지 않음")
+            return False
+        if not self.select(spot):
+            self.close()
+            return False
+        log.info("길라잡이 바로가기(무료 순간이동): %s (권장 %s)", spot["name"], f"{spot['power']:,}")
+        self.drv.click(*GUIDE_GO)
+        self.drv.sleep(8.0)                      # 로딩
+        return True
+
+    def claim_rewards(self, power):
+        """권장 전투력을 넘긴 사냥터들의 '보상 받기'를 누른다 (이미 받은 곳은 버튼이 회색)."""
+        if not self.open():
+            return 0
+        n = 0
+        for spot in guide_spots():
+            if spot["power"] > power:
+                break
+            if not self.select(spot):
+                continue
+            px = _crop(self.drv.shot(), (1260, 775, 1420, 805)).reshape(-1, 3).mean(0)
+            if px[0] - px[2] > 25:               # 청록 버튼 = 받을 보상 있음 (회색 = 수령 완료)
+                log.info("길라잡이 보상 받기: %s", spot["name"])
+                self.drv.click(*GUIDE_CLAIM)
+                self.drv.sleep(1.5)
+                n += 1
+        self.close()
+        return n
