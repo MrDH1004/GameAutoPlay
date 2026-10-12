@@ -269,12 +269,12 @@ class Bot:
                 self._hunt_press_at = 0.0
                 self._death_misses = 0
                 shot = self._save_screen(snap.frame, "death")
-                self._death_secs, n = self.deathbook.record(self._source if not self.farm_mode else "사냥터",
-                                                            self.power, shot)
+                farming = self.farm_mode or now < self._farm_until
+                self._death_secs, n = self.deathbook.record("사냥터" if farming else self._source, self.power, shot)
                 self.notifier.send(f"사망 ({self._source}, 최근 {n}회째) → 무료 복귀", snap.frame, key="death")
                 retry_limit = int(d.get("retry_limit", 3))
-                if self.farm_mode:
-                    self.farm.on_death(now)          # 사냥터 모드: 더 낮은 사냥터로
+                if farming:
+                    self.farm.on_death(now)          # 사냥터에서 죽음: 한 단계 낮은 사냥터로
                 elif d.get("policy", "retry") == "retry" and n <= retry_limit:
                     # 하던 퀘스트를 기억해 두고, 거점에서 부활한 뒤 같은 퀘스트를 다시 누른다
                     self._quest_name = self._read_quest_name(snap.frame) or self._quest_name
@@ -283,13 +283,14 @@ class Bot:
                     log.info("사망 → 거점 부활 후 같은 퀘스트 재도전 (%s '%s', %d/%d회)", self._source,
                              self._quest_name or "?", n, retry_limit)
                 else:
-                    if self.farm:
-                        self.farm.on_death(now)
-                    log.info("같은 퀘스트에서 %d번 사망 → 재도전 대신 다른 퀘스트로 전환", n)
                     if d.get("policy", "retry") == "retry":     # 중단 시간은 재도전 횟수를 넘긴 뒤부터 30분, 60분…
                         self._death_secs = min(float(d.get("block_seconds", 1800)) * 2 ** max(0, n - retry_limit - 1),
                                                float(d.get("max_block_seconds", 14400)))
-                    self._block_current_quest(now)
+                    if d.get("after_retry", "farm") == "farm" and self.farm:
+                        self._start_farming(now, f"'{self._quest_name or self._source}' 재도전 실패")
+                    else:
+                        log.info("같은 퀘스트에서 %d번 사망 → 다른 퀘스트로 전환", n)
+                        self._block_current_quest(now)
                 self.stats["deaths"] += 1
                 self._deaths = [t for t in self._deaths if now - t < d.get("streak_window", 600)] + [now]
                 if len(self._deaths) >= d.get("streak_limit", 3):
@@ -330,6 +331,19 @@ class Bot:
             if ok and self.mission.last_tab:
                 self._source = self.mission.last_tab
             self._click_at = time.monotonic()
+
+    def _start_farming(self, now, why):
+        """퀘스트를 중단하고 그동안 전투력에 맞는 사냥터(앵벌 존)로 가서 자동 사냥."""
+        secs = getattr(self, "_death_secs", None) or (self.cfg.get("death") or {}).get("block_seconds", 1800)
+        if self.mission:
+            self.mission.block(self._source, secs)
+        self._farm_until = now + secs
+        self._need_switch = False
+        self._retry_quest = None
+        self.farm.need_travel = True
+        self.farm.next_try = now + 5
+        log.warning("%s → %d분간 전투력에 맞는 사냥터에서 자동 사냥, 이후 퀘스트 다시 시도", why, secs // 60)
+        self.notifier.send(f"{why} → {secs // 60:.0f}분 앵벌 후 퀘스트 재시도", key="farm_fallback")
 
     def _block_current_quest(self, now):
         """사망한 퀘스트(진행 중이던 임무 탭)를 한동안 멈추고, 복귀 후 다른 퀘스트로 전환한다."""
@@ -512,16 +526,16 @@ class Bot:
                 self._fails = 0
             else:
                 log.warning("전환할 다른 퀘스트가 없음 → 차단 시간이 끝날 때까지 자동 사냥만 유지")
-                if self.farm_fallback:
-                    secs = (self.cfg.get("death") or {}).get("block_seconds", 1800)
-                    self._farm_until = now + secs
-                    self.farm.need_travel = True
-                    self.farm.next_try = 0.0
-                    log.info("폴백: 퀘스트가 모두 막힘 → %d분간 전투력에 맞는 안전 사냥터에서 사냥", secs // 60)
+                if self.farm_fallback and self.farm:
+                    self._start_farming(now, "진행할 퀘스트 없음")
             return
-        if self.farm_fallback and now < self._farm_until and self.mission and self.mission.is_blocked("본편"):
-            self.farm.tick(snap, now)
-        if self.farm_mode:
+        if self._farm_until and now >= self._farm_until and not self.farm_mode:
+            self._farm_until = 0.0
+            log.info("앵벌 시간 끝 → 퀘스트 다시 진행")
+            self._fails = 0
+            self._idle_since = None
+            self._click_at = 0.0
+        if self.farm_mode or (self.farm and now < self._farm_until):
             self._need_switch = False
             if self._run_yeonggi_if_due(snap, now):
                 return
