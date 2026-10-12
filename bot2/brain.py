@@ -184,6 +184,22 @@ class Bot:
         self._check_user()
         actions.hotkey(combo)
 
+    def _potion_key(self, frame, keys):
+        """물약이 남아 있는 칸의 키 (하단 Ctrl+1/Ctrl+2 칸 숫자를 읽음). 못 읽으면 번갈아 누른다."""
+        try:
+            from .shop import POTION_COUNT_BOXES, _read_count
+            from .farm import _crop
+            for key in keys:
+                k = key.lower().replace(" ", "")
+                i = {"ctrl+1": 0, "ctrl+2": 1}.get(k)
+                if i is not None:
+                    n = _read_count(_crop(frame, POTION_COUNT_BOXES[i]))
+                    if n:
+                        return key
+        except Exception as e:  # noqa: BLE001
+            log.debug("물약 칸 읽기 실패: %s", e)
+        return keys[self._potion_idx % len(keys)]
+
     def _watch_hp(self, snap, now):
         """전투 중 HP가 낮으면 물약 키를 누른다. 아주 낮으면 알림."""
         c = self.hp_cfg
@@ -205,7 +221,7 @@ class Bot:
                     self.notifier.send("물약 부족 가능 (눌러도 HP가 오르지 않음)", snap.frame, key="potion")
         keys = c.get("potion_keys") or []
         if keys and self.hp < c.get("potion_below", 0.45) and now - self._potion_at > c.get("potion_gap", 6.0):
-            key = keys[self._potion_idx % len(keys)]
+            key = self._potion_key(snap.frame, keys)
             log.info("HP %.0f%% → 물약 %s", self.hp * 100, key)
             self._hotkey("물약", key)
             self._potion_at = now
