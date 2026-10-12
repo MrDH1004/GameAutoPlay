@@ -153,10 +153,11 @@ class RewardTask:
     def run(self, now, power=None):
         """한 번 돌린다. 끝나면 필드로 돌아와 있어야 한다."""
         self.next_at = now + self.interval
-        log.info("보상 받기 시작 (우편함 → 업적 → 길라잡이)")
+        steps = [n for k, n in (("mail", "우편함"), ("achievements", "업적"), ("guide", "길라잡이")) if self.cfg.get(k, k != "mail")]
+        log.info("보상 받기 시작 (%s)", " → ".join(steps))
         done = []
         try:
-            if self.cfg.get("mail", True) and self.mail():
+            if self.cfg.get("mail", False) and self.mail():
                 done.append("우편함")
             if self.cfg.get("achievements", True) and self.achievements():
                 done.append("업적")

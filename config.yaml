@@ -224,7 +224,7 @@ rewards:
   enabled: true
   interval_minutes: 60
   first_delay: 120        # 시작 후 처음 받기까지 (초)
-  mail: true
+  mail: false            # 우편함은 주기적으로 안 받음 (사용자 지시)
   achievements: true
   guide: true
 

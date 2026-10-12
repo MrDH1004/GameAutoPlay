@@ -47,6 +47,8 @@ class PotionShop:
         self.check_every = float(self.cfg.get("check_minutes", 5)) * 60
         self.max_per_day = int(self.cfg.get("auto_per_day", 1))     # 자동 구매 하루 최대 횟수 (수동 버튼은 제한 없음)
         self._limit_logged = None
+        self._fails = 0                 # 오늘 시도 횟수 (상점 도착 전 실패 재시도 제한용)
+        self._fails_day = None
         self.next_check = 0.0
         self.requested = False          # 제어판 버튼
         self.last_count = None
@@ -67,6 +69,10 @@ class PotionShop:
             self.last_count = n
             if n < self.below:
                 used = self.auto_today()
+                if self._fails_day != date.today():
+                    self._fails_day, self._fails = date.today(), 0
+                if self._fails >= 3:
+                    used = max(used, self.max_per_day)
                 if used >= self.max_per_day:
                     if self._limit_logged != date.today():
                         self._limit_logged = date.today()
@@ -164,20 +170,27 @@ class PotionShop:
     def run(self, now):
         manual = self.requested
         self.requested = False
-        if not manual and getattr(self, "_auto", False):
-            self._count_auto()                  # 시도한 것만으로 오늘 1회로 센다 (실패해도 반복하지 않음)
+        auto = not manual and getattr(self, "_auto", False)
         self._auto = False
         log.info("물약 %s 구매", "수동(버튼)" if manual else "자동")
         self.next_check = now + self.check_every
         log.info("물약 구매 시작 (타바로 성 잡화 상점)")
+        if auto:
+            self._fails += 1                    # 상점 도착 전 실패(지도 안 열림 등)는 하루 3번까지 10분 뒤 재시도
+            if self._fails < 3:
+                self.next_check = now + 600
         try:
             if not self._go_to_shop():
                 return False
             if not self._arrive_and_open(float(self.cfg.get("walk_timeout", 600))):
+                if auto:
+                    self._count_auto()          # 걸어가서 못 연 경우는 반복하지 않는다
                 log.warning("물약 구매: 상점에 도착/열기 실패")
                 self.bot.notifier.send("물약 구매 실패 (상점에 도착하지 못함)", key="potion_shop")
                 return False
             ok = self._buy()
+            if auto:
+                self._count_auto()              # 상점까지 가서 산 것만 오늘 1회로 센다
             d = self.drv
             d.click(*BACK)
             d.sleep(1.5)
