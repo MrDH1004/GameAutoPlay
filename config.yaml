@@ -213,10 +213,16 @@ notify:
 # 하단 체력 바를 읽어 낮으면 물약 단축키를 누른다 (목록을 번갈아 사용). 하단 Ctrl+1/Ctrl+2 칸이 물약.
 hp:
   enabled: true
-  potion_keys: ["ctrl+2", "ctrl+1"]
+  potion_keys: ["ctrl+1", "ctrl+2"]
   potion_below: 0.45      # HP가 이 비율 아래면 물약
   potion_gap: 6.0         # 물약 최소 간격(초)
   danger_below: 0.2       # 이 아래면 위험 알림
+  rest_enabled: true      # 보스가 아닌데 HP가 낮으면 잡던 몹까지만 잡고 자동 사냥을 끄고 회복
+  rest_below: 0.33        # 이 비율 이하면 휴식 시작
+  rest_resume: 0.8        # 이 비율 이상 차면 자동 사냥 다시 켜기 (휴식 중엔 이 아래면 물약)
+  rest_finish_max: 30     # 잡던 몹 마무리를 기다리는 최대 시간(초)
+  rest_max: 180           # 이 시간(초)이 지나면 덜 찼어도 다시 켜기
+  rest_fight_below: 0.15  # 쉬는 중 공격받아 HP가 이 아래로 떨어지면 다시 싸움
 
 # ===== 공짜 보상 자동 받기 =====
 # 우편함 '모두 받기'(4개 탭), 업적 '모두 받기'(5개 탭), 길라잡이 사냥터 미션 '보상 받기'. 받기 버튼만 누른다.

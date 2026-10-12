@@ -104,6 +104,10 @@ class Bot:
         self._potion_warned = 0.0
         self._low_hp_warned = 0.0
         self.hp = None
+        self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
+        self._rest_at = 0.0
+        self._rest_press_at = 0.0
+        self._rest_tries = 0
         self._seen_known = False        # 필드/대화/전투 등 아는 화면을 한 번이라도 봤는지
         self._ui_warned = False
         self._run_t0 = time.monotonic()
@@ -220,7 +224,8 @@ class Bot:
                     log.warning("물약을 %d번 눌러도 HP가 오르지 않음 → 물약이 없거나 다른 키일 수 있음", self._potion_miss)
                     self.notifier.send("물약 부족 가능 (눌러도 HP가 오르지 않음)", snap.frame, key="potion")
         keys = c.get("potion_keys") or []
-        if keys and self.hp < c.get("potion_below", 0.45) and now - self._potion_at > c.get("potion_gap", 6.0):
+        below = c.get("rest_resume", 0.8) if self._rest == "rest" else c.get("potion_below", 0.45)
+        if keys and self.hp < below and now - self._potion_at > c.get("potion_gap", 6.0):
             key = self._potion_key(snap.frame, keys)
             log.info("HP %.0f%% → 물약 %s", self.hp * 100, key)
             self._hotkey("물약", key)
@@ -231,6 +236,77 @@ class Bot:
             self._low_hp_warned = now
             log.warning("HP 위험 %.0f%%", self.hp * 100)
             self.notifier.send(f"HP 위험 {self.hp * 100:.0f}% (출처: {self._source})", snap.frame, key="hp")
+
+    def _rest_tick(self, snap, now):
+        """보스가 아닌 자동 사냥 중 HP가 rest_below(1/3) 이하면: 잡던 몹까지 잡고 → 자동 사냥 끄기 →
+        물약/자연 회복으로 rest_resume(80%) 이상 차면 → 자동 사냥 다시 켜기. 휴식 중이면 True (다른 행동 안 함)."""
+        c = self.hp_cfg
+        if not c.get("enabled", True) or not c.get("rest_enabled", True) or self.dry_run:
+            self._rest = None
+            return False
+        hp = self.hp or 0.0
+        if self._rest is None:
+            if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.33) and not self._boss_near(snap, now):
+                self._rest, self._rest_at = "finish", now
+                log.info("HP %.0f%% → 잡던 몹까지만 잡고 자동 사냥 끄고 회복", hp * 100)
+            return False
+        self._last_progress = now               # 휴식은 멈춤이 아님
+        if self._rest != "on" and self._boss_near(snap, now):
+            log.info("보스 등장 → 휴식 취소, 자동 사냥 유지")
+            self._rest, self._rest_tries, self._rest_press_at = "on", 0, 0.0
+        if self._rest == "finish":
+            # 전투가 끝나면(=잡던 몹 처치) 끈다. 너무 오래 걸리면 그냥 끈다
+            if snap.state == "COMBAT" and now - self._rest_at < c.get("rest_finish_max", 30):
+                return True
+            self._rest, self._rest_tries, self._rest_press_at = "off", 0, 0.0
+        if self._rest == "off":
+            if self._rest_toggle(snap, now, want_on=False):
+                return True
+            self._rest, self._rest_at = "rest", now
+            log.info("자동 사냥 끔 → HP %.0f%%까지 회복 대기", c.get("rest_resume", 0.8) * 100)
+            return True
+        if self._rest == "rest":
+            why = None
+            if hp >= c.get("rest_resume", 0.8):
+                why = f"HP {hp * 100:.0f}% 회복"
+            elif now - self._rest_at > c.get("rest_max", 180):
+                why = f"{c.get('rest_max', 180):.0f}초 동안 회복이 덜 됨(HP {hp * 100:.0f}%)"
+            elif snap.state == "COMBAT" and 0.0 < hp < c.get("rest_fight_below", 0.15):
+                why = f"쉬는 중 공격받아 HP {hp * 100:.0f}%"
+            if why is None:
+                return True
+            log.info("%s → 자동 사냥 다시 켬", why)
+            self._rest, self._rest_tries, self._rest_press_at = "on", 0, 0.0
+        if self._rest == "on":
+            if self._rest_toggle(snap, now, want_on=True):
+                return True
+            log.info("자동 사냥 다시 켜짐")
+            self._rest = None
+        return False
+
+    def _rest_toggle(self, snap, now, want_on):
+        """T로 자동 사냥을 want_on 상태로 만든다. 아직 바꾸는 중이면 True, 끝났으면(또는 3번 실패) False."""
+        if snap.auto_on == want_on:
+            return False
+        if now - self._rest_press_at < 3.0:
+            return True
+        what = "켜기" if want_on else "끄기"
+        if self._rest_tries >= 3:
+            log.warning("자동 사냥 %s: T를 3번 눌러도 안 바뀜 → 포기", what)
+            return False
+        self._rest_tries += 1
+        log.info("자동 사냥 %s → T 키 (%d/3)", what, self._rest_tries)
+        self._press("자동 사냥 " + what, "t")
+        self._rest_press_at = now
+        return True
+
+    def _boss_near(self, snap, now):
+        """보스 체력바가 보이거나 최근 10초 안에 보였으면 True."""
+        if self.preset:
+            if now - getattr(self.preset, "_last_boss", 0.0) < 10:
+                return True
+            return snap.state == "COMBAT" and self.preset.boss_visible(snap.frame)
+        return snap.state == "COMBAT" and bool(self.matcher.find(snap.frame, "combat_boss.png", [0.35, 0.04, 0.3, 0.06]))
 
     def _press(self, label, key):
         if self.dry_run:
@@ -495,6 +571,8 @@ class Bot:
 
     def _on_field(self, snap, now):
         """필드 화면: COMBAT/MOVING은 아무것도 하지 않고, IDLE이 이어질 때만 퀘스트를 누른다."""
+        if self._rest_tick(snap, now):
+            return
         self._watch_move_end(snap, now)
         if now - self._power_at > 300 and snap.state != "MOVING":     # 전투력은 5분마다 읽는다 (OCR 1~2초)
             self._power_at = now
