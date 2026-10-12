@@ -6,6 +6,7 @@
 """
 import argparse
 import logging
+import logging.handlers
 import os
 import sys
 
@@ -25,7 +26,8 @@ def setup_logging(debug):
         datefmt="%H:%M:%S",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler(os.path.join(ROOT, "logs", "bot2.log"), encoding="utf-8"),
+            logging.handlers.RotatingFileHandler(os.path.join(ROOT, "logs", "bot2.log"), maxBytes=5_000_000,
+                                                 backupCount=5, encoding="utf-8"),
         ],
     )
 

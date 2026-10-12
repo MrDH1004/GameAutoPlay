@@ -416,7 +416,7 @@ class FarmTask:
         return set(self.banned)
 
     def pick(self, power, now):
-        usable = {"spots": [s for s in self.db["spots"] if s.get("power")]}
+        usable = {"spots": [s for s in self.db["spots"] if s.get("power") and not s.get("disabled")]}
         s = best_spot(usable, power, self.margin, self._active_bans(now))
         if not s:
             return None

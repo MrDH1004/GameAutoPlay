@@ -1,9 +1,9 @@
-# GameAutoPlay — 도깨비의세계 퀘스트 자동 진행 보조
+# GameAutoPlay — 도깨비의세계 퀘스트 자동 진행
 
-자동 진행이 멈추면 오른쪽 퀘스트 목록을 클릭하고, 대화/보상/수락 팝업을 눌러 주는 화면 인식 매크로.
-게임 메모리·패킷은 건드리지 않고 화면 캡처 + 마우스/키보드 입력만 사용한다.
+화면 캡처(mss) + 템플릿 매칭(OpenCV) + 키보드/마우스 입력(pydirectinput)만 쓰는 화면 인식 매크로.
+게임 메모리·패킷은 건드리지 않는다. 현재 버전은 `version.py` 참고.
 
-> ⚠️ 게임 폴더에 안티치트 로더(`ucldr_DKBI_GL_loader_x64.exe`)가 있다. 입력 매크로는 운영 정책 위반으로
+> ⚠️ 게임에 안티치트 로더(`ucldr_DKBI_GL_loader_x64.exe`)가 있다. 입력 매크로는 운영 정책 위반으로
 > 계정 제재를 받을 수 있으니 사용 전 게임 약관을 확인할 것.
 
 ## 설치
@@ -12,57 +12,71 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
-## 사용 순서
-게임이 관리자 권한으로 실행되므로 **아래 명령은 모두 관리자 PowerShell에서** 실행해야 클릭이 전달된다.
+## 실행 (권장: 제어판)
+`gui.bat` 더블클릭 → 관리자 권한 요청 → 제어판이 열리고 자동으로 시작한다.
 
-1. **스크린샷 수집** — 게임 중 멈추는 화면마다 F9 (F12 종료)
-   ```powershell
-   .\.venv\Scripts\python.exe -m tools.snap
-   ```
-2. **템플릿 자르기** — 버튼을 드래그해 `templates/`에 저장, 출력된 비율 좌표는 `config.yaml`에 기입
-   ```powershell
-   .\.venv\Scripts\python.exe -m tools.crop screenshots\파일이름.png
-   ```
-   | 파일 | 내용 |
-   |---|---|
-   | `quest_first.png` | 오른쪽 퀘스트 목록 첫 항목 (또는 `quest_tracker.click` 좌표만 설정) |
-   | `auto_running.png` | "자동 진행 중" 표시 (있으면 멈춤 감지가 정확해짐) |
-   | `dialog_skip.png`, `dialog_next.png` | 대화 스킵/다음 |
-   | `reward.png`, `accept.png` | 완료·보상 / 수락 |
-   | `cutscene_skip.png`, `revive.png` | 컷신 / 부활 |
-3. **dry-run 확인** — 클릭 없이 감지 로그만 출력
-   ```powershell
-   .\.venv\Scripts\python.exe main.py --dry-run --debug
-   ```
-4. **실행**
-   ```powershell
-   .\.venv\Scripts\python.exe main.py
-   ```
+| 탭 | 내용 |
+|---|---|
+| 대시보드 | 현재 상태(이동/전투/대화/사망…), 가동 시간, 사망·임무 전환·영기 수련 횟수 |
+| 설정 | 기능 토글, 수치, 프로필(퀘스트용/앵벌용/밤샘용), 알림 토큰, 예약 실행, 버전 정보 |
+| 통계 | 전투력 추이 그래프, 퀘스트별 사망 횟수, 최근 사망 기록 |
+| 미리보기 | 게임 화면 썸네일 + 인식 결과 (테두리 색 = 상태) |
+| 사냥터 | 사냥터 DB 보기/수정 (이름·몬스터 전투력·사용 여부) |
+| 스킬 추천 | 무과금 도술 추천 세트(스킬 아이콘), 계열 요약, 실측 효율표, 출처 |
+| 로그 | 실시간 로그 (경고만 보기 가능) |
 
-## 영기 수련 자동 진행
-`config.yaml`의 `yeonggi.interval`(기본 180초)마다 필드 화면에서:
-1. ☰ 메뉴 → `영기 수련` 열기
-2. 하단 모래시계 바가 있으면(진행 중) 바로 복귀
-3. 없으면 `0/1` 노드를 왼쪽부터 클릭 → "현재 수련이 불가능합니다"면 닫고 다음 노드 → `수련` 클릭
-4. 뒤로가기로 필드 복귀
+창을 닫아도 실행 중이면 트레이로 숨어서 계속 돈다 (트레이 메뉴 → 완전히 종료).
 
-영기 수련만 돌리려면 `quest_tracker.enabled: false`, 끄려면 `yeonggi.enabled: false`.
-dry-run에서는 메뉴를 열 수 없어 영기 수련 단계는 로그만 남긴다.
+명령줄 실행: `.\.venv\Scripts\python.exe run.py` (퀘스트) / `run.py --farm` 또는 `farm.bat` (사냥터 전용) / `--dry-run` (클릭 없이 로그만)
+
+## 동작 요약
+- **상태 머신** (bot2/brain.py): 사망 > 대화 > 다른 화면 > 전투 > 이동 > 정지 순으로 판단해 한 가지 동작만 한다.
+- **퀘스트**: 오래 멈춰 있으면 오른쪽 트래커의 메인 퀘스트 클릭 → 진행이 없으면 트래커 OCR 스캔 → 임무 화면(J)에서 본편→서사→일일→주간.
+- **대화**: '넘기기' 버튼이 보이면 클릭.
+- **사망**: 무료 복귀 버튼만 누른다(유료 즉시 부활은 절대 누르지 않음).
+  - 죽은 퀘스트는 30분 중단, 같은 퀘스트에서 또 죽으면 60분·120분… (최대 4시간)
+  - **전투력 게이트**: 한 퀘스트에서 2번 죽으면 전투력이 3% 오를 때까지 재도전하지 않는다.
+  - 다른 퀘스트가 없으면 전투력에 맞는 안전 사냥터로 걸어가 자동 사냥.
+  - 기록: `logs/deaths.jsonl`, 화면: `screenshots/death_*.png`
+- **사냥터 모드** (bot2/farm.py): 좌하단 전투력을 읽어 몬스터 전투력이 내 전투력×0.9 이하인 사냥터 중 가장 센 곳으로 걸어간다.
+  15분마다 재평가, 사망하면 한 단계 아래로. DB는 `farm_spots.json` (만들기: `python -m tools.farm_scan "지역" 배너x 배너y`).
+- **멈춤 감시**: 10분 동안 이동/전투/대화가 없으면 화면 저장 후 복구(지도 닫기 → ESC → 다른 퀘스트), 3번 실패하면 일시정지.
+- **영기 수련**: 주기적으로 메뉴를 열어 빨간 점 노드를 수련.
+- **사용자 양보**: 게임 창을 직접 조작하면 2분 쉬고 재개. 다른 창에서 하는 작업은 무시(`yield_only_game_input`).
+
+## 폰 알림 / 원격 제어
+`config.yaml`의 `notify:` 또는 제어판 설정 → "알림 연결"에 입력.
+- 텔레그램: @BotFather로 봇 생성 → 봇에게 아무 말 → `https://api.telegram.org/bot<토큰>/getUpdates`에서 chat id 확인
+- 원격 명령: `/상태` `/화면` `/일시정지` `/재개` `/정지` (설정한 chat id에서 온 명령만 받음)
+- 알림: 사망, 일시정지, 멈춤 복구, 시작, 매일 `report_hour`시 일일 리포트
 
 ## 단축키 / 안전장치
-- `F12` 종료, `F11` 일시정지·재개
-- 마우스를 화면 왼쪽 위 모서리로 옮기면 비상 정지
-- 게임 창이 맨 앞에 있을 때만 동작
-- 퀘스트를 `max_retries`번 눌러도 진행이 없으면 화면 저장(`screenshots/stuck_*.png`) + 경고음 + 일시정지
+- `F12` 종료, `F11` 일시정지·재개, 마우스를 화면 왼쪽 위 모서리로 → 비상 정지
+- 게임 창이 맨 앞에 있을 때만 입력
+- 10분 안에 3번 사망, 알 수 없는 화면 지속, 복구 실패 시 화면 저장 + 경고음 + 알림 + 일시정지
+- 시작할 때 설정값·템플릿 점검, 하루 지난 브리지 이미지/일주일 지난 자동 저장 화면 정리, 로그는 5MB×5개 회전
+
+## 개발
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v    # 저장된 실제 화면으로 인식/판단 로직 검사
+```
+- `start_bridge.bat`: 관리자 권한 브리지. `python -m tools.ctl shot|click x y|key k|drag ...`로 일반 권한에서 게임 조작/캡처
+- `tools/dosul_scan.py`: 도술 목록 설명창 수집, `tools/farm_scan.py`: 사냥터 DB 생성, `tools/make_icon.py`: 앱 아이콘
+- 기능을 고치면 `version.py`의 `VERSION`/`CHANGELOG`를 올린다 (제어판이 업데이트 내용을 한 번 보여 줌)
 
 ## 구조
 ```
-main.py            진입점
-config.yaml        설정 (창 제목, 좌표, 템플릿, 팝업 우선순위)
-bot/window.py      게임 창 찾기·캡처
-bot/vision.py      템플릿 매칭, 화면 변화(멈춤) 감지
-bot/actions.py     클릭·키 입력, 단축키
-bot/runner.py      메인 루프 (팝업 → 멈춤 감지 → 퀘스트 클릭)
-tools/snap.py      스크린샷 수집
-tools/crop.py      템플릿 자르기
+gui.py / gui_extra.py   제어판 (PySide6)
+run.py                  명령줄 진입점 (v2)
+bot2/brain.py           상태 머신 본체
+bot2/perception.py      화면 → 상태 판단
+bot2/mission.py         임무 화면(J) 진행
+bot2/tracker.py         퀘스트 트래커 OCR 스캔
+bot2/farm.py            사냥터 선택/이동
+bot2/safety.py          사망 기록, 전투력 게이트
+bot2/notify.py          텔레그램/디스코드
+bot2/selfcheck.py       시작 점검, 파일 정리
+bot/                    창 캡처, 입력, 템플릿 매칭, 영기 수련 (v1 공용)
+skill_guide.py          스킬 추천 데이터
+config.yaml             설정
 ```

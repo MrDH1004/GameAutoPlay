@@ -7,6 +7,7 @@
 import ctypes
 import json
 import logging
+import logging.handlers
 import os
 import sys
 import time
@@ -31,11 +32,13 @@ if __name__ == "__main__":
     _ensure_admin()
 
 import yaml
-from PySide6.QtCore import QObject, QThread, QTimer, Qt, Signal
+from datetime import datetime
+from PySide6.QtCore import QObject, QThread, QTime, QTimer, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
-                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
+                               QTabWidget, QTextBrowser, QVBoxLayout, QWidget, QLineEdit, QScrollArea,
+                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox)
 
 CONFIG_PATH = os.path.join(ROOT, "config.yaml")
 SETTINGS_PATH = os.path.join(ROOT, "gui_settings.json")
@@ -90,6 +93,8 @@ STATE_INFO = {   # 내부 상태 → (표시 이름, 설명, 색)
 SETTING_FIELDS = [
     ("toggle", ("farm", "enabled"), "사냥터 전용(앵벌) 모드", "퀘스트를 아예 끄고 내 전투력에 맞는 사냥터에서 자동 사냥만 유지"),
     ("toggle", ("farm", "fallback_when_blocked"), "퀘스트 전부 막히면 안전 사냥터로", "사망으로 모든 퀘스트가 중단되면 전투력에 맞는 사냥터에서 사냥"),
+    ("toggle", ("yield_only_game_input",), "게임 창 조작에만 양보", "다른 창에서 하는 작업은 무시하고, 게임을 직접 조작할 때만 멈춤"),
+    ("toggle", ("notify", "enabled"), "폰 알림/원격 제어", "사망·일시정지·멈춤을 텔레그램/디스코드로 알림 (아래 토큰 입력 필요)"),
     ("toggle", ("yeonggi", "enabled"), "영기 수련 자동 진행", "주기적으로 메뉴를 열어 빨간 점 노드를 수련"),
     ("toggle", ("mission", "enabled"), "임무 화면(J) 폴백", "퀘스트가 막히면 본편→서사→일일→주간 순으로 진행"),
     ("toggle", ("quest_tracker", "scan", "enabled"), "트래커 OCR 스캔", "우측 퀘스트 목록을 스크롤해 진행 가능한 퀘스트 탐색"),
@@ -97,12 +102,22 @@ SETTING_FIELDS = [
     ("int", ("yeonggi", "interval"), "영기 수련 확인 주기", (30, 3600, "초")),
     ("float", ("farm", "margin"), "사냥터 허용 비율 (몬스터/내 전투력)", (0.3, 1.5, "배")),
     ("int", ("farm", "reselect_minutes"), "사냥터 재선택 주기", (1, 240, "분")),
+    ("int", ("stall", "minutes"), "멈춤으로 보는 시간", (1, 240, "분")),
+    ("int", ("death", "gate_deaths"), "전투력 게이트 사망 횟수", (1, 20, "회")),
     ("int", ("user_idle_resume",), "직접 조작 후 재개 대기", (5, 1800, "초")),
     ("float", ("loop_interval",), "화면 확인 주기", (0.1, 3.0, "초")),
     ("int", ("idle", "seconds"), "정지로 판단하는 시간", (2, 60, "초")),
     ("int", ("death", "streak_limit"), "연속 사망 한도", (1, 20, "회")),
     ("int", ("death", "streak_window"), "연속 사망 판단 구간", (60, 3600, "초")),
     ("int", ("death", "block_seconds"), "사망 퀘스트 중단 시간", (60, 7200, "초")),
+]
+
+
+# 문자열 설정: (키 경로, 라벨, 비밀값 여부)
+TEXT_FIELDS = [
+    (("notify", "telegram", "token"), "텔레그램 봇 토큰", True),
+    (("notify", "telegram", "chat_id"), "텔레그램 chat id", False),
+    (("notify", "discord", "webhook"), "디스코드 웹훅 URL", True),
 ]
 
 
@@ -237,9 +252,21 @@ class Window(QMainWindow):
         tabs = QTabWidget()
         tabs.addTab(self._build_dashboard(), "대시보드")
         tabs.addTab(self._build_settings(), "설정")
+        from gui_extra import PreviewTab, SpotEditor, StatsTab
+        self.stats_tab = StatsTab(C)
+        self.preview_tab = PreviewTab(C, lambda: self.thread.bot if self.thread else None)
+        tabs.addTab(self.stats_tab, "통계")
+        tabs.addTab(self.preview_tab, "미리보기")
+        tabs.addTab(SpotEditor(C), "사냥터")
         tabs.addTab(self._build_skills(), "스킬 추천")
         tabs.addTab(self._build_log(), "로그")
         outer.addWidget(tabs, 1)
+        self.tabs = tabs
+        self._last_power = None
+        self._power_rec_at = 0.0
+        self._stats_at = 0.0
+        self._sched_day = None
+        self._build_tray()
 
         foot = QLabel("단축키  F11 일시정지/재개   ·   F12 종료   ·   직접 조작하면 자동으로 양보   ·   마우스를 화면 좌상단 구석으로 옮기면 비상 정지")
         foot.setObjectName("sub")
@@ -251,7 +278,7 @@ class Window(QMainWindow):
         root_log.setLevel(logging.INFO)
         root_log.addHandler(self.log_handler)
         os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-        fh = logging.FileHandler(LOG_PATH, encoding="utf-8")
+        fh = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=5_000_000, backupCount=5, encoding="utf-8")
         fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
         root_log.addHandler(fh)
 
@@ -271,19 +298,51 @@ class Window(QMainWindow):
     def _save(self):
         data = {}
         for path, w in self.controls.items():
-            data["/".join(path)] = w.isChecked() if isinstance(w, QCheckBox) else w.value()
+            data["/".join(path)] = self._value(w)
         data["_debug"] = self.chk_debug.isChecked()
         data["_dry"] = self.chk_dry.isChecked()
+        data["_sched_start_on"] = self.chk_sched_start.isChecked()
+        data["_sched_start"] = self.time_start.time().toString("HH:mm")
+        data["_sched_stop_on"] = self.chk_sched_stop.isChecked()
+        data["_sched_stop_h"] = self.spin_stop_h.value()
+        data["_last_version"] = self.saved.get("_last_version", "")
         try:
             with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1)
         except OSError:
             pass
 
+    @staticmethod
+    def _value(w):
+        if isinstance(w, QCheckBox):
+            return w.isChecked()
+        if isinstance(w, QLineEdit):
+            return w.text().strip()
+        return w.value()
+
+    def _apply_values(self, data):
+        """프로필 적용: 키 경로 문자열 → 값."""
+        for path, w in self.controls.items():
+            k = "/".join(path)
+            if k not in data:
+                continue
+            v = data[k]
+            if isinstance(w, QCheckBox):
+                w.setChecked(bool(v))
+            elif isinstance(w, QLineEdit):
+                w.setText(str(v))
+            else:
+                w.setValue(v)
+        logging.info("프로필 적용 (다음 시작부터)")
+
+    def _collect_values(self):
+        return {"/".join(p): self._value(w) for p, w in self.controls.items()
+                if not isinstance(w, QLineEdit)}       # 토큰은 프로필에 넣지 않는다
+
     def _build_config(self):
         cfg = yaml.safe_load(open(CONFIG_PATH, encoding="utf-8"))
         for path, w in self.controls.items():
-            set_path(cfg, path, w.isChecked() if isinstance(w, QCheckBox) else w.value())
+            set_path(cfg, path, self._value(w))
         return cfg
 
     # ---------- UI 구성
@@ -384,6 +443,10 @@ class Window(QMainWindow):
 
     def _build_settings(self):
         w = QWidget()
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setWidget(w)
         lay = QVBoxLayout(w)
         lay.setContentsMargins(0, 12, 0, 0)
         lay.setSpacing(12)
@@ -424,8 +487,48 @@ class Window(QMainWindow):
                 r2 += 1
         gl1.setColumnStretch(1, 1)
         gl2.setColumnStretch(3, 1)
+        from gui_extra import ProfileBar
+        lay.addWidget(ProfileBar(self._collect_values, self._apply_values))
         lay.addWidget(g1)
         lay.addWidget(g2)
+
+        gt = QGroupBox("알림 연결 (선택)")
+        glt = QGridLayout(gt)
+        for i, (path, label, secret) in enumerate(TEXT_FIELDS):
+            le = QLineEdit()
+            saved = self.saved.get("/".join(path))
+            le.setText(str(saved if saved is not None else (get_path(self.base_config, path, "") or "")))
+            if secret:
+                le.setEchoMode(QLineEdit.PasswordEchoOnEdit)
+            glt.addWidget(QLabel(label), i, 0)
+            glt.addWidget(le, i, 1)
+            self.controls[path] = le
+        tip = QLabel("텔레그램: @BotFather로 봇 생성 → 봇에게 아무 말 → api.telegram.org/bot(토큰)/getUpdates 에서 chat id 확인. "
+                     "원격 명령: /상태 /화면 /일시정지 /재개 /정지")
+        tip.setObjectName("sub")
+        tip.setWordWrap(True)
+        glt.addWidget(tip, len(TEXT_FIELDS), 0, 1, 2)
+        lay.addWidget(gt)
+
+        gs = QGroupBox("예약 실행")
+        gls = QGridLayout(gs)
+        self.chk_sched_start = QCheckBox("매일 이 시각에 자동 시작")
+        self.chk_sched_start.setChecked(bool(self.saved.get("_sched_start_on", False)))
+        self.time_start = QTimeEdit(QTime.fromString(self.saved.get("_sched_start", "02:00"), "HH:mm"))
+        self.time_start.setDisplayFormat("HH:mm")
+        self.chk_sched_stop = QCheckBox("시작 후 이 시간이 지나면 자동 정지")
+        self.chk_sched_stop.setChecked(bool(self.saved.get("_sched_stop_on", False)))
+        self.spin_stop_h = QDoubleSpinBox()
+        self.spin_stop_h.setRange(0.5, 48)
+        self.spin_stop_h.setDecimals(1)
+        self.spin_stop_h.setValue(float(self.saved.get("_sched_stop_h", 6)))
+        gls.addWidget(self.chk_sched_start, 0, 0)
+        gls.addWidget(self.time_start, 0, 1)
+        gls.addWidget(self.chk_sched_stop, 1, 0)
+        gls.addWidget(self.spin_stop_h, 1, 1)
+        gls.addWidget(QLabel("시간"), 1, 2)
+        gls.setColumnStretch(3, 1)
+        lay.addWidget(gs)
 
         g3 = QGroupBox("실행 옵션")
         gl3 = QVBoxLayout(g3)
@@ -451,7 +554,7 @@ class Window(QMainWindow):
         note.setObjectName("sub")
         lay.addWidget(note)
         lay.addStretch(1)
-        return w
+        return scroll
 
     def _build_skills(self):
         """무과금 도술 추천 (skill_guide.py 데이터)."""
@@ -614,6 +717,7 @@ class Window(QMainWindow):
     def _refresh(self):
         th = self.thread
         bot = th.bot if th else None
+        self._refresh_extra(bot)
         if not th:
             self.lbl_state.setText("정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")
@@ -679,7 +783,78 @@ class Window(QMainWindow):
         for k, c in self.chips.items():
             c.on(k == key)
 
+    # ---------- 통계 기록 / 미리보기 / 예약
+    def _refresh_extra(self, bot):
+        now = time.monotonic()
+        if bot and bot.power and (bot.power != self._last_power or now - self._power_rec_at > 1800):
+            from gui_extra import record_power
+            record_power(bot.power)
+            self._last_power, self._power_rec_at = bot.power, now
+        if now - self._stats_at > 60 and self.tabs.currentWidget() is self.stats_tab:
+            self._stats_at = now
+            self.stats_tab.refresh()
+        self.preview_tab.tick(self.tabs.currentWidget() is self.preview_tab and self.isVisible())
+        # 예약 시작
+        if self.chk_sched_start.isChecked() and not self.thread:
+            t = self.time_start.time()
+            nowt = datetime.now()
+            if (nowt.hour, nowt.minute) == (t.hour(), t.minute()) and self._sched_day != nowt.date():
+                self._sched_day = nowt.date()
+                logging.info("예약 시작")
+                self.start()
+        # 예약 정지
+        if (self.chk_sched_stop.isChecked() and self.thread and self.started_at
+                and now - self.started_at > self.spin_stop_h.value() * 3600):
+            logging.info("예약 정지 (%.1f시간 경과)", self.spin_stop_h.value())
+            self.stop()
+
+    # ---------- 트레이
+    def _build_tray(self):
+        self.tray = None
+        self._quitting = False
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            return
+        self.tray = QSystemTrayIcon(QIcon(os.path.join(ROOT, "assets", "app.ico")), self)
+        m = QMenu()
+        m.addAction("열기", self._show_from_tray)
+        m.addAction("시작", self.start)
+        m.addAction("일시정지/재개", self.toggle_pause)
+        m.addAction("정지", self.stop)
+        m.addSeparator()
+        m.addAction("완전히 종료", self._quit)
+        self.tray.setContextMenu(m)
+        self.tray.setToolTip("도깨비의세계 자동 진행")
+        self.tray.activated.connect(lambda r: self._show_from_tray() if r == QSystemTrayIcon.Trigger else None)
+        self.tray.show()
+
+    def _show_from_tray(self):
+        self.showNormal()
+        self.raise_()
+        self.activateWindow()
+
+    def _quit(self):
+        self._quitting = True
+        self.close()
+
+    def show_changelog_if_new(self):
+        from version import CHANGELOG, VERSION
+        last = self.saved.get("_last_version", "")
+        if last == VERSION:
+            return
+        new = [c for c in CHANGELOG if not last or tuple(map(int, c[0].split("."))) > tuple(map(int, last.split(".")))]
+        text = "\n".join(f"v{v} ({d})  {n}" for v, d, n in new[:8])
+        self.saved["_last_version"] = VERSION
+        self._save()
+        QMessageBox.information(self, f"v{VERSION} 업데이트", "바뀐 점:\n\n" + text)
+
     def closeEvent(self, e):
+        if self.tray and self.thread and not self._quitting:
+            # 실행 중에는 창만 숨기고 트레이에서 계속 돈다
+            e.ignore()
+            self.hide()
+            self.tray.showMessage("도깨비의세계 자동 진행", "트레이에서 계속 실행 중입니다. 완전히 끄려면 트레이 메뉴 → 완전히 종료",
+                                  QSystemTrayIcon.Information, 3000)
+            return
         if self.thread:
             self.stop()
             self.thread.wait(4000)
@@ -698,6 +873,7 @@ def main():
     app.setStyleSheet(QSS)
     win = Window()
     win.show()
+    QTimer.singleShot(800, win.show_changelog_if_new)
     if "--autostart" in sys.argv:
         QTimer.singleShot(1500, win.start)
     sys.exit(app.exec())

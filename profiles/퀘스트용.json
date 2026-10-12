@@ -1,0 +1,6 @@
+{
+ "farm/enabled": false,
+ "farm/fallback_when_blocked": true,
+ "mission/enabled": true,
+ "yeonggi/enabled": true
+}

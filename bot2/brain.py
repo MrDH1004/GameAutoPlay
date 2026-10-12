@@ -16,7 +16,10 @@ from bot.vision import Matcher, save_image
 from bot.window import GameWindow
 from bot.yeonggi import YeonggiTask
 
-from .farm import FarmTask
+from .farm import FarmTask, read_power
+from .notify import Notifier
+from .safety import DeathBook
+from . import selfcheck
 from .mission import MissionTask
 from .perception import Perceiver
 from .tracker import TrackerScanner
@@ -57,6 +60,17 @@ class Bot:
         self.farm_fallback = bool(fm.get("fallback_when_blocked"))   # 퀘스트가 전부 막히면 안전 사냥터로
         self.farm = FarmTask(self, fm) if (self.farm_mode or self.farm_fallback) else None
         self._farm_until = 0.0
+        self._gate_check = 0.0
+        self.deathbook = DeathBook(config.get("death") or {})
+        self.notifier = Notifier(config.get("notify"))
+        st = config.get("stall") or {}
+        self.stall_secs = float(st.get("minutes", 10)) * 60
+        self._last_progress = time.monotonic()
+        self._stalls = 0
+        self.power = None               # 마지막으로 읽은 전투력
+        self._power_at = 0.0
+        self.started_wall = time.time()
+        self.selfcheck = ""
         self._hunt_check = 0.0
         self._last_map_close = 0.0
 
@@ -102,6 +116,7 @@ class Bot:
         path = os.path.join(SCREENSHOT_DIR, f"{prefix}_{datetime.now():%Y%m%d_%H%M%S}.png")
         save_image(path, frame)
         log.warning("현재 화면 저장: %s", path)
+        return path
 
     def _check_user(self):
         idle = self.activity.idle_seconds()
@@ -142,6 +157,10 @@ class Bot:
             pass
         self.alert_reason = reason
         self.paused = True
+        try:
+            self.notifier.send(f"일시정지: {reason}", frame if frame is not None else self.window.grab(), key="alert")
+        except Exception:  # noqa: BLE001
+            pass
 
     # ---------- 상태별 처리 ----------
     def _on_dialog(self, snap, now):
@@ -174,6 +193,10 @@ class Bot:
                 self._hunt_tries = 0
                 self._hunt_press_at = 0.0
                 self._death_misses = 0
+                shot = self._save_screen(snap.frame, "death")
+                self._death_secs, n = self.deathbook.record(self._source if not self.farm_mode else "사냥터",
+                                                            self.power, shot)
+                self.notifier.send(f"사망 ({self._source}, 최근 {n}회째) → 무료 복귀", snap.frame, key="death")
                 if self.farm:
                     self.farm.on_death(now)          # 더 낮은 사냥터로 (사냥터 모드/폴백 둘 다)
                 if not self.farm_mode:
@@ -194,7 +217,7 @@ class Bot:
         """사망한 퀘스트(진행 중이던 임무 탭)를 한동안 멈추고, 복귀 후 다른 퀘스트로 전환한다."""
         if not self.mission:
             return
-        secs = (self.cfg.get("death") or {}).get("block_seconds", 1800)
+        secs = getattr(self, "_death_secs", None) or (self.cfg.get("death") or {}).get("block_seconds", 1800)
         self.mission.block(self._source, secs)
         self._need_switch = True
         log.info("사망 → '%s' 퀘스트를 %d분간 중단하고 다른 퀘스트로 전환", self._source, secs // 60)
@@ -314,6 +337,21 @@ class Bot:
     def _on_field(self, snap, now):
         """필드 화면: COMBAT/MOVING은 아무것도 하지 않고, IDLE이 이어질 때만 퀘스트를 누른다."""
         self._watch_move_end(snap, now)
+        if now - self._power_at > 300 and snap.state != "MOVING":     # 전투력은 5분마다 읽는다 (OCR 1~2초)
+            self._power_at = now
+            p = read_power(snap.frame)
+            if p:
+                if self.power and p != self.power:
+                    log.info("전투력 %s → %s", f"{self.power:,}", f"{p:,}")
+                self.power = p
+        if self.mission and now - self._gate_check > 60:
+            self._gate_check = now
+            for src in list(self.deathbook.gates):
+                if not self.mission.is_blocked(src) and self.deathbook.gate_closed(src, self.power):
+                    self.mission.block(src, 600)
+                    log.info("전투력 게이트: '%s'는 전투력이 오를 때까지 보류 (10분 뒤 재확인)", src)
+                    if self.farm_fallback and src == "본편":
+                        self._farm_until = max(self._farm_until, now + 600)
         if self._want_hunt:
             self._ensure_hunt(snap, now)
             return
@@ -441,6 +479,76 @@ class Bot:
         self._idle_since = None
         self._verify = {"until": now + qt.get("verify_seconds", 7.0), "ok": False}
 
+    def _on_stall(self, snap, now):
+        """stall.minutes 동안 아무 진행(이동/전투/대화)이 없을 때의 단계별 복구."""
+        self._stalls += 1
+        self._last_progress = now
+        mins = self.stall_secs / 60
+        shot = self._save_screen(snap.frame, "stall")
+        log.warning("멈춤 감지: %.0f분 동안 진행 없음 (%d회째, 상태 %s)", mins, self._stalls, snap.state)
+        if self._stalls >= 3:
+            self._alert(f"{mins:.0f}분씩 {self._stalls}번 연속 진행 없음 (복구 실패)", snap.frame)
+            self._stalls = 0
+            return
+        self.notifier.send(f"{mins:.0f}분 동안 진행이 없어 복구 시도 ({self._stalls}회째)", snap.frame, key="stall")
+        if self.farm and self.farm.nav.map_open(snap.frame):
+            self._press("멈춤 복구: 지도 닫기", "m")
+        elif snap.state == "OVERLAY":
+            self._press("멈춤 복구: 화면 닫기", "esc")
+        elif self.farm_mode:
+            self.farm.need_travel = True
+            self.farm.next_try = 0.0
+        elif self.mission and not self.dry_run:
+            log.info("멈춤 복구: 임무 화면에서 다른 퀘스트 찾기")
+            self._run_mission(now)
+        else:
+            self._want_hunt = True
+            self._hunt_tries = 0
+
+    # ---------- 원격 명령 / 리포트 ----------
+    def status_text(self):
+        up = time.time() - self.started_wall
+        st = "일시정지" if self.paused else ("사용자 조작 대기" if self.waiting_user else (self._last_state or "-"))
+        lines = [f"상태: {st}" + (f" ({self.alert_reason})" if self.alert_reason else ""),
+                 f"가동: {int(up // 3600)}시간 {int(up % 3600 // 60)}분",
+                 f"전투력: {self.power:,}" if self.power else "전투력: ?",
+                 f"퀘스트 출처: {self._source}",
+                 f"사망 {self.stats['deaths']} · 임무 전환 {self.stats['missions']} · 영기 {self.stats['yeonggi']}"]
+        if self.farm and (self.farm_mode or time.monotonic() < self._farm_until):
+            lines.append("사냥터: " + self.farm.describe())
+        return "\n".join(lines)
+
+    def handle_command(self, cmd):
+        """텔레그램 명령. (답장, 화면 또는 None)"""
+        if cmd in ("상태", "status"):
+            return self.status_text(), None
+        if cmd in ("화면", "screen"):
+            return self.status_text(), (self.window.grab() if self.window.locate() else None)
+        if cmd in ("일시정지", "pause"):
+            self.paused = True
+            self.alert_reason = "원격 일시정지"
+            return "일시정지했습니다.", None
+        if cmd in ("재개", "resume"):
+            self.paused = False
+            self.alert_reason = ""
+            self.activity.ignore_until_now()
+            self._idle_since = self._verify = None
+            return "재개했습니다.", None
+        if cmd in ("정지", "stop"):
+            self.stop_event.set()
+            return "매크로를 종료합니다.", None
+        return "명령: /상태 /화면 /일시정지 /재개 /정지", None
+
+    def _daily_report(self):
+        rc = self.cfg.get("notify") or {}
+        hour = rc.get("report_hour")
+        if hour is None:
+            return
+        today = datetime.now()
+        if today.hour == int(hour) and getattr(self, "_reported_day", None) != today.date():
+            self._reported_day = today.date()
+            self.notifier.send("일일 리포트\n" + self.status_text(), key="report")
+
     # ---------- 루프 ----------
     def _tick(self):
         frame = self.window.grab()
@@ -453,6 +561,12 @@ class Bot:
         if state != "OVERLAY":
             self._overlay_since = None
             self._overlay_esc = 0
+        if state in ("MOVING", "COMBAT", "DIALOG", "DEAD") or snap.world_motion > self.motion_threshold:
+            self._last_progress = now
+            self._stalls = 0
+        elif now - self._last_progress > self.stall_secs:
+            self._on_stall(snap, now)
+            return
 
         if state == "DEAD":
             self._on_dead(snap, now)
@@ -471,13 +585,18 @@ class Bot:
         log.info("시작 (v2 상태 머신): '%s' (%s 종료 / %s 일시정지)%s", self.cfg["window_title"],
                  self.stop_key, self.pause_key, "  [dry-run]" if self.dry_run else "")
         interval = self.cfg.get("loop_interval", 0.5)
+        _, self.selfcheck = selfcheck.run_all(self.cfg)
+        self.notifier.start_commands(self.handle_command)
+        self.notifier.send("매크로 시작 (" + self.selfcheck + ")", key="start")
         time.sleep(2.0)
         self.activity.ignore_until_now()   # 실행 직전의 입력(브리지 포커스 등)은 사용자 조작이 아님
         waiting_logged = False
         while True:
             if self.stop_event.is_set():
                 log.info("종료 요청")
+                self.notifier.stop()
                 return
+            self._daily_report()
             if self.hotkeys.pressed(self.stop_key):
                 log.info("종료 키 입력")
                 return
@@ -508,6 +627,8 @@ class Bot:
                 if not waiting_logged:
                     log.info("게임 창이 없거나 맨 앞에 있지 않아 대기 중...")
                     waiting_logged = True
+                if self.cfg.get("yield_only_game_input", True):
+                    self.activity.ignore_until_now(0.3)   # 다른 창에서 한 조작은 게임 조작으로 치지 않는다
                 self._idle_since = self._verify = None
                 time.sleep(0.5)
                 continue

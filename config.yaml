@@ -118,6 +118,10 @@ death:
   streak_limit: 3        # streak_window초 안에 이만큼 죽으면 일시정지
   streak_window: 600
   block_seconds: 1800    # 사망한 퀘스트(임무 탭)를 이 시간 동안 중단하고 다른 퀘스트를 진행
+  max_block_seconds: 14400   # 같은 퀘스트에서 반복 사망하면 중단 시간을 2배씩 늘리되 이 값까지
+  repeat_window: 10800       # 이 시간(초) 안의 사망만 '반복'으로 센다
+  gate_deaths: 2             # 전투력 게이트: 한 퀘스트에서 이만큼 죽으면
+  gate_gain: 0.03            #   전투력이 그때보다 3% 이상 오를 때까지 그 퀘스트를 재도전하지 않음
   retry: 3.0
 overlay:
   grace: 8.0         # 필드가 아닌 화면을 이만큼 기다린 뒤
@@ -176,3 +180,24 @@ farm:
   reselect_minutes: 15      # 이 주기로 전투력을 다시 읽어 사냥터를 올리거나 내린다
   upgrade_gain: 1.15        # 더 센 사냥터가 지금보다 이 배수 이상일 때만 올라간다 (잦은 이동 방지)
   death_ban_minutes: 60     # 사망한 사냥터를 제외하는 시간
+
+# ===== 멈춤 감시 =====
+# 이 시간 동안 이동/전투/대화가 전혀 없으면 화면을 저장하고 단계별로 복구 (3번 연속 실패하면 일시정지)
+stall:
+  minutes: 10
+
+# 다른 창에서 한 키보드/마우스 조작은 게임 조작으로 치지 않는다 (게임 창이 맨 앞일 때의 조작만 양보)
+yield_only_game_input: true
+
+# ===== 폰 알림 / 원격 제어 =====
+# 텔레그램: @BotFather 로 봇을 만들어 token, 봇에게 말을 건 뒤 https://api.telegram.org/bot<token>/getUpdates 에서 chat id 확인
+# 디스코드: 채널 설정 → 연동 → 웹후크 URL
+notify:
+  enabled: false
+  telegram:
+    token: ""
+    chat_id: ""
+  discord:
+    webhook: ""
+  min_gap: 20          # 같은 종류 알림 최소 간격(초)
+  report_hour: 9       # 매일 이 시각(0~23)에 일일 리포트. 끄려면 null

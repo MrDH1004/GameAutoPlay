@@ -1,0 +1,8 @@
+{
+ "farm/enabled": false,
+ "farm/fallback_when_blocked": true,
+ "mission/enabled": true,
+ "yeonggi/enabled": true,
+ "death/streak_limit": 2,
+ "user_idle_resume": 30
+}
