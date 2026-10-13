@@ -1039,7 +1039,19 @@ class Bot:
             if (not self.window.locate() or self.window.is_minimized()
                     or not self.window.is_foreground()):
                 if not waiting_logged:
-                    log.info("게임 창이 없거나 맨 앞에 있지 않아 대기 중...")
+                    if not self.window.locate():
+                        why = "게임 창을 찾지 못함 (제목 '%s' / 프로세스 %s)" % (self.window.title_part, self.window.process_name or "-")
+                    elif self.window.is_minimized():
+                        why = "게임 창이 최소화되어 있음"
+                    else:
+                        fg = ""
+                        try:
+                            from bot.window import foreground_title
+                            fg = foreground_title()
+                        except Exception:  # noqa: BLE001
+                            pass
+                        why = "게임 창은 찾았지만 맨 앞이 아님" + (f" (지금 앞 창: '{fg}')" if fg else "")
+                    log.info("대기 중: %s", why)
                     waiting_logged = True
                 if not self.window.locate():
                     self._gone_since = self._gone_since or time.monotonic()

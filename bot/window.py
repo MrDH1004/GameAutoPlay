@@ -68,6 +68,17 @@ def find_windows(title_part, process_name=None):
     return found
 
 
+def foreground_title():
+    """지금 맨 앞에 있는 창의 제목 (로그용)."""
+    hwnd = user32.GetForegroundWindow()
+    if not hwnd:
+        return ""
+    n = user32.GetWindowTextLengthW(hwnd)
+    buf = ctypes.create_unicode_buffer(n + 1)
+    user32.GetWindowTextW(hwnd, buf, n + 1)
+    return buf.value[:40]
+
+
 class GameWindow:
     def __init__(self, title_part, process_name=None):
         self.title_part = title_part
