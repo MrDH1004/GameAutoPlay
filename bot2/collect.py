@@ -392,6 +392,22 @@ class Collector:
                 return self.title(img) or "?", img
         return None, img
 
+    @staticmethod
+    def _update_have(db, book, idx, have, title=None):
+        """DB의 등록 수 갱신. 화면 전환 중 오독(9→0처럼 갑자기 줄어듦)은 반영하지 않는다
+        (등록은 조각이 늘기만 하므로 줄어든 값은 오독).
+        title(화면에서 읽은 그림 제목)이 DB 이름과 분명히 다르면 번호가 어긋난 것이므로 갱신하지 않는다."""
+        for e in db.get("album", []):
+            if e["book"] == book and e["idx"] == idx:
+                nm = e.get("name") or ""
+                if title and 2 <= len(nm) <= 8 and "?" not in nm and " " not in nm and 2 <= len(title) <= 8                         and "?" not in title and not _similar(title, nm):
+                    return
+                if have < e.get("have", 0):
+                    return
+                e["have"] = have
+                e["done"] = have >= 9
+                return
+
     def confirmed_have(self, img):
         """등록 칸 수. 9/9(완성)이면 화면 전환 중 오판일 수 있어 잠시 뒤 다시 읽어 낮은 쪽을 쓴다."""
         have = painting_have(img)
@@ -641,9 +657,9 @@ class Collector:
                     self.open_book(b)
                 else:
                     self.switch_book(b)
-                img = d.shot()
-                name, idx = self.title(img), 0
-                while name:
+                img = self.settled()
+                name, idx = self.title(img) or "?", 0
+                while name and idx < 30:
                     if has_register_pill(img):
                         d.click(*REGISTER_ALL)
                         d.sleep(1.5)
@@ -651,17 +667,50 @@ class Collector:
                         d.sleep(1.0)
                         n += 1
                         log.info("화첩 '%s' 조각 등록", name)
-                        img = d.shot()
+                        img = self.settled()
                     if db is not None:
-                        for e in db.get("album", []):
-                            if e["book"] == b and e["idx"] == idx:
-                                e["have"] = painting_have(img)
-                                e["done"] = e["have"] >= 9
+                        self._update_have(db, b, idx, self.confirmed_have(img), self.title(img))
                     name, img = self.next_painting(name, img)
                     idx += 1
         finally:
             self.exit_screen()
         return n
+
+    def recount_album(self, db, save=None):
+        """화첩 전체를 한 바퀴 돌며 그림별 등록 수만 다시 읽어 DB를 바로잡는다 (몬스터 목록은 그대로).
+        등록 중 오기록을 고칠 때 쓴다. 바로잡은 그림 수."""
+        d = self.drv
+        self.reset_ui()
+        if not self.open_menu_item("album"):
+            self.exit_screen()
+            return 0
+        fixed = 0
+        try:
+            for b in range(len(BOOKS)):
+                if b == 0:
+                    self.open_book(0)
+                else:
+                    self.switch_book(b)
+                img = self.settled()
+                name, idx = self.title(img) or "?", 0
+                while name and idx < 30:
+                    have = self.confirmed_have(img)
+                    ttl = self.title(img)
+                    for e in db.get("album", []):
+                        nm = e.get("name") or ""
+                        if (e["book"] == b and e["idx"] == idx and (e.get("have") != have or e.get("done") != (have >= 9))
+                                and not (2 <= len(nm) <= 8 and "?" not in nm and " " not in nm and 2 <= len(ttl) <= 8
+                                         and "?" not in ttl and not _similar(ttl, nm))):
+                            log.info("화첩 등록 수 바로잡음 %s #%d '%s' %s → %d/9", BOOKS[b], idx, e.get("name"), e.get("have"), have)
+                            e["have"], e["done"] = have, have >= 9
+                            fixed += 1
+                    name, img = self.next_painting(name, img)
+                    idx += 1
+                if save:
+                    save()
+        finally:
+            self.exit_screen()
+        return fixed
 
     def register_relics(self):
         """유물 메뉴에 빨간 점이 있으면 미완료 목록에서 빨간 점 붙은 아이콘을 눌러 '등록' (미검증)."""

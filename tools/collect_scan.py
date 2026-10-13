@@ -4,6 +4,7 @@
     tools/collect_scan.py album [책번호…]   # 화첩만 스캔 (0 인물 1 동물 2 곤충 3 사물 4 도깨비 5 요귀)
     tools/collect_scan.py relics     # 유물 수집만 스캔 (항목마다 저장)
     tools/collect_scan.py fix        # 완성(9/9)인데 몬스터가 비어 있는 그림만 재확인
+    tools/collect_scan.py recount    # 화첩 그림별 등록 수만 다시 읽어 DB 바로잡기
     tools/collect_scan.py register   # 등록만
     tools/collect_scan.py go         # 수집 몬스터 하나 골라 걸어가기
 """
@@ -55,6 +56,9 @@ try:
     elif mode == "fix":
         n = c.col.rescan_done(c.db, save=lambda: save_db(c.db, c.path))
         logging.info("재확인으로 고친 그림 %d개", n)
+    elif mode == "recount":
+        n = c.col.recount_album(c.db, save=lambda: save_db(c.db, c.path))
+        logging.info("등록 수 바로잡은 그림 %d개", n)
     elif mode == "register":
         c.register(time.monotonic())
     elif mode == "go":

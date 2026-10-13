@@ -76,5 +76,14 @@ class CandidatesTest(unittest.TestCase):
         self.assertEqual(c.candidates(self.db(), None), [])
 
 
+class UpdateHaveTest(unittest.TestCase):
+    def test_have_never_decreases(self):
+        db = {"album": [{"book": 1, "idx": 0, "have": 9, "done": True}, {"book": 1, "idx": 1, "have": 0, "done": False}]}
+        c.Collector._update_have(db, 1, 0, 0)               # 연출 화면 오독(9→0)은 무시
+        self.assertEqual((db["album"][0]["have"], db["album"][0]["done"]), (9, True))
+        c.Collector._update_have(db, 1, 1, 9)               # 등록으로 늘어난 값은 반영 → 완성
+        self.assertEqual((db["album"][1]["have"], db["album"][1]["done"]), (9, True))
+
+
 if __name__ == "__main__":
     unittest.main()
