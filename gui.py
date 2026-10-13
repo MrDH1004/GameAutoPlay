@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
 import yaml
 from datetime import datetime
-from PySide6.QtCore import QObject, QThread, QTime, QTimer, Qt, Signal
+from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
@@ -250,6 +250,9 @@ class Window(QMainWindow):
         with open(CONFIG_PATH, encoding="utf-8") as f:
             self.base_config = yaml.safe_load(f)
         self.saved = self._load_saved()
+        self._geo_timer = QTimer(self)                  # 창을 옮기거나 크기를 바꾸면 잠시 뒤 저장 (강제 종료돼도 위치가 남게)
+        self._geo_timer.setSingleShot(True)
+        self._geo_timer.timeout.connect(self._save_geometry_now)
 
         root = QWidget()
         root.setObjectName("root")
@@ -316,6 +319,8 @@ class Window(QMainWindow):
         data["_sched_stop_on"] = self.chk_sched_stop.isChecked()
         data["_sched_stop_h"] = self.spin_stop_h.value()
         data["_last_version"] = self.saved.get("_last_version", "")
+        g = self.geometry() if not self.isMaximized() else self.normalGeometry()
+        data["_geometry"] = [g.x(), g.y(), g.width(), g.height(), self.isMaximized()]      # 창 위치/크기 (다음 실행 때 복원)
         try:
             with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1)
@@ -905,7 +910,38 @@ class Window(QMainWindow):
         self._save()
         QMessageBox.information(self, f"v{VERSION} 업데이트", "바뀐 점:\n\n" + text)
 
+    def restore_geometry(self):
+        """저장된 창 위치/크기를 복원. 저장된 자리가 지금 연결된 모니터 안에 없으면 기본 위치를 쓴다."""
+        g = self.saved.get("_geometry")
+        if not (isinstance(g, list) and len(g) == 5):
+            return
+        x, y, w, h, maxi = g
+        rect = QRect(int(x), int(y), max(int(w), 600), max(int(h), 400))
+        # 창의 제목 줄 일부(왼쪽 위 100x40)가 어떤 화면에든 보여야 한다
+        grab = QRect(rect.x(), rect.y(), 100, 40)
+        if not any(sc.availableGeometry().intersects(grab) for sc in QApplication.screens()):
+            return
+        self.setGeometry(rect)
+        if maxi:
+            self.showMaximized()
+
+    def moveEvent(self, e):
+        super().moveEvent(e)
+        self._geo_timer.start(600)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self._geo_timer.start(600)
+
+    def _save_geometry_now(self):
+        if self.saved is not None:
+            try:
+                self._save()
+            except Exception:  # noqa: BLE001
+                pass
+
     def closeEvent(self, e):
+        self._save_geometry_now()
         if self.tray and self.thread and not self._quitting:
             # 실행 중에는 창만 숨기고 트레이에서 계속 돈다
             e.ignore()
@@ -930,6 +966,7 @@ def main():
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
     win = Window()
+    win.restore_geometry()
     win.show()
     if "--autostart" in sys.argv:
         logging.info("업데이트 내용은 설정 탭의 '버전 정보'에서 볼 수 있습니다")
