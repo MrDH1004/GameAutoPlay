@@ -142,6 +142,8 @@ class Bot:
         self._last_death_click = 0.0
         self._want_hunt = False
         self._death_misses = 0
+        self._death_since = 0.0         # 사망 화면에서 버튼을 기다리기 시작한 시각
+        self._death_alerted = False
         self._death_open = False        # 이번 사망 화면을 이미 기록했는지 (화면이 남아 다시 누를 때 중복 기록 방지)
         self._deaths = []
         self._hunt_tries = 0
@@ -437,10 +439,18 @@ class Bot:
                                 "(레벨/장비에 비해 위험한 지역일 수 있음)")
                     self._deaths = []
                 return
+        # 사망 직후에는 화면이 서서히 나타나 '거점 이동 후 부활' 버튼이 몇 초 늦게 뜬다 → 포기하지 말고 기다린다.
+        # (버튼을 못 찾았다고 일시정지하면 봇이 멈춰 버린다)
+        if not self._death_since:
+            self._death_since = now
+        waited = now - self._death_since
         self._death_misses += 1
-        log.warning("사망 화면인데 무료 복귀 버튼을 찾지 못함 (%d회)", self._death_misses)
-        if self._death_misses == 3:
-            self._alert("사망 화면의 복귀 버튼을 모름 (유료 '즉시 부활'은 누르지 않음)", snap.frame)
+        if self._death_misses <= 3 or self._death_misses % 10 == 0:
+            log.info("사망 화면: 복귀 버튼이 아직 안 보임 (%d초째 기다리는 중)", waited)
+        if waited > float(d.get("button_wait", 45)) and not self._death_alerted:
+            self._death_alerted = True
+            log.warning("사망 화면인데 %d초가 지나도 무료 복귀 버튼을 못 찾음 (유료 '즉시 부활'은 누르지 않음)", waited)
+            self._alert("사망 화면의 복귀 버튼을 찾지 못함 (유료 '즉시 부활'은 누르지 않음)", snap.frame)
 
     def _read_quest_name(self, frame):
         """오른쪽 퀘스트 목록 맨 위 퀘스트 제목 (예: '[5장] 길목을 막는 요귀'). 못 읽으면 None."""
@@ -1002,6 +1012,8 @@ class Bot:
             return
         if state not in ("DEAD", "OVERLAY"):
             self._death_open = False
+            self._death_since = 0.0
+            self._death_alerted = False
         if state == "DEAD":
             self._on_dead(snap, now)
         elif state == "DIALOG":

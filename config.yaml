@@ -116,6 +116,7 @@ death:
   free_buttons: [death_leave.png, death_base_revive.png]   # 나가기 / 거점 이동 후 부활. 유료 '즉시 부활'은 템플릿에 넣지 않는다
   button_region: [0.3, 0.9, 0.45, 0.1]
   button_threshold: 0.8
+  button_wait: 45        # 사망 직후 화면이 서서히 나타나 버튼이 늦게 뜬다 → 이 시간(초)까지는 포기하지 않고 계속 기다림
   streak_limit: 5        # streak_window초 안에 이만큼 죽으면 일시정지
   streak_window: 600
   policy: retry          # retry = 거점 부활 후 같은 퀘스트 재도전, switch = 바로 다른 퀘스트로
