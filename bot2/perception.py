@@ -17,6 +17,7 @@ class Snapshot:
     combat: bool = False            # 대상 몬스터 체력 바가 보임
     dead: bool = False              # 사망 화면
     dialog: Optional[Match] = None  # 대화 넘기기 버튼
+    walking: bool = False           # 하단 '자동 이동 중 N m' 바가 보임 (웨이포인트 이동 중)
     auto_on: bool = False           # 하단 T 슬롯이 주황색으로 켜져 있음 (자동 사냥/자동 퀘스트)
     tracker_changed: bool = False   # 직전 스냅샷보다 퀘스트 목록이 바뀜
     world_motion: float = 0.0       # 캐릭터 주변 화면 변화량
@@ -90,6 +91,10 @@ class Perceiver:
         idle = c.get("idle") or {}
         snap.auto_moving = bool(self._find(frame, idle.get("auto_indicator"),
                                            idle.get("indicator_region")))
+
+        # 하단 '자동 이동 중 202m' 바 (길라잡이/발자국/퀘스트 웨이포인트 이동). 이 동안 자동 사냥(T)을 켜면
+        # 주변 몹을 공격하느라 이동이 취소되므로, 이동 중인지 따로 알아 둔다.
+        snap.walking = bool(self._find(frame, "collect_moving.png", [0.30, 0.60, 0.45, 0.40], 0.8))
 
         ci = c.get("combat_indicator") or {}
         snap.combat = any(self._find(frame, t, ci.get("region")) for t in ci.get("templates", []))

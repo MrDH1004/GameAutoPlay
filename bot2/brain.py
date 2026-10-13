@@ -632,6 +632,8 @@ class Bot:
             log.info("자동 사냥 켜짐 확인")
             self._want_hunt = False
             return
+        if snap.walking:
+            return                      # 웨이포인트 이동 중에 켜면 주변 몹을 공격하느라 이동이 취소된다 → 도착한 뒤에 켠다
         if now - self._hunt_press_at < 3.0:
             return
         if self._hunt_tries >= 3:
@@ -647,6 +649,8 @@ class Bot:
         """영기 수련은 전투 중이 아닌 필드에서만. 실행했으면 True."""
         if not (self.yeonggi and self.yeonggi.due(now) and snap.state in ("IDLE", "MOVING")):
             return False
+        if snap.walking or snap.combat:
+            return False                # 이동·전투 중에 메뉴를 열면 클릭이 안 먹거나 이동이 끊긴다 → 다음 틱에 다시
         try:
             self.yeonggi.run(now)
             self.stats["yeonggi"] += 1
@@ -809,7 +813,7 @@ class Bot:
                 if self._go_collect(now):
                     return
             self.farm.tick(snap, now)
-            if (not snap.auto_on and snap.state != "MOVING" and not self._want_hunt
+            if (not snap.auto_on and snap.state != "MOVING" and not snap.walking and not self._want_hunt
                     and now - self._hunt_check > 15 and now >= self.farm.next_try):
                 self._hunt_check = now
                 log.info("사냥터 모드: 자동 사냥이 꺼져 있음 → 켜기")

@@ -44,6 +44,7 @@ PIECE_ROW = (1230, 600)                            # 오른쪽 등록효과 목�
 REGISTER_ALL = (1488, 945)
 PILL_BOX = (1400, 430, 1580, 1000)                 # '등록가능' 금색 표시를 찾는 영역
 
+WALK_BAR_BOX = (576, 660, 1344, 1080)              # 하단 '자동 이동 중 N m' 바가 뜨는 영역 (이동 중 y≈752)
 POPUP_SRC_TAB = (918, 442)                         # 아이템 창 '획득처' 탭
 SRC_ROWS = [(960, 497), (960, 551)]                # 획득처 행 ('요귀' / '콘텐츠' …)
 SRC_ROW_BOX = [(812, 478, 1100, 516), (812, 532, 1100, 570)]
@@ -247,11 +248,44 @@ def save_db(db, path):
     os.replace(tmp, path)
 
 
-def candidates(db, power, max_ratio=2.0, banned=(), use_relics=True):
-    """사냥 후보 몬스터: [(power, -모을것수, monster, via)] 약한 순.
-    via = 그 몬스터 목록을 다시 여는 경로 (화첩 그림 / 유물 아이템)."""
+def candidates(db, power, max_ratio=2.0, banned=(), use_relics=True, by_order=True):
+    """사냥 후보 몬스터: [(power, -모을것수, monster, via)] (앞에서부터 차례로 간다).
+    via = 그 몬스터 목록을 다시 여는 경로 (화첩 그림 / 유물 아이템).
+
+    by_order=True (기본, 사용자 지시): 화첩 화면에서 보이는 순서대로 — 책 순서(인물→동물→곤충→사물→도깨비→요귀),
+      각 책 안에서는 위→아래, 왼쪽→오른쪽 — 완성(9/9)이 아닌 그림의 몬스터를 앞에서부터 고른다.
+      한 그림에 수집 가능한 몬스터가 여럿이면 가장 약한 몬스터를 그 그림의 대표로 쓴다.
+    by_order=False: 예전 방식 (전투력 이하 먼저, 여러 그림에 필요한 몬스터 우선)."""
     if not power:
         return []
+    if by_order:
+        out, seen = [], set()
+        for e in sorted(db.get("album", []), key=lambda e: (e.get("book", 0), e.get("idx", 0))):
+            if e.get("done"):
+                continue
+            ok = []
+            for m in e.get("monsters", []):
+                p = usable_power(m, power, max_ratio)
+                key = (m["name"], m.get("region", ""))
+                if p is None or not m["name"] or key in banned:
+                    continue
+                ok.append((p, m, key))
+            if not ok:
+                continue
+            p, m, key = min(ok, key=lambda t: t[0])              # 그림 안에서는 가장 약한 몬스터
+            if key in seen:                                       # 앞 그림이 이미 같은 몬스터를 골랐으면 중복 방지
+                continue
+            seen.add(key)
+            out.append((p, -1, m, ("album", e)))
+        if use_relics:                                            # 유물은 화첩 뒤에 (약한 순)
+            out += [t for t in _by_strength(db, power, max_ratio, banned, True) if t[3][0] == "relic"]
+        return out
+    return _by_strength(db, power, max_ratio, banned, use_relics)
+
+
+def _by_strength(db, power, max_ratio, banned, use_relics):
+    """예전 정렬: 내 전투력 이하(안전)를 먼저, 그 안에서는 더 많은 수집품에 필요한 몬스터 → 센 몬스터 순.
+    그다음 내 전투력 초과 ~ 상한 이하는 약한 순."""
     mons = {}
     entries = [("album", e) for e in db.get("album", []) if not e.get("done")]
     if use_relics:
@@ -265,8 +299,6 @@ def candidates(db, power, max_ratio=2.0, banned=(), use_relics=True):
             slot = mons.setdefault(key, {"monster": m, "via": (kind, e), "count": 0, "p": p})
             slot["count"] += 1
     out = [(s["p"], -s["count"], s["monster"], s["via"]) for s in mons.values()]
-    # 내 전투력 이하(안전)를 먼저, 그 안에서는 더 많은 수집품에 필요한 몬스터 → 센 몬스터 순.
-    # 그다음 내 전투력 초과 ~ 상한 이하는 약한 순.
     out.sort(key=lambda t: (t[0] > power, t[1], -t[0]) if t[0] <= power else (True, t[0], t[1]))
     return out
 
@@ -604,6 +636,10 @@ class Collector:
         return False
 
     # ---------- 이동 ----------
+    def is_walking(self):
+        """하단 '자동 이동 중 N m' 바가 보이면 True (웨이포인트 이동 중). 이 동안에는 자동 사냥(T)을 켜면 안 된다."""
+        return bool(_matches(self.drv.shot(), _tpl("collect_moving.png"), WALK_BAR_BOX, 0.8))
+
     def walk_to(self, monster, via):
         """via(화첩 그림/유물)의 요귀 목록에서 monster 행의 발자국(무료 자동 이동)을 누른다. 성공하면 True."""
         kind, e = via
@@ -631,9 +667,8 @@ class Collector:
             for m in rows:
                 if _similar(m["name"], monster["name"]):
                     self.drv.click(1636, m["cy"])       # 발자국 → 화면이 닫히고 자동 이동 시작
-                    self.drv.sleep(2.0)
-                    img = self.drv.shot()
-                    moving = bool(_matches(img, _tpl("collect_moving.png"), (700, 960, 1250, 1060), 0.7)) if os.path.exists(os.path.join(TPL_DIR, "collect_moving.png")) else None
+                    self.drv.sleep(1.5)
+                    moving = self.is_walking()
                     log.info("수집: '%s' 발자국 클릭 (y=%d) → 자동 이동 표시 %s", m["name"], m["cy"], moving)
                     return True
             log.warning("수집: 목록에서 '%s'를 찾지 못함", monster["name"])
@@ -818,10 +853,13 @@ class CollectTask:
                 self.done_round.clear()
                 cands = candidates(self.db, power, self.max_ratio, self._bans(now), self.cfg.get("relics", True))
             for p, negc, m, via in cands[:3]:
-                what = via[1].get("name")
-                log.info("수집 사냥: '%s'(%s, %dK) ← %s '%s' 외 %d건 (전투력 %s, 상한 %d%%)", m["name"], m.get("region"),
-                         p // 1000, "화첩" if via[0] == "album" else "유물", what, -negc - 1,
-                         f"{power:,}", self.max_ratio * 100)
+                e = via[1]
+                if via[0] == "album":                       # 화첩: 책 · 그림 번호 · 모은 조각 수까지 보여 순서대로 가는지 알 수 있게
+                    where = f"화첩 {BOOKS[e['book']]} {e['idx'] + 1}번째 '{e.get('name')}' {e.get('have', 0)}/9"
+                else:
+                    where = f"유물 '{e.get('name')}'"
+                log.info("수집 사냥: %s → '%s' (%dK, 전투력 %s 의 %.1f배)", where, m["name"], p // 1000,
+                         f"{power:,}", p / power)
                 if self.col.walk_to(m, via):
                     self.current = m
                     self.hunt_since = now

@@ -134,7 +134,7 @@ class YeonggiTask:
             return None
         self._click("☰ 메뉴", menu, 0.3)
 
-        frame, entry = self._wait_for("menu_entry", 3.0)
+        frame, entry = self._wait_for("menu_entry", 5.0)       # 메뉴가 늦게 뜨는 경우를 위해 여유
         if not entry:
             log.warning("메뉴에서 '영기 수련'을 찾지 못함 (전투 등으로 메뉴가 닫혔을 수 있음)")
             return None
