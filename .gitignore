@@ -14,3 +14,7 @@ gui_settings.json
 build/
 dist/
 *.spec
+
+# 화첩/유물 수집 스캔 데이터(재생성 가능)
+collect_db.json
+collect_db.backup*.json

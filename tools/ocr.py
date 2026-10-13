@@ -23,7 +23,8 @@ def read_text(image, scale=2.0, lang="ko"):
         buf.tofile(path)
         proc = subprocess.run(
             ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", PS1, "-Path", path, "-Lang", lang],
-            capture_output=True, timeout=30)
+            capture_output=True, timeout=30,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))     # 호출마다 PowerShell 창이 번쩍 뜨지 않게
         out = proc.stdout.decode("utf-8", "replace").strip()
         if proc.returncode != 0 or not out:
             raise RuntimeError("OCR 실패: " + proc.stderr.decode("utf-8", "replace")[:300])

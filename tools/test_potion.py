@@ -1,4 +1,6 @@
 """물약 구매 루틴 단독 실행 (관리자 권한 필요: 브리지 run 으로 실행). 결과는 logs/test_potion.log"""
+import ctypes  # noqa: E402
+ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)   # 브리지가 띄운 콘솔 창 숨김 (백그라운드 실행)
 import logging
 import os
 import sys

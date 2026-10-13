@@ -43,10 +43,10 @@ OPS_FILE = os.path.join(ROOT, "tools", "bridge_ops.py")
 
 
 def stop_other_instances():
-    """같은 폴더의 매크로(main.py)나 이전 브리지가 돌고 있으면 종료."""
+    """같은 폴더의 매크로(main.py)나 이전 브리지가 돌고 있으면 종료. (venv python.exe는 런처가 부모로 같은 명령줄을 가지므로 부모는 제외 — 아니면 자기 런처를 죽여 즉시 종료됨)"""
     ps = ("Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | "
           "Where-Object { ($_.CommandLine -like '*main.py*' -or $_.CommandLine -like '*tools.bridge*') "
-          "-and $_.ProcessId -ne " + str(os.getpid()) + " } | "
+          "-and $_.ProcessId -ne " + str(os.getpid()) + " -and $_.ProcessId -ne " + str(os.getppid()) + " } | "
           "ForEach-Object { Stop-Process -Id $_.ProcessId -Force; $_.ProcessId }")
     out = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True)
     if out.stdout.strip():

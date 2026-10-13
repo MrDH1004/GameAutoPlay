@@ -17,12 +17,13 @@ from bot.vision import Matcher, save_image
 from bot.window import GameWindow
 from bot.yeonggi import YeonggiTask
 
-from .farm import GUIDE_CLOSE, FarmTask, read_power
+from .farm import GUIDE_CLOSE, FarmTask, StopRequested, read_power
 from .notify import Notifier
 from .rewards import RewardTask
 from .preset import PresetSwitcher
 from .enhance import EnhanceTask
 from .shop import PotionShop
+from .collect import CollectTask
 from .farm import BotDriver
 from .safety import DeathBook, hp_ratio
 from . import selfcheck
@@ -76,6 +77,9 @@ class Bot:
             self.rewards.next_at = time.monotonic() + float(rw.get("first_delay", 120))
             self.rewards.on_new_skill = lambda a, b: self.notifier.send(
                 f"새 도술 {b - a}개 습득 ({a}→{b}). 도술 조합/프리셋을 다시 보세요.", key="skill")
+        cl = config.get("collect") or {}
+        self.collect = CollectTask(self, cl) if (cl.get("enabled", True) and self.farm) else None
+        self._collect_pending = False   # 앵벌이 시작되면 수집 몬스터로 먼저 가 본다
         ps = config.get("potion_shop") or {}
         self.potion_shop = PotionShop(self, ps) if ps.get("enabled", True) else None
         en = config.get("enhance") or {}
@@ -371,6 +375,9 @@ class Bot:
                 self.notifier.send(f"사망 ({self._source}, 최근 {n}회째) → 무료 복귀", snap.frame, key="death")
                 retry_limit = int(d.get("retry_limit", 3))
                 if farming:
+                    if self.collect and self.collect.current:
+                        self.collect.on_death(now)   # 수집 몬스터에서 죽음: 그 몬스터 제외하고 다음(더 약한) 후보로
+                        self._collect_pending = True
                     self.farm.on_death(now)          # 사냥터에서 죽음: 한 단계 낮은 사냥터로
                 elif d.get("policy", "retry") == "retry" and n <= retry_limit:
                     # 하던 퀘스트를 기억해 두고, 거점에서 부활한 뒤 같은 퀘스트를 다시 누른다
@@ -429,6 +436,31 @@ class Bot:
                 self._source = self.mission.last_tab
             self._click_at = time.monotonic()
 
+    def _go_collect(self, now):
+        """수집 몬스터(화첩/유물)로 걸어간다. 성공하면 일반 사냥터 이동을 앵벌 끝까지 막는다."""
+        power = self.power or self.farm.power
+        if not power:
+            from .farm import read_power
+            power = read_power(self.window.grab())
+        if not power:
+            log.warning("수집: 전투력을 몰라 일반 사냥터로")
+            return False
+        try:
+            ok = self.collect.go(power, now)
+        except StopRequested:
+            self._collect_pending = True        # 사용자 조작으로 중단 → 다음에 다시 시도
+            return True
+        finally:
+            self._idle_since = None
+            self._moving_since = None
+        if ok:
+            self.farm.need_travel = False
+            self.farm.current = None
+            self.farm.next_eval = max(self._farm_until, now + 60) if not self.farm_mode else now + self.farm.reselect * 4
+            self.farm.status = "수집 사냥 중"
+            self._want_hunt = False              # 도착(이동 종료) 감지가 T를 켠다
+        return ok
+
     def _start_farming(self, now, why):
         """퀘스트를 중단하고 그동안 전투력에 맞는 사냥터(앵벌 존)로 가서 자동 사냥."""
         secs = getattr(self, "_death_secs", None) or (self.cfg.get("death") or {}).get("block_seconds", 1800)
@@ -439,6 +471,7 @@ class Bot:
         self._retry_quest = None
         self.farm.need_travel = True
         self.farm.next_try = now + 5
+        self._collect_pending = bool(self.collect)
         log.warning("%s → %d분간 전투력에 맞는 사냥터에서 자동 사냥, 이후 퀘스트 다시 시도", why, secs // 60)
         self.notifier.send(f"{why} → {secs // 60:.0f}분 앵벌 후 퀘스트 재시도", key="farm_fallback")
 
@@ -612,6 +645,18 @@ class Bot:
             finally:
                 self._idle_since = None
             return
+        if (self.collect and self.collect.register_due(now) and snap.state in ("IDLE", "COMBAT")
+                and not self._verify and not self.dry_run and self._rest is None):
+            try:
+                self.collect.register(now)
+            finally:
+                self._idle_since = None
+                self._moving_since = None
+                if self.collect.current:            # 수집 사냥 중이었으면 화면을 닫고 그 자리에서 계속 (자동 사냥 다시 켬)
+                    self._want_hunt = True
+                    self._hunt_tries = 0
+                    self._hunt_press_at = 0.0
+            return
         if (self.rewards and self.rewards.due(now) and snap.state in ("IDLE", "COMBAT")
                 and not self._verify and not self.dry_run):
             try:
@@ -630,6 +675,9 @@ class Bot:
             return
         if self._farm_until and now >= self._farm_until and not self.farm_mode:
             self._farm_until = 0.0
+            self._collect_pending = False
+            if self.collect:
+                self.collect.stop()
             log.info("앵벌 시간 끝 → 퀘스트 다시 진행")
             self._fails = 0
             self._idle_since = None
@@ -638,6 +686,10 @@ class Bot:
             self._need_switch = False
             if self._run_yeonggi_if_due(snap, now):
                 return
+            if self._collect_pending and snap.state in ("IDLE", "COMBAT", "MOVING") and now >= self.farm.next_try:
+                self._collect_pending = False
+                if self._go_collect(now):
+                    return
             self.farm.tick(snap, now)
             if (not snap.auto_on and snap.state != "MOVING" and not self._want_hunt
                     and now - self._hunt_check > 15 and now >= self.farm.next_try):
