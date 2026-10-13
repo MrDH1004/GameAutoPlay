@@ -9,7 +9,8 @@ from bot import actions
 user32 = ctypes.windll.user32
 
 ALLOWED_KEYS = {"esc", "enter", "space", "tab", "f", "g", "t", "j", "m", "i", "p", "u", "k", "o", "l",
-                "h", "x", "z", "r", "1", "2", "3", "4", "5", "up", "down", "left", "right"}
+                "h", "x", "z", "r", "1", "2", "3", "4", "5", "up", "down", "left", "right",
+                "f11"}                      # f11 = 매크로 일시정지/재개 단축키 (게임 조작이 아님)
 
 
 def focus_game(win):
