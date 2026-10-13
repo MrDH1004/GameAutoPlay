@@ -58,13 +58,32 @@ class YeonggiTask:
         self.bot._click_frame(label, match.x, match.y)
         time.sleep(pause)
 
+    def _wait_popup(self, timeout=4.0):
+        """노드를 누른 뒤 팝업이 뜰 때까지 기다린다: '수련' 버튼이나 '수련 불가'가 보이면 (frame, train, impossible).
+        끝까지 아무것도 안 보이면 마지막 frame과 (None, None)."""
+        end = time.monotonic() + timeout
+        frame = None
+        while time.monotonic() < end:
+            frame = self.bot.window.grab()
+            train = self._find(frame, "train")
+            impossible = self._find(frame, "impossible")
+            if train or impossible:
+                return frame, train, impossible
+            time.sleep(0.3)
+        return frame, None, None
+
     def _close_popup(self, frame):
-        match = self._find(frame, "close")
-        if match:
-            self._click("팝업 닫기", match, 0.8)
-        else:
-            self.bot._press("팝업 닫기", "esc")
-            time.sleep(0.8)
+        """팝업(수련 정보/불가 안내)을 닫는다. 닫혔는지 확인하고 남아 있으면 한 번 더."""
+        for _ in range(3):
+            match = self._find(frame, "close")
+            if match:
+                self._click("팝업 닫기", match, 0.8)
+            else:
+                self.bot._press("팝업 닫기", "esc")
+                time.sleep(0.8)
+            frame = self.bot.window.grab()
+            if not self._find(frame, "close") and not self._find(frame, "train"):
+                return
 
     def _leave(self):
         """영기 수련 화면에서 필드로 복귀."""
@@ -154,17 +173,17 @@ class YeonggiTask:
         log.info("수련 가능한 노드 %d개 발견", len(nodes))
 
         for node in nodes[: self.cfg.get("max_tries", 6)]:
-            self._click(f"노드 ({node.x},{node.y})", node, 1.2)
-            frame = self.bot.window.grab()
+            self._click(f"노드 ({node.x},{node.y})", node, 0.6)
+            frame, train, impossible = self._wait_popup(4.0)
 
-            if self._find(frame, "impossible"):
+            if impossible and not train:
                 log.info("  수련 불가 노드 → 닫고 다음 노드")
                 self._close_popup(frame)
                 continue
 
-            train = self._find(frame, "train")
             if not train:
-                log.info("  수련 버튼 없음 → 닫고 다음 노드")
+                log.info("  수련 버튼 없음(팝업이 4초 안에 안 뜸) → 닫고 다음 노드")
+                self.bot._save_screen(frame, "yeonggi_nobtn")
                 self._close_popup(frame)
                 continue
 
