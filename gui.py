@@ -1,4 +1,4 @@
-"""도깨비의세계 자동 진행 매크로 - 제어판 (PySide6).
+"""도깨비헬퍼 - 도깨비의세계 자동 진행 매크로 제어판 (PySide6).
 
     python gui.py
 
@@ -238,7 +238,7 @@ class Window(QMainWindow):
     def __init__(self):
         super().__init__()
         from version import VERSION
-        self.setWindowTitle(f"도깨비의세계 · 자동 진행 제어판 v{VERSION}")
+        self.setWindowTitle(f"도깨비헬퍼 v{VERSION}")
         self.resize(1000, 720)
         self.thread = None
         self.started_at = 0.0
@@ -363,10 +363,10 @@ class Window(QMainWindow):
     # ---------- UI 구성
     def _build_header(self):
         row = QHBoxLayout()
-        title = QLabel("도깨비의세계")
+        title = QLabel("도깨비헬퍼")
         title.setStyleSheet("font-size:22px; font-weight:800;")
         from version import VERSION
-        sub = QLabel(f"자동 진행 제어판  ·  v{VERSION}")
+        sub = QLabel(f"도깨비의세계 자동 진행  ·  v{VERSION}")
         sub.setObjectName("sub")
         col = QVBoxLayout()
         col.setSpacing(0)
@@ -888,7 +888,7 @@ class Window(QMainWindow):
         m.addSeparator()
         m.addAction("완전히 종료", self._quit)
         self.tray.setContextMenu(m)
-        self.tray.setToolTip("도깨비의세계 자동 진행")
+        self.tray.setToolTip("도깨비헬퍼")
         self.tray.activated.connect(lambda r: self._show_from_tray() if r == QSystemTrayIcon.Trigger else None)
         self.tray.show()
 
@@ -948,7 +948,7 @@ class Window(QMainWindow):
             # 실행 중에는 창만 숨기고 트레이에서 계속 돈다
             e.ignore()
             self.hide()
-            self.tray.showMessage("도깨비의세계 자동 진행", "트레이에서 계속 실행 중입니다. 완전히 끄려면 트레이 메뉴 → 완전히 종료",
+            self.tray.showMessage("도깨비헬퍼", "트레이에서 계속 실행 중입니다. 완전히 끄려면 트레이 메뉴 → 완전히 종료",
                                   QSystemTrayIcon.Information, 3000)
             return
         if self.thread:
