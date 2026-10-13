@@ -466,6 +466,7 @@ class Bot:
             self._hunt_tries = 0
             self._hunt_press_at = 0.0
             log.warning("앵벌 모드 켬 (수동 버튼) → 퀘스트는 멈추고 사냥터에서 자동 사냥 (끄면 퀘스트 재개)")
+            self._focus_game_window()
             self.notifier.send("앵벌 모드 켬 (수동)", key="manual_farm")
         else:
             self.farm_mode = self._cfg_farm_mode
@@ -479,6 +480,18 @@ class Bot:
             self._verify = None
             log.warning("앵벌 모드 끔 (수동 버튼) → 퀘스트 다시 진행")
             self.notifier.send("앵벌 모드 끔 → 퀘스트 재개", key="manual_farm")
+
+    def _focus_game_window(self):
+        """제어판 버튼을 누르면 제어판이 게임 위로 올라와 봇이 '게임 창이 앞에 없음'으로 멈춘다 → 게임 창을 앞으로 가져온다."""
+        if self.dry_run or not self.cfg.get("focus_on_start", True):
+            return
+        try:
+            from tools.bridge_ops import focus_game
+            if self.window.locate() and focus_game(self.window):
+                self.activity.ignore_until_now()        # 포커스 이동은 사용자 조작이 아님
+                log.info("게임 창을 맨 앞으로 가져옴")
+        except Exception as e:  # noqa: BLE001
+            log.debug("게임 창 포커스 실패: %s", e)
 
     def _go_collect(self, now):
         """수집 몬스터(화첩/유물)로 걸어간다. 성공하면 일반 사냥터 이동을 앵벌 끝까지 막는다."""

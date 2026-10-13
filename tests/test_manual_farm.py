@@ -31,6 +31,8 @@ def make(cfg_farm=False):
     b._idle_since = 1.0
     b._verify = "v"
     b.notifier = types.SimpleNamespace(send=lambda *a, **k: None)
+    b.focused = []
+    b._focus_game_window = lambda: b.focused.append(1)
     b.request_manual_farm = types.MethodType(Bot.request_manual_farm, b)
     b.apply = types.MethodType(Bot._apply_manual_farm, b)
     return b
@@ -46,6 +48,7 @@ class ManualFarmTest(unittest.TestCase):
         self.assertTrue(b.manual_farm and b.farm_mode)
         self.assertTrue(b.farm.need_travel and b._collect_pending and b._want_hunt)
         self.assertIsNone(b._retry_quest)
+        self.assertEqual(b.focused, [1])                              # 켤 때 게임 창을 앞으로
         b.request_manual_farm(False)
         b.apply(2)
         self.assertFalse(b.manual_farm or b.farm_mode)                # 설정값(False)으로 복귀
