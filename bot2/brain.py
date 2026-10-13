@@ -64,6 +64,9 @@ class Bot:
 
         fm = config.get("farm") or {}
         self.farm_mode = bool(fm.get("enabled"))                     # 퀘스트 대신 사냥터만
+        self._cfg_farm_mode = self.farm_mode                         # 설정에 적힌 값 (수동 앵벌 모드를 끄면 이 값으로 되돌림)
+        self.manual_farm = False                                     # 제어판 버튼으로 켠 앵벌 모드
+        self._manual_farm_request = None                             # 버튼이 남긴 요청: True 켜기 / False 끄기 / None 없음
         self.farm_fallback = bool(fm.get("fallback_when_blocked"))   # 퀘스트가 전부 막히면 안전 사냥터로
         self.farm = FarmTask(self, fm) if (self.farm_mode or self.farm_fallback) else None
         self._farm_until = 0.0
@@ -435,6 +438,47 @@ class Bot:
             if ok and self.mission.last_tab:
                 self._source = self.mission.last_tab
             self._click_at = time.monotonic()
+
+    def request_manual_farm(self, on):
+        """제어판 버튼에서 호출 (다른 스레드). 실제 전환은 봇 루프에서 한다."""
+        self._manual_farm_request = bool(on)
+
+    def _apply_manual_farm(self, now):
+        """수동 앵벌 모드 전환: 켜면 퀘스트는 멈추고 사냥터(수집 몬스터 → 일반 사냥터)에서만 자동 사냥,
+        끄면 설정값으로 되돌리고 퀘스트를 다시 진행한다."""
+        req, self._manual_farm_request = self._manual_farm_request, None
+        if req is None or req == self.manual_farm:
+            return
+        self.manual_farm = req
+        self._retry_quest = None
+        self._need_switch = False
+        if req:
+            if self.farm is None:
+                self.farm = FarmTask(self, self.cfg.get("farm") or {})
+            if self.collect is None and (self.cfg.get("collect") or {}).get("enabled", True):
+                self.collect = CollectTask(self, self.cfg.get("collect") or {})
+            self.farm_mode = True
+            self.farm.need_travel = True
+            self.farm.next_try = 0.0
+            self.farm.next_eval = 0.0
+            self._collect_pending = bool(self.collect)
+            self._want_hunt = True
+            self._hunt_tries = 0
+            self._hunt_press_at = 0.0
+            log.warning("앵벌 모드 켬 (수동 버튼) → 퀘스트는 멈추고 사냥터에서 자동 사냥 (끄면 퀘스트 재개)")
+            self.notifier.send("앵벌 모드 켬 (수동)", key="manual_farm")
+        else:
+            self.farm_mode = self._cfg_farm_mode
+            self._farm_until = 0.0
+            self._collect_pending = False
+            if self.collect:
+                self.collect.stop()
+            self._fails = 0
+            self._click_at = 0.0
+            self._idle_since = None
+            self._verify = None
+            log.warning("앵벌 모드 끔 (수동 버튼) → 퀘스트 다시 진행")
+            self.notifier.send("앵벌 모드 끔 → 퀘스트 재개", key="manual_farm")
 
     def _go_collect(self, now):
         """수집 몬스터(화첩/유물)로 걸어간다. 성공하면 일반 사냥터 이동을 앵벌 끝까지 막는다."""
@@ -900,6 +944,7 @@ class Bot:
             self._on_stall(snap, now)
             return
 
+        self._apply_manual_farm(now)
         self._watch_hp(snap, now)
         if self.preset and not self.dry_run and self.preset.tick(snap, now):
             return

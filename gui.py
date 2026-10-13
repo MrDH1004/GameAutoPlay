@@ -69,6 +69,7 @@ QPushButton#start:hover {{ background: #55dca0; }}
 QPushButton#start:disabled {{ background: {C['panel2']}; color: {C['idle']}; }}
 QPushButton#stop {{ background: {C['bad']}; color: #2b0a0a; border: none; }}
 QPushButton#stop:disabled {{ background: {C['panel2']}; color: {C['idle']}; }}
+QPushButton[on="true"] {{ background: {C['warn']}; color: #2b1d00; border: none; }}
 QPlainTextEdit {{ background: #0f1116; border: 1px solid {C['line']}; border-radius: 10px; padding: 8px;
                   font-family: Consolas,'Malgun Gothic'; font-size: 12px; }}
 QSpinBox, QDoubleSpinBox {{ background: {C['panel2']}; border: 1px solid {C['line']}; border-radius: 8px; padding: 5px 8px; min-width: 80px; }}
@@ -383,7 +384,11 @@ class Window(QMainWindow):
         self.btn_potion.setToolTip("타바로 성 잡화 상점으로 가서 2단 체력 회복 물약을 한도까지 구매")
         self.btn_potion.clicked.connect(self.buy_potion)
         self._pending_potion = False
-        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion):
+        self.btn_farm = QPushButton("⚔  앵벌 모드 켜기")
+        self.btn_farm.setToolTip("퀘스트를 멈추고 전투력에 맞는 사냥터에서 자동 사냥만 합니다 (화첩/유물 수집 몬스터를 먼저 사냥). 다시 누르면 꺼지고 퀘스트를 재개합니다.")
+        self.btn_farm.clicked.connect(self.toggle_farm)
+        self._pending_farm = False
+        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm):
             b.setMinimumHeight(42)
             row.addWidget(b)
         return row
@@ -700,6 +705,22 @@ class Window(QMainWindow):
             logging.info("물약 구매 요청 (버튼) → 매크로 시작")
             self.start()
 
+    def toggle_farm(self):
+        """앵벌 모드 수동 켜기/끄기. 정지 상태면 매크로를 시작하면서 앵벌 모드로."""
+        bot = self.thread.bot if self.thread else None
+        if bot:
+            on = not bot.manual_farm
+            bot.request_manual_farm(on)
+            if on and bot.paused:
+                self.toggle_pause()
+            logging.info("앵벌 모드 %s 요청 (버튼)", "켜기" if on else "끄기")
+        elif self.thread:
+            return                                  # 시작 중
+        else:
+            self._pending_farm = True
+            logging.info("앵벌 모드 켜기 요청 (버튼) → 매크로 시작")
+            self.start()
+
     def stop(self):
         if self.thread and self.thread.bot:
             self.thread.bot.stop_event.set()
@@ -747,6 +768,14 @@ class Window(QMainWindow):
         if self._pending_potion and bot and getattr(bot, "potion_shop", None):
             bot.potion_shop.requested = True
             self._pending_potion = False
+        if self._pending_farm and bot:
+            bot.request_manual_farm(True)
+            self._pending_farm = False
+        on = bool(bot and bot.manual_farm)
+        self.btn_farm.setText("⚔  앵벌 모드 끄기" if on else "⚔  앵벌 모드 켜기")
+        self.btn_farm.setProperty("on", on)
+        self.btn_farm.style().unpolish(self.btn_farm)
+        self.btn_farm.style().polish(self.btn_farm)
         if not th:
             self.lbl_state.setText("정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")
