@@ -34,6 +34,7 @@ if __name__ == "__main__":
 import yaml
 from datetime import datetime
 from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal
+from toggle_switch import Toggle
 from PySide6.QtGui import QColor, QIcon, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
@@ -73,9 +74,7 @@ QPushButton[on="true"] {{ background: {C['warn']}; color: #2b1d00; border: none;
 QPlainTextEdit {{ background: #0f1116; border: 1px solid {C['line']}; border-radius: 10px; padding: 8px;
                   font-family: Consolas,'Malgun Gothic'; font-size: 12px; }}
 QSpinBox, QDoubleSpinBox {{ background: {C['panel2']}; border: 1px solid {C['line']}; border-radius: 8px; padding: 5px 8px; min-width: 80px; }}
-QCheckBox {{ spacing: 10px; padding: 4px 0; }}
-QCheckBox::indicator {{ width: 38px; height: 20px; border-radius: 10px; background: {C['idle']}; }}
-QCheckBox::indicator:checked {{ background: {C['accent']}; }}
+QCheckBox {{ padding: 4px 0; }}
 QScrollBar:vertical {{ background: transparent; width: 10px; }}
 QScrollBar::handle:vertical {{ background: {C['line']}; border-radius: 5px; min-height: 30px; }}
 QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
@@ -517,7 +516,7 @@ class Window(QMainWindow):
         for kind, path, label, extra in SETTING_FIELDS:
             saved = self.saved.get("/".join(path))
             if kind == "toggle":
-                cb = QCheckBox(label)
+                cb = Toggle(label, on_color=C["accent"], off_color=C["idle"])
                 cb.setChecked(bool(saved if saved is not None else get_path(self.base_config, path, False)))
                 hint = QLabel(extra)
                 hint.setObjectName("sub")
@@ -568,11 +567,11 @@ class Window(QMainWindow):
 
         gs = QGroupBox("예약 실행")
         gls = QGridLayout(gs)
-        self.chk_sched_start = QCheckBox("매일 이 시각에 자동 시작")
+        self.chk_sched_start = Toggle("매일 이 시각에 자동 시작", on_color=C["accent"], off_color=C["idle"])
         self.chk_sched_start.setChecked(bool(self.saved.get("_sched_start_on", False)))
         self.time_start = QTimeEdit(QTime.fromString(self.saved.get("_sched_start", "02:00"), "HH:mm"))
         self.time_start.setDisplayFormat("HH:mm")
-        self.chk_sched_stop = QCheckBox("시작 후 이 시간이 지나면 자동 정지")
+        self.chk_sched_stop = Toggle("시작 후 이 시간이 지나면 자동 정지", on_color=C["accent"], off_color=C["idle"])
         self.chk_sched_stop.setChecked(bool(self.saved.get("_sched_stop_on", False)))
         self.spin_stop_h = QDoubleSpinBox()
         self.spin_stop_h.setRange(0.5, 48)
@@ -588,9 +587,9 @@ class Window(QMainWindow):
 
         g3 = QGroupBox("실행 옵션")
         gl3 = QVBoxLayout(g3)
-        self.chk_dry = QCheckBox("연습 모드 (클릭/키 입력 없이 감지 결과만 로그로 확인)")
+        self.chk_dry = Toggle("연습 모드 (클릭/키 입력 없이 감지 결과만 로그로 확인)", on_color=C["accent"], off_color=C["idle"])
         self.chk_dry.setChecked(bool(self.saved.get("_dry", False)))
-        self.chk_debug = QCheckBox("디버그 로그 (화면 변화량 등 상세 출력)")
+        self.chk_debug = Toggle("디버그 로그 (화면 변화량 등 상세 출력)", on_color=C["accent"], off_color=C["idle"])
         self.chk_debug.setChecked(bool(self.saved.get("_debug", False)))
         gl3.addWidget(self.chk_dry)
         gl3.addWidget(self.chk_debug)
@@ -665,7 +664,7 @@ class Window(QMainWindow):
         lay = QVBoxLayout(w)
         lay.setContentsMargins(0, 12, 0, 0)
         bar = QHBoxLayout()
-        self.chk_warn = QCheckBox("경고/오류만 보기")
+        self.chk_warn = Toggle("경고/오류만 보기", on_color=C["accent"], off_color=C["idle"])
         self.chk_warn.toggled.connect(self._refilter)
         bar.addWidget(self.chk_warn)
         bar.addStretch(1)
