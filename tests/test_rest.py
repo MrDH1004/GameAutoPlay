@@ -17,6 +17,7 @@ def make_bot(boss=False):
     b._rest_at = b._rest_press_at = 0.0
     b._rest_tries = 0
     b._rest_had_target = False
+    b._rest_empty_since = None
     b._last_progress = 0.0
     b.presses = []
     b._press = lambda label, key: b.presses.append(key)
@@ -101,8 +102,20 @@ class TargetBarRestTest(unittest.TestCase):
         self.assertTrue(b.tick(snap("COMBAT", True, 0.5), 3))        # 몹이 줄고 있음 → 계속 싸움
         self.assertTrue(b.tick(snap("COMBAT", True, 0.1), 6))
         self.assertEqual(b.presses, [])
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 8))        # 바가 사라짐(몹 처치) → 전투가 계속돼도 T로 끈다
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 8))        # 바가 막 사라짐 → 0.8초 지켜봄
+        self.assertEqual(b.presses, [])
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 9))        # 계속 비어 있음(몹 처치) → 전투가 계속돼도 T로 끈다
         self.assertEqual(b.presses, ["t"])
+
+    def test_nearly_dead_target_is_not_finished(self):
+        """체력이 조금(2%) 남은 몹을 두고 끄면 안 되고, 바가 잠깐 깜빡여도 끄면 안 된다."""
+        b = make_bot()
+        b.hp = 0.4
+        b.tick(snap("COMBAT", True, 0.8), 0)
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.015), 3))      # 바가 거의 비었지만 아직 살아 있음
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 4))        # 1틱 깜빡임
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.3), 4.3))      # 다른 몹으로 타겟 전환
+        self.assertEqual(b.presses, [])
 
     def test_no_target_falls_back_to_combat_state(self):
         b = make_bot()
@@ -135,6 +148,7 @@ class FinishUntilKillTest(unittest.TestCase):
         self.assertEqual(b._rest, "finish")
         self.assertEqual(b.presses, [])
         self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 41))        # 몹이 죽으면(바가 빔) 그때 끈다
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 42))        # 0.8초 넘게 계속 비어 있어야 확정
         self.assertEqual(b._rest, "off")
 
     def test_only_a_very_long_wait_gives_up(self):

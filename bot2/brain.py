@@ -120,6 +120,7 @@ class Bot:
         self.live = LiveStatus(self, float(config.get("live_interval", 3.0)))     # 대시보드 실시간 상황판
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
         self._rest_at = 0.0
+        self._rest_empty_since = None   # 타겟 체력바가 완전히 비어 보이기 시작한 시각 (잠깐 깜빡임 무시용)
         self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
         self._rest_press_at = 0.0
         self._rest_tries = 0
@@ -266,7 +267,7 @@ class Bot:
         hp = self.hp or 0.0
         if self._rest is None:
             if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.5) and not self._boss_near(snap, now):
-                self._rest, self._rest_at = "finish", now
+                self._rest, self._rest_at, self._rest_empty_since = "finish", now, None
                 self._rest_had_target = target_fill(snap.frame) > 0.02 if getattr(snap, "frame", None) is not None else False
                 log.info("HP %.0f%% → 잡던 몹까지만 잡고 자동 사냥 끄고 회복 (타겟 체력바 %s)", hp * 100,
                          "있음" if self._rest_had_target else "없음")
@@ -283,8 +284,15 @@ class Bot:
             if fill > 0.02:
                 self._rest_had_target = True
             waited = now - self._rest_at
+            # 바가 '완전히' 사라진 상태가 0.8초 이어져야 처치로 본다. (예전에는 2% 이하면 처치로 봐서, 체력이
+            # 조금 남은 몹을 두고 자동 사냥을 꺼 버렸다. 타겟 전환 순간의 깜빡임도 걸러낸다.)
+            if fill > 0.0:
+                self._rest_empty_since = None
+            elif self._rest_empty_since is None:
+                self._rest_empty_since = now
+            gone = self._rest_empty_since is not None and now - self._rest_empty_since >= 0.8
             if self._rest_had_target:
-                done = fill <= 0.02                              # 잡던 몹의 체력바가 사라짐 = 그 몹을 잡았다
+                done = gone
             else:
                 done = snap.state != "COMBAT"                    # 처음부터 타겟이 없었으면 전투 상태가 끝났을 때
             # 사용자 지시: 잡던 몹은 죽일 때까지 끈다(HP나 시간 때문에 도중에 끄지 않음).
@@ -293,7 +301,7 @@ class Bot:
                 done = True
             if not done:
                 return True
-            log.info("잡던 몹 마무리 %s → 자동 사냥 끔 (%d초)", "완료" if fill <= 0.02 else "시간 초과", waited)
+            log.info("잡던 몹 마무리 %s → 자동 사냥 끔 (%d초)", "완료" if gone else "시간 초과", waited)
             self._rest, self._rest_tries, self._rest_press_at = "off", 0, 0.0
         if self._rest == "off":
             if self._rest_toggle(snap, now, want_on=False):
