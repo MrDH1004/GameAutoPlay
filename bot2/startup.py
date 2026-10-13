@@ -18,15 +18,26 @@ MAP_NAME_BOX = (20, 12, 300, 44)            # 좌상단 지도 이름 (1920x1080
 TRACKER_BOX = (1540, 105, 1830, 520)        # 오른쪽 퀘스트 트래커
 
 
+def clean_map_name(txt):
+    """지도 이름 정리: 앞의 방패 아이콘(숫자/기호로 읽힘)·뒤의 던전 남은 시간('00:59:58')·잡음을 떼고,
+    '비경]'처럼 짝이 없는 대괄호를 '[비경]'으로 되살린다."""
+    t = txt.strip()
+    t = re.sub(r"^[\d\W_]+(?=[가-힣\[])", "", t)             # 앞의 아이콘 기호
+    t = re.sub(r"^\d\s+", "", t)
+    for _ in range(3):                                          # 뒤에 붙은 시간/기호 잡음 (겹겹이 붙어 여러 번)
+        t = re.sub(r"[\d:.『』「」'`]+\s*$", "", t).rstrip()
+    t = re.sub(r"\s+", " ", t).strip()
+    if "]" in t and "[" not in t:
+        t = "[" + t
+    return t
+
+
 def read_map_name(frame):
     """지금 있는 지도 이름 ('안개 기슭 지하 동굴', '우물동굴' …). 못 읽으면 ''."""
     crop = _crop(frame, MAP_NAME_BOX)
     best = ""
     for img, sc in ((crop, 3), (crop, 2), (_binarize(crop, 180), 3)):
-        txt = _ocr(img, sc).strip()
-        txt = re.sub(r"^[\d\W_]+(?=[가-힣\[])", "", txt)             # 앞의 방패 아이콘이 숫자/기호로 읽힌 것을 뗀다 ('9 안개…')
-        txt = re.sub(r"^[\d]\s+", "", txt)
-        txt = re.sub(r"\s+", " ", txt)
+        txt = clean_map_name(_ocr(img, sc))
         if len(txt) > len(best):
             best = txt
         if len(best) >= 3 and re.search(r"[가-힣]{2,}", best):

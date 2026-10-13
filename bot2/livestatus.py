@@ -20,7 +20,7 @@ from .startup import read_map_name
 log = logging.getLogger(__name__)
 
 TARGET_NAME_BOX = (860, 72, 1100, 96)       # 상단 타겟 몹 '⚔170K 우물 박쥐'
-QUEST_TOP_BOX = (1540, 105, 1830, 175)      # 트래커 맨 위 퀘스트 한두 줄
+QUEST_TOP_BOX = (1540, 105, 1830, 240)      # 트래커 맨 위 (위쪽 '도사 수행록' 위젯 아래에 본편 퀘스트가 나옴)
 
 
 def read_target(frame):
@@ -28,7 +28,7 @@ def read_target(frame):
     fill = target_fill(frame)
     if fill <= 0.02:
         return None
-    txt = _ocr(_crop(frame, TARGET_NAME_BOX), 3)
+    txt = _ocr(_crop(frame, TARGET_NAME_BOX), 2)
     power = None
     m = re.search(r"(\d+(?:\.\d)?)\s*([KkMm])", txt)
     if m:
@@ -39,10 +39,11 @@ def read_target(frame):
 
 
 def read_quest(frame):
-    """트래커 맨 위 퀘스트 제목 (예: '[5장] 우물동굴 소탕 3'). 못 읽으면 ''."""
+    """트래커 맨 위 본편 퀘스트 제목 (예: '[5장] 우물동굴 소탕 3'). 못 읽으면 ''."""
     txt = _ocr(_crop(frame, QUEST_TOP_BOX), 2)
-    m = re.search(r"\[[^\]]{1,8}\][^\[\n]{1,30}", txt)
-    return (m.group(0) if m else txt).strip()[:40]
+    m = (re.search(r"\[\s*\d+\s*장\s*\][^\[\n]{1,30}", txt)
+         or re.search(r"\[[^\]]{1,8}\][^\[\n]{1,30}", txt))
+    return m.group(0).strip()[:40] if m else ""
 
 
 class LiveStatus:

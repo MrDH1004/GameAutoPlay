@@ -36,6 +36,15 @@ class StartupTest(unittest.TestCase):
         self.assertIn("HP 40%", warns)
         self.assertEqual(su.warnings({"screen": "사망 화면"}, 50)[0][:6], "필드가 아님")
 
+    def test_clean_map_name(self):
+        self.assertEqual(su.clean_map_name("9 안개 기습 지하 동굴"), "안개 기습 지하 동굴")             # 앞의 방패 아이콘
+        self.assertEqual(su.clean_map_name("비경] 영험한청산지하동굴 00:59:58"), "[비경] 영험한청산지하동굴")  # 던전 남은 시간 + 대괄호 복원
+        self.assertEqual(su.clean_map_name("우물동굴"), "우물동굴")
+
+    def test_quest_title_reads_main_quest_not_reward_widget(self):
+        from bot2 import livestatus as ls
+        self.assertEqual(ls.read_quest(load("field_hp_95.png")), "[5장] 길목을 막는 요귀")
+
 
 if __name__ == "__main__":
     unittest.main()
