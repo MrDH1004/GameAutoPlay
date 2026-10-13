@@ -99,3 +99,25 @@ def hp_ratio(frame):
         return 0.0
     span = (HP_X1 - HP_X0) * sx
     return float(min(1.0, max(0.0, (xs.max() - 2) / span)))
+
+
+# 화면 상단 타겟 체력바(현재 잡고 있는 몹): 1920x1080 기준 y≈104~111, x≈872~1073 (풀 폭 약 202px). 진한 빨강으로 채워짐.
+TARGET_BAR = (860, 104, 1090, 111)
+TARGET_BAR_FULL = 202
+
+
+def target_fill(frame):
+    """현재 타겟 몹의 체력바 채움 비율 0.0~1.0. 타겟이 없거나 몹이 죽어 바가 비면 0.0.
+    (센 지역에서는 몹이 계속 붙어 있어 '전투 상태 종료'를 못 쓰므로, 바가 비는 순간을 '잡던 몹을 잡았다'로 본다.)"""
+    import numpy as np
+    h, w = frame.shape[:2]
+    sx, sy = w / 1920.0, h / 1080.0
+    x0, y0, x1, y1 = TARGET_BAR
+    crop = frame[int(y0 * sy):max(int(y1 * sy), int(y0 * sy) + 1), int(x0 * sx):int(x1 * sx)].astype(int)
+    if crop.size == 0:
+        return 0.0
+    b, g, r = crop[..., 0], crop[..., 1], crop[..., 2]
+    red = (r > 110) & (g < 60) & (b < 60) & (r - g > 70)
+    cols = int((red.sum(axis=0) >= max(2, red.shape[0] // 2)).sum())
+    return min(1.0, cols / (TARGET_BAR_FULL * sx))
+

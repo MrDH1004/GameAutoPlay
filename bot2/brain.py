@@ -25,7 +25,7 @@ from .enhance import EnhanceTask
 from .shop import PotionShop
 from .collect import CollectTask
 from .farm import BotDriver
-from .safety import DeathBook, hp_ratio
+from .safety import DeathBook, hp_ratio, target_fill
 from . import selfcheck
 from .mission import MissionTask
 from .perception import Perceiver
@@ -115,6 +115,7 @@ class Bot:
         self.hp = None
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
         self._rest_at = 0.0
+        self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
         self._rest_press_at = 0.0
         self._rest_tries = 0
         self._seen_known = False        # 필드/대화/전투 등 아는 화면을 한 번이라도 봤는지
@@ -271,16 +272,31 @@ class Bot:
         if self._rest is None:
             if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.5) and not self._boss_near(snap, now):
                 self._rest, self._rest_at = "finish", now
-                log.info("HP %.0f%% → 잡던 몹까지만 잡고 자동 사냥 끄고 회복", hp * 100)
+                self._rest_had_target = target_fill(snap.frame) > 0.02 if getattr(snap, "frame", None) is not None else False
+                log.info("HP %.0f%% → 잡던 몹까지만 잡고 자동 사냥 끄고 회복 (타겟 체력바 %s)", hp * 100,
+                         "있음" if self._rest_had_target else "없음")
             return False
         self._last_progress = now               # 휴식은 멈춤이 아님
         if self._rest != "on" and self._boss_near(snap, now):
             log.info("보스 등장 → 휴식 취소, 자동 사냥 유지")
             self._rest, self._rest_tries, self._rest_press_at = "on", 0, 0.0
         if self._rest == "finish":
-            # 전투가 끝나면(=잡던 몹 처치) 끈다. 너무 오래 걸리면 그냥 끈다
-            if snap.state == "COMBAT" and now - self._rest_at < c.get("rest_finish_max", 30):
+            # 잡던 몹을 다 잡았는지: 화면 상단 타겟 체력바가 비면(=그 몹이 죽음) 자동 사냥을 끈다.
+            # 센 지역에서는 몹이 계속 붙어 '전투 상태'가 안 끝나므로 상태 대신 이 바를 본다.
+            # 처음부터 타겟이 없거나(바 없음) 너무 오래 걸리면(rest_finish_max) 그냥 끈다.
+            fill = target_fill(snap.frame) if getattr(snap, "frame", None) is not None else 0.0
+            if fill > 0.02:
+                self._rest_had_target = True
+            waited = now - self._rest_at
+            if self._rest_had_target:
+                done = fill <= 0.02                              # 잡던 몹의 체력바가 사라짐 = 그 몹을 잡았다
+            else:
+                done = snap.state != "COMBAT"                    # 처음부터 타겟이 없었으면 전투 상태가 끝났을 때
+            if waited >= c.get("rest_finish_max", 30):
+                done = True                                      # 너무 오래 걸리면 그냥 끈다
+            if not done:
                 return True
+            log.info("잡던 몹 마무리 %s → 자동 사냥 끔 (%d초)", "완료" if fill <= 0.02 else "시간 초과", waited)
             self._rest, self._rest_tries, self._rest_press_at = "off", 0, 0.0
         if self._rest == "off":
             if self._rest_toggle(snap, now, want_on=False):
