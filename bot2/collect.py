@@ -323,6 +323,11 @@ class Collector:
         return dot
 
     def exit_screen(self):
+        """화첩/유물 전체 화면에서 나간다. 정지 요청이 와 있으면 이어서 클릭·대기하지 않는다
+        (정지 중에 finally에서 또 StopRequested가 터져 에러로 보이던 문제)."""
+        stop = getattr(getattr(self.drv, "bot", None), "stop_event", None)
+        if stop is not None and stop.is_set():
+            return
         self.drv.click(*EXIT)
         self.drv.sleep(1.5)
 

@@ -186,8 +186,12 @@ class BotThread(QThread):
             self.bot = Bot(self.config, dry_run=self.dry_run)
             self.bot.run()
         except Exception as e:      # 화면에 보여주고 스레드 종료
-            logging.exception("매크로 오류")
-            self.failed.emit(f"{type(e).__name__}: {e}")
+            from bot2.farm import StopRequested
+            if isinstance(e, StopRequested) or isinstance(e.__context__, StopRequested):
+                logging.info("정지 요청으로 작업을 중단하고 종료함")       # 정지 버튼은 정상 종료 — 에러로 남기지 않는다
+            else:
+                logging.exception("매크로 오류")
+                self.failed.emit(f"{type(e).__name__}: {e}")
         finally:
             self.bot = None
 

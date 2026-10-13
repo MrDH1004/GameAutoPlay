@@ -6,8 +6,34 @@ import time
 import pydirectinput
 
 pydirectinput.PAUSE = 0.05
-# 마우스를 화면 왼쪽 위 모서리로 옮기면 pydirectinput이 예외를 내며 멈춘다 (비상 정지).
+# 마우스를 화면 왼쪽 위 모서리로 옮기면 pydirectinput이 FailSafeException을 낸다.
+# 사용자가 마우스를 모서리로 치워 두는 일이 흔해서, 예외로 매크로가 죽지 않도록 아래 _safe()가 받아 처리한다
+# (입력을 건너뛰지 않고 마우스를 화면 안쪽으로 옮긴 뒤 한 번 다시 보낸다).
 pydirectinput.FAILSAFE = True
+
+try:
+    from pydirectinput import FailSafeException
+except ImportError:                           # 라이브러리 버전에 따라 이름이 없으면 빈 예외로 대체
+    class FailSafeException(Exception):
+        pass
+
+
+def _safe(fn, *args, **kwargs):
+    """입력 함수를 실행하되 FAILSAFE로 막히면 마우스를 안쪽으로 옮기고 한 번만 다시 시도한다."""
+    try:
+        return fn(*args, **kwargs)
+    except FailSafeException:
+        try:
+            old = pydirectinput.FAILSAFE
+            pydirectinput.FAILSAFE = False
+            try:
+                w, h = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+                pydirectinput.moveTo(max(40, w // 2), max(40, h // 2))        # 모서리에서 화면 가운데로
+            finally:
+                pydirectinput.FAILSAFE = old
+        except Exception:                      # noqa: BLE001
+            pass
+        return fn(*args, **kwargs)
 
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
@@ -25,21 +51,21 @@ def click(x, y, jitter=3):
     x += random.randint(-jitter, jitter)
     y += random.randint(-jitter, jitter)
     mark_self_input()
-    pydirectinput.moveTo(x, y)
+    _safe(pydirectinput.moveTo, x, y)
     time.sleep(random.uniform(0.05, 0.12))
-    pydirectinput.click()
+    _safe(pydirectinput.click)
     mark_self_input()
 
 
 def drag(x1, y1, x2, y2, steps=10):
     """누른 채로 (x1,y1)→(x2,y2)로 끌기 (목록 스크롤용)."""
     mark_self_input()
-    pydirectinput.moveTo(x1, y1)
-    pydirectinput.mouseDown()
+    _safe(pydirectinput.moveTo, x1, y1)
+    _safe(pydirectinput.mouseDown)
     for i in range(1, steps + 1):
-        pydirectinput.moveTo(int(x1 + (x2 - x1) * i / steps), int(y1 + (y2 - y1) * i / steps))
+        _safe(pydirectinput.moveTo, int(x1 + (x2 - x1) * i / steps), int(y1 + (y2 - y1) * i / steps))
         time.sleep(0.03)
-    pydirectinput.mouseUp()
+    _safe(pydirectinput.mouseUp)
     mark_self_input()
 
 
@@ -48,16 +74,16 @@ def hotkey(combo):
     keys = [k.strip() for k in combo.lower().split("+") if k.strip()]
     mark_self_input()
     for k in keys[:-1]:
-        pydirectinput.keyDown(k)
-    pydirectinput.press(keys[-1])
+        _safe(pydirectinput.keyDown, k)
+    _safe(pydirectinput.press, keys[-1])
     for k in reversed(keys[:-1]):
-        pydirectinput.keyUp(k)
+        _safe(pydirectinput.keyUp, k)
     mark_self_input()
 
 
 def press(key):
     mark_self_input()
-    pydirectinput.press(key)
+    _safe(pydirectinput.press, key)
     mark_self_input()
 
 
@@ -134,7 +160,7 @@ def wheel(x, y, amount=-3):
     """(x, y)로 마우스를 옮기고 휠을 굴린다. amount<0 이면 아래로 (칸 수).
     게임은 120짜리 이벤트를 연달아 보내면 무시하므로, 칸 수만큼의 델타를 이벤트 하나로 보낸다."""
     mark_self_input()
-    pydirectinput.moveTo(int(x), int(y))
+    _safe(pydirectinput.moveTo, int(x), int(y))
     time.sleep(0.3)                  # 게임 UI가 마우스 위치(호버)를 인식할 시간
     user32.mouse_event(0x0800, 0, 0, (int(amount) * 120) & 0xFFFFFFFF, 0)       # MOUSEEVENTF_WHEEL
     mark_self_input()
