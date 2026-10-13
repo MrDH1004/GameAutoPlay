@@ -239,6 +239,9 @@ collect:
   first_register_delay: 300
   death_ban_minutes: 60   # 수집 몬스터에서 죽으면 그 몬스터를 이 시간 제외
   db_file: collect_db.json
+  min_hunt_minutes: 3     # 한 수집 몬스터에서 최소 이만큼은 사냥
+  max_hunt_minutes: 25    # 한 수집 몬스터에서 이만큼 사냥하면 다음 후보로 (완성된 그림은 후보에서 빠짐)
+  detect_piece_in_chat: false   # 채팅에서 '화첩 조각 획득'을 읽어 바로 교대 (채팅 글씨를 거의 못 읽어서 꺼 둠, 실험용)
 
 # ===== 공짜 보상 자동 받기 =====
 # 우편함 '모두 받기'(4개 탭), 업적 '모두 받기'(5개 탭), 길라잡이 사냥터 미션 '보상 받기'. 받기 버튼만 누른다.

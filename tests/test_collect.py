@@ -85,5 +85,37 @@ class UpdateHaveTest(unittest.TestCase):
         self.assertEqual((db["album"][1]["have"], db["album"][1]["done"]), (9, True))
 
 
+
+class RotationTest(unittest.TestCase):
+    def make_task(self):
+        t = c.CollectTask.__new__(c.CollectTask)
+        t.done_round, t.banned = set(), {}
+        t.min_hunt, t.max_hunt, t.hunt_since = 180.0, 1500.0, 100.0
+        t.current = {"name": "몬스터A", "region": ""}
+        return t
+
+    def test_switch_rules(self):
+        t = self.make_task()
+        snap = type("S", (), {"frame": object()})()
+        t.cfg = {}
+        t.piece_in_chat = lambda frame: True
+        self.assertFalse(t.should_switch(snap, 150))          # 최소 사냥 시간 전에는 안 바꿈
+        self.assertFalse(t.should_switch(snap, 400))          # 채팅 감지는 기본 꺼짐 → 시간 전에는 계속
+        self.assertTrue(t.should_switch(snap, 100 + 1500))    # 상한 시간이 지나면 교대
+        t.cfg = {"detect_piece_in_chat": True}
+        self.assertTrue(t.should_switch(snap, 400))           # 켜면 조각이 보일 때 교대
+
+    def test_done_round_excluded_from_candidates(self):
+        t = self.make_task()
+        t.next_target()
+        self.assertIsNone(t.current)
+        self.assertEqual(t.done_round, {("몬스터A", "")})
+        db = {"album": [{"book": 1, "idx": 0, "name": "곰", "done": False, "monsters": [
+            {"name": "몬스터A", "region": "", "power": 17000, "red": False, "conf": 3},
+            {"name": "몬스터B", "region": "", "power": 20000, "red": False, "conf": 3}]}], "relics": []}
+        names = [m["name"] for _, _, m, _ in c.candidates(db, 65000, 2.0, banned=t.done_round)]
+        self.assertEqual(names, ["몬스터B"])                    # 방금 사냥한 몬스터는 이번 순회에서 빠짐
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -83,6 +83,7 @@ class Bot:
         cl = config.get("collect") or {}
         self.collect = CollectTask(self, cl) if (cl.get("enabled", True) and self.farm) else None
         self._collect_pending = False   # 앵벌이 시작되면 수집 몬스터로 먼저 가 본다
+        self._collect_check = 0.0       # 수집 사냥 교대 조건을 마지막으로 본 시각
         ps = config.get("potion_shop") or {}
         self.potion_shop = PotionShop(self, ps) if ps.get("enabled", True) else None
         en = config.get("enhance") or {}
@@ -747,6 +748,12 @@ class Bot:
             self._need_switch = False
             if self._run_yeonggi_if_due(snap, now):
                 return
+            if (self.collect and self.collect.current and not self._collect_pending and snap.state in ("IDLE", "COMBAT")
+                    and now - self._collect_check >= 20):
+                self._collect_check = now                # 채팅 OCR이 느리니 20초에 한 번만 본다
+                if self.collect.should_switch(snap, now):
+                    self.collect.next_target()           # 조각이 들어왔거나 오래 걸렸으면 다음 후보로
+                    self._collect_pending = True
             if self._collect_pending and snap.state in ("IDLE", "COMBAT", "MOVING") and now >= self.farm.next_try:
                 self._collect_pending = False
                 if self._go_collect(now):

@@ -765,6 +765,10 @@ class CollectTask:
         self.ban_secs = float(self.cfg.get("death_ban_minutes", 60)) * 60
         self.next_register = time.monotonic() + float(self.cfg.get("first_register_delay", 300))
         self.banned = {}            # (이름, 지역) → 해제 시각
+        self.done_round = set()     # 이번 순회에서 이미 사냥한 몬스터 (이름, 지역) — 한 바퀴 돌면 비움
+        self.hunt_since = 0.0       # 지금 몬스터에 도착해 사냥을 시작한 시각
+        self.max_hunt = float(self.cfg.get("max_hunt_minutes", 25)) * 60    # 조각이 안 들어와도 이 시간이 지나면 다음 후보로
+        self.min_hunt = float(self.cfg.get("min_hunt_minutes", 3)) * 60     # 이동 직후 오탐을 피하려고 최소 이 시간은 사냥
         self.current = None         # 지금 사냥 중인 수집 몬스터
         self.status = "대기"
 
@@ -803,13 +807,19 @@ class CollectTask:
         try:
             if self.need_scan():
                 self.scan()
-            for p, negc, m, via in candidates(self.db, power, self.max_ratio, self._bans(now), self.cfg.get("relics", True))[:3]:
+            cands = candidates(self.db, power, self.max_ratio, self._bans(now) | self.done_round, self.cfg.get("relics", True))
+            if not cands and self.done_round:                 # 한 바퀴 다 돌았으면 처음부터 다시
+                log.info("수집 사냥: 후보를 한 바퀴 다 돌아 처음부터 다시 시작")
+                self.done_round.clear()
+                cands = candidates(self.db, power, self.max_ratio, self._bans(now), self.cfg.get("relics", True))
+            for p, negc, m, via in cands[:3]:
                 what = via[1].get("name")
                 log.info("수집 사냥: '%s'(%s, %dK) ← %s '%s' 외 %d건 (전투력 %s, 상한 %d%%)", m["name"], m.get("region"),
                          p // 1000, "화첩" if via[0] == "album" else "유물", what, -negc - 1,
                          f"{power:,}", self.max_ratio * 100)
                 if self.col.walk_to(m, via):
                     self.current = m
+                    self.hunt_since = now
                     self.status = "수집 사냥 중"
                     return True
                 self.banned[(m["name"], m.get("region", ""))] = now + 600
@@ -821,6 +831,40 @@ class CollectTask:
             log.warning("수집 사냥 이동 실패: %s", e)
         self.current = None
         return False
+
+    def should_switch(self, snap, now):
+        """지금 수집 몬스터를 그만 사냥하고 다음 후보로 넘어갈 때인지.
+        사냥 시작 후 max_hunt(기본 25분)가 지나면 True. 조각 획득을 채팅 글씨(OCR)로 감지하는 것은
+        글씨가 작고 배경이 비쳐 거의 못 읽어서(획득했습니다→'니특귰曰니나') 설정으로만 켤 수 있다
+        (collect.detect_piece_in_chat, 기본 꺼짐)."""
+        if not self.current or not self.hunt_since:
+            return False
+        spent = now - self.hunt_since
+        if spent < self.min_hunt:
+            return False
+        if spent >= self.max_hunt:
+            log.info("수집 사냥: '%s' %d분 사냥 → 다음 후보로", self.current["name"], spent // 60)
+            return True
+        if (self.cfg.get("detect_piece_in_chat", False) and getattr(snap, "frame", None) is not None
+                and self.piece_in_chat(snap.frame)):
+            log.info("수집 사냥: 화첩 조각 획득 확인 → '%s' 다음 후보로 (%d분 사냥)", self.current["name"], spent // 60)
+            return True
+        return False
+
+    @staticmethod
+    def piece_in_chat(frame):
+        """왼쪽 아래 채팅창에 '화첩 조각' 획득 메시지가 있으면 True (OCR)."""
+        try:
+            txt = _ocr(_crop(frame, (60, 800, 700, 960)), 2)
+        except Exception:  # noqa: BLE001
+            return False
+        return "화첩" in txt and "조각" in txt
+
+    def next_target(self):
+        """이 몬스터는 이번 순회에서 끝낸 것으로 표시."""
+        if self.current:
+            self.done_round.add((self.current["name"], self.current.get("region", "")))
+        self.current = None
 
     def on_death(self, now):
         if self.current:
