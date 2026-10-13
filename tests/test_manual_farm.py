@@ -66,3 +66,23 @@ class ManualFarmTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class IgnoreUserTest(unittest.TestCase):
+    def make(self, manual, ignore_cfg=True, idle=0.5):
+        b = types.SimpleNamespace()
+        b.manual_farm = manual
+        b.cfg = {"farm": {"manual_ignore_user": ignore_cfg}}
+        b.user_resume = 120
+        b.activity = types.SimpleNamespace(idle_seconds=lambda: idle)
+        b._ignore_user = types.MethodType(Bot._ignore_user, b)
+        b.check = types.MethodType(Bot._check_user, b)
+        return b
+
+    def test_user_input_detection_toggle(self):
+        from bot.actions import UserInterrupt
+        with self.assertRaises(UserInterrupt):
+            self.make(manual=False).check()                 # 평소: 조작 직후면 양보
+        self.make(manual=True).check()                      # 수동 앵벌 모드: 감지 끔
+        with self.assertRaises(UserInterrupt):
+            self.make(manual=True, ignore_cfg=False).check()  # 설정으로 다시 켤 수 있음

@@ -166,7 +166,13 @@ class Bot:
         log.warning("현재 화면 저장: %s", path)
         return path
 
+    def _ignore_user(self):
+        """앵벌 모드를 수동으로 켠 동안에는 사용자 조작을 감지해 멈추지 않는다 (설정 farm.manual_ignore_user)."""
+        return self.manual_farm and bool((self.cfg.get("farm") or {}).get("manual_ignore_user", True))
+
     def _check_user(self):
+        if self._ignore_user():
+            return
         idle = self.activity.idle_seconds()
         if idle is not None and idle < self.user_resume:
             raise actions.UserInterrupt()
@@ -1049,7 +1055,7 @@ class Bot:
                 waiting_logged = False
                 self.activity.ignore_until_now()
 
-            if not self.dry_run:
+            if not self.dry_run and not self._ignore_user():
                 idle = self.activity.idle_seconds()
                 if idle is not None and idle < self.user_resume:
                     if not self.waiting_user:
@@ -1061,6 +1067,9 @@ class Bot:
                 if self.waiting_user:
                     log.info("조작 없음 → 재개")
                     self.waiting_user = False
+            elif self.waiting_user:
+                self.waiting_user = False                       # 앵벌 모드 중에는 조작 대기를 풀고 계속 진행
+                log.info("앵벌 모드: 사용자 조작 감지를 끄고 계속 진행")
 
             try:
                 self._tick()
