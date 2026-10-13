@@ -180,7 +180,6 @@ map_accept:
 farm:
   enabled: false            # true면 퀘스트 없이 사냥터만 (앵벌 전용)
   fallback_when_blocked: true   # 퀘스트 모드에서 사망으로 모든 퀘스트가 막히면 안전 사냥터에서 사냥
-  manual_grace_seconds: 12      # '앵벌 모드' 버튼을 누른 직후 이 시간(초) 동안만 사용자 조작 감지를 풂 (그 뒤엔 평소처럼 감지, 0이면 안 풂)
   travel: guide            # guide = 길라잡이(F5) 추천 사냥터 무료 순간이동, map = 세계지도 걸어가기(farm_spots.json)
   claim_minutes: 30        # 길라잡이 사냥터 미션 보상(권장 전투력 달성) 확인 주기
   spots_file: farm_spots.json
@@ -195,6 +194,7 @@ stall:
   minutes: 10
 
 # 다른 창에서 한 키보드/마우스 조작은 게임 조작으로 치지 않는다 (게임 창이 맨 앞일 때의 조작만 양보)
+user_detect: true          # 사용자 조작 감지 (제어판 상단 토글 버튼으로 켜고 끔; 끄면 마우스·키보드를 써도 봇이 양보하지 않음)
 yield_only_game_input: true
 
 # ===== 폰 알림 / 원격 제어 =====

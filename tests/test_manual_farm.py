@@ -70,29 +70,20 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class GraceTest(unittest.TestCase):
-    def run_on(self, grace_cfg):
+class ButtonClickTest(unittest.TestCase):
+    def test_turning_on_ignores_the_button_click_only(self):
         b = make()
-        b.cfg = {"farm": {} if grace_cfg is None else {"manual_grace_seconds": grace_cfg}}
         b.waiting_user = True
         calls = []
         b.activity = types.SimpleNamespace(ignore_until_now=lambda sec=1.5: calls.append(sec))
         b.request_manual_farm(True)
         b.apply(1)
-        return b, calls
-
-    def test_grace_only_when_turned_on(self):
-        b, calls = self.run_on(None)
-        self.assertEqual(calls, [12.0])                     # 기본 12초만 조작 감지를 풂
+        self.assertEqual(calls, [1.5])                      # 버튼 클릭 직후의 입력만 사용자 조작으로 치지 않음
         self.assertFalse(b.waiting_user)                    # 조작 대기 중이었어도 바로 풀림
-        b.request_manual_farm(False)
         calls.clear()
+        b.request_manual_farm(False)
         b.apply(2)
-        self.assertEqual(calls, [])                         # 끌 때는 아무것도 안 함 → 평소 감지로 복귀
-
-    def test_grace_zero_disables(self):
-        _, calls = self.run_on(0)
-        self.assertEqual(calls, [])
+        self.assertEqual(calls, [])                         # 끌 때는 아무것도 안 함
 
 
 class PowerGuardTest(unittest.TestCase):

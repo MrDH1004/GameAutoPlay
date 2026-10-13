@@ -94,7 +94,6 @@ STATE_INFO = {   # 내부 상태 → (표시 이름, 설명, 색)
 SETTING_FIELDS = [
     ("toggle", ("farm", "enabled"), "사냥터 전용(앵벌) 모드", "퀘스트를 아예 끄고 내 전투력에 맞는 사냥터에서 자동 사냥만 유지"),
     ("toggle", ("farm", "fallback_when_blocked"), "퀘스트 전부 막히면 안전 사냥터로", "사망으로 모든 퀘스트가 중단되면 전투력에 맞는 사냥터에서 사냥"),
-    ("int", ("farm", "manual_grace_seconds"), "앵벌 모드 켠 직후 조작 감지 해제", (0, 60, "초")),
     ("toggle", ("yield_only_game_input",), "게임 창 조작에만 양보", "다른 창에서 하는 작업은 무시하고, 게임을 직접 조작할 때만 멈춤"),
     ("toggle", ("notify", "enabled"), "폰 알림/원격 제어", "사망·일시정지·멈춤을 텔레그램/디스코드로 알림 (아래 토큰 입력 필요)"),
     ("toggle", ("rewards", "enabled"), "보상 자동 받기", "1시간마다 우편함·업적·길라잡이 보상의 '받기' 버튼만 누름 (현재 모두 제외 설정이라 꺼 둠)"),
@@ -320,6 +319,7 @@ class Window(QMainWindow):
         data["_sched_stop_on"] = self.chk_sched_stop.isChecked()
         data["_sched_stop_h"] = self.spin_stop_h.value()
         data["_last_version"] = self.saved.get("_last_version", "")
+        data["_user_detect"] = bool(getattr(self, "user_detect", True))
         g = self.geometry() if not self.isMaximized() else self.normalGeometry()
         data["_geometry"] = [g.x(), g.y(), g.width(), g.height(), self.isMaximized()]      # 창 위치/크기 (다음 실행 때 복원)
         try:
@@ -359,6 +359,7 @@ class Window(QMainWindow):
         cfg = yaml.safe_load(open(CONFIG_PATH, encoding="utf-8"))
         for path, w in self.controls.items():
             set_path(cfg, path, self._value(w))
+        cfg["user_detect"] = bool(getattr(self, "user_detect", True))       # 상단 토글 버튼 값
         return cfg
 
     # ---------- UI 구성
@@ -394,7 +395,12 @@ class Window(QMainWindow):
         self.btn_farm.setToolTip("퀘스트를 멈추고 전투력에 맞는 사냥터에서 자동 사냥만 합니다 (화첩/유물 수집 몬스터를 먼저 사냥). 다시 누르면 꺼지고 퀘스트를 재개합니다.")
         self.btn_farm.clicked.connect(self.toggle_farm)
         self._pending_farm = False
-        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm):
+        self.btn_detect = QPushButton("🖱  조작 감지 켜짐")
+        self.btn_detect.setToolTip("켜짐: 마우스·키보드를 쓰면 봇이 2분간 양보합니다.\n꺼짐: 마우스·키보드를 써도 봇이 멈추지 않습니다 (봇의 클릭과 겹칠 수 있으니 이동·등록 중에는 주의).")
+        self.btn_detect.clicked.connect(self.toggle_detect)
+        self.user_detect = bool(self.saved.get("_user_detect", True))
+        self._refresh_detect_button()
+        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm, self.btn_detect):
             b.setMinimumHeight(42)
             row.addWidget(b)
         return row
@@ -710,6 +716,24 @@ class Window(QMainWindow):
             self._pending_potion = True
             logging.info("물약 구매 요청 (버튼) → 매크로 시작")
             self.start()
+
+    def toggle_detect(self):
+        """사용자 조작 감지 켜기/끄기 (실행 중이면 바로 적용, 정지 상태면 다음 시작부터)."""
+        self.user_detect = not self.user_detect
+        bot = self.thread.bot if self.thread else None
+        if bot:
+            bot.set_user_detect(self.user_detect)
+        else:
+            logging.info("사용자 조작 감지 %s (다음 시작부터 적용)", "켬" if self.user_detect else "끔")
+        self._save()
+        self._refresh_detect_button()
+
+    def _refresh_detect_button(self):
+        on = self.user_detect
+        self.btn_detect.setText("🖱  조작 감지 켜짐" if on else "🖱  조작 감지 꺼짐")
+        self.btn_detect.setProperty("on", not on)                 # 꺼진 상태를 노란색으로 눈에 띄게
+        self.btn_detect.style().unpolish(self.btn_detect)
+        self.btn_detect.style().polish(self.btn_detect)
 
     def toggle_farm(self):
         """앵벌 모드 수동 켜기/끄기. 정지 상태면 매크로를 시작하면서 앵벌 모드로."""

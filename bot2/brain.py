@@ -51,6 +51,7 @@ class Bot:
         self.hotkeys = actions.HotkeyWatcher(self.stop_key, self.pause_key)
         self.activity = actions.UserActivity()
         self.user_resume = config.get("user_idle_resume", 120)
+        self.user_detect = bool(config.get("user_detect", True))      # 제어판 토글: 사용자 조작 감지
 
         self.quest_cfg = config["quest_tracker"]
         yg = config.get("yeonggi") or {}
@@ -167,7 +168,21 @@ class Bot:
         log.warning("현재 화면 저장: %s", path)
         return path
 
+    def set_user_detect(self, on):
+        """제어판 토글: 사용자 조작 감지 켜기/끄기. 끄면 마우스·키보드를 써도 봇이 양보하지 않는다."""
+        on = bool(on)
+        if on == self.user_detect:
+            return
+        self.user_detect = on
+        if on:
+            self.activity.ignore_until_now()            # 켜는 순간의 조작(버튼 클릭)은 사용자 조작으로 치지 않음
+        else:
+            self.waiting_user = False                   # 조작 대기 중이었어도 바로 풀림
+        log.warning("사용자 조작 감지 %s (버튼)", "켬" if on else "끔 → 마우스·키보드를 써도 봇이 멈추지 않음")
+
     def _check_user(self):
+        if not self.user_detect:
+            return
         idle = self.activity.idle_seconds()
         if idle is not None and idle < self.user_resume:
             raise actions.UserInterrupt()
@@ -468,9 +483,7 @@ class Bot:
             self._hunt_press_at = 0.0
             log.warning("앵벌 모드 켬 (수동 버튼) → 퀘스트는 멈추고 사냥터에서 자동 사냥 (끄면 퀘스트 재개)")
             self._focus_game_window()
-            grace = float((self.cfg.get("farm") or {}).get("manual_grace_seconds", 12))
-            if grace > 0:                           # 버튼을 누르느라 쓴 마우스 조작 때문에 2분씩 기다리지 않게, 켠 직후 잠깐만 감지를 푼다
-                self.activity.ignore_until_now(grace)
+            self.activity.ignore_until_now()        # 버튼을 누르느라 쓴 마우스 조작은 사용자 조작으로 치지 않음
             self.waiting_user = False
             self.notifier.send("앵벌 모드 켬 (수동)", key="manual_farm")
         else:
@@ -1072,7 +1085,7 @@ class Bot:
                 waiting_logged = False
                 self.activity.ignore_until_now()
 
-            if not self.dry_run:
+            if not self.dry_run and self.user_detect:
                 idle = self.activity.idle_seconds()
                 if idle is not None and idle < self.user_resume:
                     if not self.waiting_user:
