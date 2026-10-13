@@ -114,6 +114,8 @@ class Bot:
         self._low_hp_warned = 0.0
         self.hp = None
         self.startup_state = None       # 시작 점검 결과 (bot2/startup.py)
+        from .livestatus import LiveStatus
+        self.live = LiveStatus(self, float(config.get("live_interval", 3.0)))     # 대시보드 실시간 상황판
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
         self._rest_at = 0.0
         self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
@@ -996,6 +998,7 @@ class Bot:
         now = time.monotonic()
         snap = self.eyes.look(frame, now)
         state = snap.state
+        self.live.note_frame(state != "OVERLAY")       # 동기화: 이번 화면을 아는 화면으로 분류했는지
         if state != self._last_state:
             log.info("상태: %s → %s", self._last_state or "-", state)
             self._last_state = state
@@ -1054,6 +1057,7 @@ class Bot:
                 log.debug("게임 창 포커스 실패: %s", e)
         self.activity.ignore_until_now()   # 실행 직전의 입력(브리지 포커스 등)은 사용자 조작이 아님
         self._startup_check()
+        self.live.start()                      # 대시보드용 실시간 상황판 읽기(별도 스레드)
         waiting_logged = False
         while True:
             if self.stop_event.is_set():

@@ -441,6 +441,28 @@ class Window(QMainWindow):
         top.addWidget(c3, 2)
         lay.addLayout(top)
 
+        # 실시간 상황판: 동기화 · 현재 위치 · 잡는 몹 · 물약 · 하는 퀘스트
+        live = QHBoxLayout()
+        live.setSpacing(12)
+        self.live_lbl = {}
+        for key, title, stretch in (("sync", "동기화", 2), ("map", "현재 위치", 2), ("mob", "잡는 몹", 2),
+                                    ("potion", "물약", 1), ("quest", "하는 퀘스트", 3)):
+            c, l = card(title)
+            v = QLabel("-")
+            v.setObjectName("big")
+            v.setWordWrap(True)
+            v.setMinimumHeight(40)
+            if key in ("map", "mob", "quest"):
+                v.setStyleSheet("font-size:18px;")             # 지도·몹·퀘스트 이름은 길어서 글씨를 줄임
+            sub_l = QLabel("")
+            sub_l.setObjectName("sub")
+            sub_l.setWordWrap(True)
+            l.addWidget(v)
+            l.addWidget(sub_l)
+            self.live_lbl[key] = (v, sub_l)
+            live.addWidget(c, stretch)
+        lay.addLayout(live)
+
         chips = QHBoxLayout()
         chips.setSpacing(8)
         self.chips = {}
@@ -821,7 +843,50 @@ class Window(QMainWindow):
             self._refresh_running(bot)
         self.lbl_recent.setText("\n".join(t for _, t in self.recent[-9:]) or "아직 이벤트가 없습니다")
 
+    def _refresh_live(self, bot):
+        """실시간 상황판 갱신 (봇의 LiveStatus가 읽어 둔 값을 그대로 보여 줌 — 여기서는 OCR을 안 한다)."""
+        live = getattr(bot, "live", None)
+        if live is None:
+            return
+        d, sy = live.data, live.sync()
+
+        def put(key, big, small="", color=None):
+            v, sm = self.live_lbl[key]
+            v.setText(big)
+            size = "font-size:18px;" if key in ("map", "mob", "quest") else ""
+            v.setStyleSheet(size + (f"color:{color};" if color else ""))
+            sm.setText(small)
+
+        rate, age, why = sy["rate"], sy["age"], sy["why"]
+        if why:
+            put("sync", "대기 중", why, C["warn"])
+        elif rate is None:
+            put("sync", "확인 중", "", None)
+        else:
+            col = C["ok"] if rate >= 0.9 else C["warn"] if rate >= 0.6 else C["bad"]
+            put("sync", f"{rate * 100:.0f}%", f"최근 화면 인식률 · 마지막 인식 {age:.0f}초 전" if age is not None else "화면 인식률", col)
+
+        if not d or d.get("at") is None or time.monotonic() - d["at"] > 20:
+            for k in ("map", "mob", "potion", "quest"):
+                put(k, "-", "읽는 중…" if k == "map" else "")
+            return
+        if not d.get("field"):
+            put("map", "필드 아님", "메뉴·던전 화면·컷신 중일 수 있음", C["warn"])
+        else:
+            put("map", d.get("map") or "?", f"HP {d['hp'] * 100:.0f}%" if d.get("hp") is not None else "")
+        t = d.get("target")
+        if t:
+            pw = f"{t['power'] // 1000}K" if t.get("power") else ""
+            put("mob", t["name"], f"{pw} · 체력 {t['fill'] * 100:.0f}%".strip(" ·"))
+        else:
+            put("mob", "없음", "타겟 몹이 없음")
+        p = d.get("potions")
+        low = p is not None and p < 50
+        put("potion", f"{p}개" if p is not None else "?", "50개 미만" if low else "", C["warn"] if low else None)
+        put("quest", d.get("quest") or "-", getattr(bot, "_source", "") and f"출처: {bot._source}" or "")
+
     def _refresh_running(self, bot):
+        self._refresh_live(bot)
         self.stat_lbl["time"].setText(fmt_time(time.monotonic() - self.started_at))
         for k in ("deaths", "missions", "yeonggi"):
             self.stat_lbl[k].setText(str(bot.stats.get(k, 0)))

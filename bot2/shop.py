@@ -14,7 +14,7 @@ from .rewards import BACK, _load_state, _save_state, _seen, _tpl
 
 log = logging.getLogger(__name__)
 
-POTION_COUNT_BOXES = [(795, 1018, 845, 1042)]                                # 하단 Ctrl+1 칸 숫자 (물약은 Ctrl+1 하나뿐)
+POTION_COUNT_BOXES = [(812, 1016, 852, 1040)]                                # 하단 Ctrl+1 칸 숫자 (물약은 Ctrl+1 하나뿐)
 SIDE_SAVED = (50, 400)                          # 세계지도 왼쪽 '위치' 아이콘
 WALK_BTN = (1634, 1019)
 SHOP_ROW = {"2단": (220, 300), "1단": (220, 196)}
@@ -23,8 +23,18 @@ QTY_OK = (1047, 679)
 BUY = (1615, 1036)
 
 
+def _white_mask(crop):
+    """흰 숫자만 남겨 흰 바탕에 검은 글자로 (물약 개수는 흰색, 배경은 어둡거나 알록달록해서 이 방식이 가장 잘 읽힌다)."""
+    import cv2
+    import numpy as np
+    m = (crop.min(axis=2) > 200).astype(np.uint8) * 255
+    img = cv2.copyMakeBorder(255 - m, 10, 10, 14, 14, cv2.BORDER_CONSTANT, value=255)
+    return cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+
 def _read_count(crop):
-    for img, sc in ((crop, 3), (_binarize(crop, 170), 3), (crop, 4)):
+    tries = [(_white_mask(crop), 4), (_white_mask(crop), 3), (crop, 3), (_binarize(crop, 170), 3), (crop, 4)]
+    for img, sc in tries:
         m = re.search(r"\d{1,3}", _ocr(img, sc))
         if m:
             return int(m.group(0))
