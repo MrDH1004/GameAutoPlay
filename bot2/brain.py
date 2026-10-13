@@ -247,7 +247,7 @@ class Bot:
                     log.warning("물약을 %d번 눌러도 HP가 오르지 않음 → 물약이 없거나 다른 키일 수 있음", self._potion_miss)
                     self.notifier.send("물약 부족 가능 (눌러도 HP가 오르지 않음)", snap.frame, key="potion")
         keys = c.get("potion_keys") or []
-        below = c.get("rest_resume", 0.8) if self._rest == "rest" else c.get("potion_below", 0.45)
+        below = c.get("rest_resume", 0.98) if self._rest == "rest" else c.get("potion_below", 0.45)
         if keys and self.hp < below and now - self._potion_at > c.get("potion_gap", 6.0):
             key = self._potion_key(snap.frame, keys)
             log.info("HP %.0f%% → 물약 %s", self.hp * 100, key)
@@ -261,15 +261,15 @@ class Bot:
             self.notifier.send(f"HP 위험 {self.hp * 100:.0f}% (출처: {self._source})", snap.frame, key="hp")
 
     def _rest_tick(self, snap, now):
-        """보스가 아닌 자동 사냥 중 HP가 rest_below(1/3) 이하면: 잡던 몹까지 잡고 → 자동 사냥 끄기 →
-        물약/자연 회복으로 rest_resume(80%) 이상 차면 → 자동 사냥 다시 켜기. 휴식 중이면 True (다른 행동 안 함)."""
+        """보스가 아닌 자동 사냥 중 HP가 rest_below(50%) 이하면: 잡던 몹까지 잡고 → 자동 사냥 끄기 →
+        물약/자연 회복으로 rest_resume(100%) 이상 차면 → 자동 사냥 다시 켜기. 휴식 중이면 True (다른 행동 안 함)."""
         c = self.hp_cfg
         if not c.get("enabled", True) or not c.get("rest_enabled", True) or self.dry_run:
             self._rest = None
             return False
         hp = self.hp or 0.0
         if self._rest is None:
-            if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.33) and not self._boss_near(snap, now):
+            if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.5) and not self._boss_near(snap, now):
                 self._rest, self._rest_at = "finish", now
                 log.info("HP %.0f%% → 잡던 몹까지만 잡고 자동 사냥 끄고 회복", hp * 100)
             return False
@@ -286,14 +286,14 @@ class Bot:
             if self._rest_toggle(snap, now, want_on=False):
                 return True
             self._rest, self._rest_at = "rest", now
-            log.info("자동 사냥 끔 → HP %.0f%%까지 회복 대기", c.get("rest_resume", 0.8) * 100)
+            log.info("자동 사냥 끔 → HP %.0f%%까지 회복 대기 (물약, 최대 %d초)", min(c.get("rest_resume", 0.98), 1.0) * 100, c.get("rest_max", 600))
             return True
         if self._rest == "rest":
             why = None
-            if hp >= c.get("rest_resume", 0.8):
+            if hp >= c.get("rest_resume", 0.98):
                 why = f"HP {hp * 100:.0f}% 회복"
-            elif now - self._rest_at > c.get("rest_max", 180):
-                why = f"{c.get('rest_max', 180):.0f}초 동안 회복이 덜 됨(HP {hp * 100:.0f}%)"
+            elif now - self._rest_at > c.get("rest_max", 600):
+                why = f"{c.get('rest_max', 600):.0f}초 동안 회복이 덜 됨(HP {hp * 100:.0f}%)"
             elif snap.state == "COMBAT" and 0.0 < hp < c.get("rest_fight_below", 0.15):
                 why = f"쉬는 중 공격받아 HP {hp * 100:.0f}%"
             if why is None:

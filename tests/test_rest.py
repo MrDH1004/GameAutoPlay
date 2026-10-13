@@ -32,8 +32,8 @@ def snap(state, auto_on):
 class RestTest(unittest.TestCase):
     def test_full_cycle(self):
         b = make_bot()
-        b.hp = 0.30
-        self.assertFalse(b.tick(snap("COMBAT", True), 0))       # 휴식 시작만 기록, 이번 틱은 평소대로
+        b.hp = 0.48
+        self.assertFalse(b.tick(snap("COMBAT", True), 0))       # 휴식 시작만 기록, 이번 틱은 평소대로 (50% 이하)
         self.assertEqual(b._rest, "finish")
         self.assertTrue(b.tick(snap("COMBAT", True), 5))        # 아직 싸우는 중 → 마무리 대기
         self.assertEqual(b.presses, [])
@@ -41,11 +41,11 @@ class RestTest(unittest.TestCase):
         self.assertEqual(b.presses, ["t"])
         self.assertTrue(b.tick(snap("IDLE", False), 11))        # 꺼짐 확인 → 회복 대기
         self.assertEqual(b._rest, "rest")
-        b.hp = 0.6
-        self.assertTrue(b.tick(snap("IDLE", False), 20))
+        b.hp = 0.8
+        self.assertTrue(b.tick(snap("IDLE", False), 20))        # 80%는 아직 부족 → 계속 쉼
         self.assertEqual(b.presses, ["t"])
-        b.hp = 0.85
-        self.assertTrue(b.tick(snap("IDLE", False), 30))        # 80% 이상 → 다시 켜기
+        b.hp = 0.99
+        self.assertTrue(b.tick(snap("IDLE", False), 30))        # 98% 이상(=100%) → 다시 켜기
         self.assertEqual(b.presses, ["t", "t"])
         self.assertFalse(b.tick(snap("IDLE", True), 31))        # 켜짐 확인 → 끝
         self.assertIsNone(b._rest)
