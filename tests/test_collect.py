@@ -109,6 +109,36 @@ class BookOrderTest(unittest.TestCase):
         self.assertEqual([m["name"] for _, _, m, _ in out], ["가면과수", "멧돼지"])                 # 곰 그림 전체 제외 → 다음 그림
 
 
+class BanPersistTest(unittest.TestCase):
+    """사망으로 제외한 몬스터는 앱을 다시 켜도 유지된다 (재시작하면 같은 몬스터로 다시 가서 죽던 문제)."""
+
+    def make(self):
+        t = c.CollectTask.__new__(c.CollectTask)
+        t.banned = {}
+        t.ban_secs = 3600.0
+        return t
+
+    def test_ban_survives_restart_and_expires(self):
+        import tempfile
+        from bot2 import rewards
+        old = rewards.STATE_FILE
+        rewards.STATE_FILE = os.path.join(tempfile.mkdtemp(), "state.json")        # 실제 logs/state.json을 건드리지 않음
+        try:
+            a = self.make()
+            now = c.time.monotonic()
+            a._ban(("황무지 도적", ""), 3600, now)
+            a._ban(("짧은 제외", ""), 0.01, now)                                    # 곧 만료
+            self.assertIn(("황무지 도적", ""), a.banned)
+            c.time.sleep(0.05)
+            b = self.make()                                                         # '재시작': 새 객체가 파일에서 불러옴
+            b._load_bans()
+            self.assertIn(("황무지 도적", ""), b.banned)
+            self.assertNotIn(("짧은 제외", ""), b.banned)                           # 만료된 것은 버림
+            self.assertGreater(b.banned[("황무지 도적", "")], c.time.monotonic() + 3500)   # 남은 시간도 이어짐
+        finally:
+            rewards.STATE_FILE = old
+
+
 class UpdateHaveTest(unittest.TestCase):
     def test_have_never_decreases(self):
         db = {"album": [{"book": 1, "idx": 0, "have": 9, "done": True}, {"book": 1, "idx": 1, "have": 0, "done": False}]}

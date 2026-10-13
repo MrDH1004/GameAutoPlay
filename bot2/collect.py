@@ -540,9 +540,10 @@ class Collector:
         self.open_menu_item("album")
         self.open_book(book)
         t = None
-        for _ in range(idx):
-            t, _ = self.next_painting(t or "")
+        for step in range(idx):
+            t, _img = self.next_painting(t or "")
             if t is None:
+                log.warning("수집: 그림 넘기기 실패 (%s %d번째로 가는 중 %d번째 '>'에서 화면이 안 바뀜)", BOOKS[book], idx + 1, step + 1)
                 return False
         if name:
             t = self.title(self.drv.shot())
@@ -659,6 +660,7 @@ class Collector:
                     self.exit_screen()
                     return False
             if not self._open_sources():
+                log.warning("수집: '요귀' 획득처를 못 열었음 (%s)", monster["name"])
                 self._close_sources(False)
                 self.exit_screen()
                 return False
@@ -804,7 +806,8 @@ class CollectTask:
         self.register_secs = float(self.cfg.get("register_minutes", 60)) * 60
         self.ban_secs = float(self.cfg.get("death_ban_minutes", 60)) * 60
         self.next_register = time.monotonic() + float(self.cfg.get("first_register_delay", 300))
-        self.banned = {}            # (이름, 지역) → 해제 시각
+        self.banned = {}            # (이름, 지역) → 해제 시각 (monotonic)
+        self._load_bans()
         self.done_round = set()     # 이번 순회에서 이미 사냥한 몬스터 (이름, 지역) — 한 바퀴 돌면 비움
         self.hunt_since = 0.0       # 지금 몬스터에 도착해 사냥을 시작한 시각
         self.max_hunt = float(self.cfg.get("max_hunt_minutes", 25)) * 60    # 조각이 안 들어와도 이 시간이 지나면 다음 후보로
@@ -815,6 +818,33 @@ class CollectTask:
     def describe(self):
         cur = self.current
         return f"{self.status}" + (f" · {cur['name']}({(cur.get('power') or 0) // 1000}K)" if cur else "")
+
+    def _ban(self, key, secs, now):
+        """몬스터를 secs초 동안 제외하고 파일에 저장한다 (앱을 다시 켜도 유지)."""
+        self.banned[key] = now + secs
+        try:
+            from .rewards import _load_state, _save_state
+            st = _load_state()
+            bans = {k: v for k, v in (st.get("collect_bans") or {}).items() if v > time.time()}
+            bans["|".join(key)] = time.time() + secs
+            st["collect_bans"] = bans
+            _save_state(st)
+        except Exception as e:  # noqa: BLE001
+            log.debug("제외 기록 저장 실패: %s", e)
+
+    def _load_bans(self):
+        try:
+            from .rewards import _load_state
+            wall = time.time()
+            for k, until in (_load_state().get("collect_bans") or {}).items():
+                if until > wall and "|" in k:
+                    name, region = k.split("|", 1)
+                    self.banned[(name, region)] = time.monotonic() + (until - wall)
+            if self.banned:
+                log.info("수집: 이전에 제외한 몬스터 %d개 유지 (%s)", len(self.banned),
+                         ", ".join(n for n, _ in self.banned))
+        except Exception as e:  # noqa: BLE001
+            log.debug("제외 기록 불러오기 실패: %s", e)
 
     def _bans(self, now):
         self.banned = {k: t for k, t in self.banned.items() if t > now}
@@ -865,7 +895,8 @@ class CollectTask:
                     self.hunt_since = now
                     self.status = "수집 사냥 중"
                     return True
-                self.banned[(m["name"], m.get("region", ""))] = now + 600
+                log.warning("수집: '%s' 이동에 실패해 10분 제외하고 다음 후보로", m["name"])
+                self._ban((m["name"], m.get("region", "")), 600, now)
             self.status = "수집 대상 없음"
             log.info("수집 사냥할 몬스터 없음 (전투력 %s × %.1f 이하) → 일반 사냥터", f"{power:,}", self.max_ratio)
         except StopRequested:
@@ -911,7 +942,7 @@ class CollectTask:
 
     def on_death(self, now):
         if self.current:
-            self.banned[(self.current["name"], self.current.get("region", ""))] = now + self.ban_secs
+            self._ban((self.current["name"], self.current.get("region", "")), self.ban_secs, now)
             log.warning("수집 몬스터 '%s'에서 사망 → %d분 제외", self.current["name"], self.ban_secs // 60)
         self.current = None
 
