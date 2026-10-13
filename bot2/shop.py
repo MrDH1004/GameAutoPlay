@@ -14,7 +14,7 @@ from .rewards import BACK, _load_state, _save_state, _seen, _tpl
 
 log = logging.getLogger(__name__)
 
-POTION_COUNT_BOXES = [(795, 1018, 845, 1042), (868, 1018, 918, 1042)]   # 하단 Ctrl+1 / Ctrl+2 칸 숫자
+POTION_COUNT_BOXES = [(795, 1018, 845, 1042)]                                # 하단 Ctrl+1 칸 숫자 (물약은 Ctrl+1 하나뿐)
 SIDE_SAVED = (50, 400)                          # 세계지도 왼쪽 '위치' 아이콘
 WALK_BTN = (1634, 1019)
 SHOP_ROW = {"2단": (220, 300), "1단": (220, 196)}
@@ -32,7 +32,7 @@ def _read_count(crop):
 
 
 def read_potion_count(frame):
-    """하단 물약 칸(Ctrl+1, Ctrl+2) 중 가장 많은 개수 (물약이 어느 칸에 있어도 됨). 못 읽으면 None."""
+    """하단 물약 칸(Ctrl+1)의 개수. 못 읽으면 None."""
     vals = [v for v in (_read_count(_crop(frame, box)) for box in POTION_COUNT_BOXES) if v is not None]
     return max(vals) if vals else None
 

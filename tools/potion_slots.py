@@ -20,5 +20,5 @@ w = GameWindow("도깨비의세계", "dokkaebi.exe")
 w.locate()
 f = w.grab()
 cv2.imwrite(os.path.join(ROOT, "logs", "potion_slots.png"), f)
-logging.info("화면 %s, Ctrl+1=%s, Ctrl+2=%s", f.shape,
+logging.info("화면 %s, Ctrl+1=%s", f.shape,
              *[_read_count(_crop(f, b)) for b in POTION_COUNT_BOXES])

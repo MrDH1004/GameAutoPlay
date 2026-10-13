@@ -215,19 +215,7 @@ class Bot:
         actions.hotkey(combo)
 
     def _potion_key(self, frame, keys):
-        """물약이 남아 있는 칸의 키 (하단 Ctrl+1/Ctrl+2 칸 숫자를 읽음). 못 읽으면 번갈아 누른다."""
-        try:
-            from .shop import POTION_COUNT_BOXES, _read_count
-            from .farm import _crop
-            for key in keys:
-                k = key.lower().replace(" ", "")
-                i = {"ctrl+1": 0, "ctrl+2": 1}.get(k)
-                if i is not None:
-                    n = _read_count(_crop(frame, POTION_COUNT_BOXES[i]))
-                    if n:
-                        return key
-        except Exception as e:  # noqa: BLE001
-            log.debug("물약 칸 읽기 실패: %s", e)
+        """물약을 누를 키. 물약은 하단 Ctrl+1 칸에만 있으므로 potion_keys의 첫 키(기본 Ctrl+1)를 쓴다."""
         return keys[self._potion_idx % len(keys)]
 
     def _watch_hp(self, snap, now):

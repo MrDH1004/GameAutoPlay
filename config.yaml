@@ -212,10 +212,10 @@ notify:
   report_hour: 9       # 매일 이 시각(0~23)에 일일 리포트. 끄려면 null
 
 # ===== 체력 관리 =====
-# 하단 체력 바를 읽어 낮으면 물약 단축키를 누른다 (목록을 번갈아 사용). 하단 Ctrl+1/Ctrl+2 칸이 물약.
+# 하단 체력 바를 읽어 낮으면 물약 단축키를 누른다. 물약은 하단 Ctrl+1 칸에만 있다 (Ctrl+2는 없음).
 hp:
   enabled: true
-  potion_keys: ["ctrl+1", "ctrl+2"]
+  potion_keys: ["ctrl+1"]      # 물약이 있는 칸은 Ctrl+1 하나뿐
   potion_below: 0.45      # HP가 이 비율 아래면 물약
   potion_gap: 6.0         # 물약 최소 간격(초)
   danger_below: 0.2       # 이 아래면 위험 알림
@@ -271,7 +271,7 @@ enhance:
   interval_minutes: 180
 
 # ===== HP 물약 자동 구매 =====
-# 하단 물약 칸(Ctrl+2) 개수가 buy_below 미만이면 타바로 성 잡화 상점(복분이)으로 걸어가서 소지 한도(250)까지 산다.
+# 하단 물약 칸(Ctrl+1) 개수가 buy_below 미만이면 타바로 성 잡화 상점(복분이)으로 걸어가서 소지 한도(250)까지 산다.
 # 세계지도 '위치'에 저장한 '타바로 성(112,104)'(복분이 앞)을 쓴다. 축지술(유료)은 쓰지 않는다.
 potion_shop:
   enabled: true
