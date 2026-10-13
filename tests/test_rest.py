@@ -111,5 +111,38 @@ class TargetBarRestTest(unittest.TestCase):
         self.assertEqual(b.presses, ["t"])
 
 
+class FinishCapTest(unittest.TestCase):
+    def setUp(self):
+        import bot2.brain as brain
+        self.brain = brain
+        self.orig = brain.target_fill
+        brain.target_fill = lambda frame: frame
+
+    def tearDown(self):
+        self.brain.target_fill = self.orig
+
+    def test_low_hp_shortens_finish_wait(self):
+        b = make_bot()
+        b.hp = 0.45
+        b.tick(snap("COMBAT", True, 0.9), 0)                          # 45%: 마무리 시작 (몹 체력 90%)
+        self.assertEqual(b._rest, "finish")
+        b.hp = 0.28                                                   # 30% 이하: 대기 10초로 단축
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 5))         # 5초 → 아직 기다림
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 11))        # 10초 지남 → 끄는 단계로 넘어감
+        self.assertEqual(b._rest, "off")
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 12))        # 다음 틱에 T로 끈다
+        self.assertEqual(b.presses, ["t"])
+
+    def test_very_low_hp_turns_off_immediately(self):
+        b = make_bot()
+        b.hp = 0.45
+        b.tick(snap("COMBAT", True, 0.9), 0)
+        b.hp = 0.15                                                   # 20% 이하: 바로 끈다
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 1))         # 기다리지 않고 끄는 단계로
+        self.assertEqual(b._rest, "off")
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 5))         # (T 연타 방지 3초 간격이 지난 뒤 눌림)
+        self.assertEqual(b.presses, ["t"])
+
+
 if __name__ == "__main__":
     unittest.main()

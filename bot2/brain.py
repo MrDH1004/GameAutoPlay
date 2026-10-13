@@ -294,7 +294,13 @@ class Bot:
                 done = fill <= 0.02                              # 잡던 몹의 체력바가 사라짐 = 그 몹을 잡았다
             else:
                 done = snap.state != "COMBAT"                    # 처음부터 타겟이 없었으면 전투 상태가 끝났을 때
-            if waited >= c.get("rest_finish_max", 30):
+            # 마무리 대기는 HP가 낮을수록 짧게: 센 지역에서는 몹을 못 잡는 동안 계속 맞아 HP가 더 떨어진다
+            cap = float(c.get("rest_finish_max", 30))
+            if hp <= c.get("rest_finish_urgent", 0.2):
+                cap = 0.0                                        # 20% 이하: 기다리지 않고 바로 끈다
+            elif hp <= c.get("rest_finish_low", 0.3):
+                cap = min(cap, 10.0)                             # 30% 이하: 최대 10초
+            if waited >= cap:
                 done = True                                      # 너무 오래 걸리면 그냥 끈다
             if not done:
                 return True
