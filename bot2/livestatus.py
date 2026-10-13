@@ -35,6 +35,7 @@ def read_target(frame):
         power = int(round(float(m.group(1)) * (1000 if m.group(2) in "Kk" else 1_000_000)))
     name = re.sub(r"\d+(?:\.\d)?\s*[KkMm]|\d+\s*m\b|[^\w가-힣 ]", " ", txt)
     name = re.sub(r"\s+", " ", name).strip()
+    name = re.sub(r"\s+\d{1,3}$", "", name)                    # 거리 표시('11m')의 숫자만 남은 것
     return {"name": name or "?", "power": power, "fill": fill}
 
 
@@ -43,7 +44,11 @@ def read_quest(frame):
     txt = _ocr(_crop(frame, QUEST_TOP_BOX), 2)
     m = (re.search(r"\[\s*\d+\s*장\s*\][^\[\n]{1,30}", txt)
          or re.search(r"\[[^\]]{1,8}\][^\[\n]{1,30}", txt))
-    return m.group(0).strip()[:40] if m else ""
+    if not m:
+        return ""
+    t = m.group(0).strip()
+    t = re.split(r"\s+\d+\s*/\s*\d+|\s{2,}|\s+(?:[가-힣]+\s)?\d{1,2}\s*/", t)[0]       # 목표 진행도(1/12)부터는 자른다
+    return t.strip()[:30]
 
 
 class LiveStatus:
