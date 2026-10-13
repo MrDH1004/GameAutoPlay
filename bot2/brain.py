@@ -113,6 +113,7 @@ class Bot:
         self._potion_warned = 0.0
         self._low_hp_warned = 0.0
         self.hp = None
+        self.startup_state = None       # 시작 점검 결과 (bot2/startup.py)
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
         self._rest_at = 0.0
         self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
@@ -514,6 +515,24 @@ class Bot:
             self._verify = None
             log.warning("앵벌 모드 끔 (수동 버튼) → 퀘스트 다시 진행")
             self.notifier.send("앵벌 모드 끔 → 퀘스트 재개", key="manual_farm")
+
+    def _startup_check(self):
+        """시작하면 먼저 화면을 한 번 찍어 상태(지도·HP·전투력·물약·퀘스트 수·자동 사냥)부터 파악한다.
+        읽기만 하고 아무것도 누르지 않는다. 결과는 self.startup_state에 두어 제어판이 보여 준다."""
+        self.startup_state = None
+        if self.dry_run or not (self.cfg.get("startup_check", True) and self.window.locate()):
+            return
+        try:
+            from . import startup
+            st = startup.check(self)
+            self.startup_state = st
+            log.info("시작 점검 (%.1f초): %s", st["took"], startup.describe(st))
+            for w in startup.warnings(st, int((self.cfg.get("potion_shop") or {}).get("buy_below", 50))):
+                log.warning("시작 점검 주의: %s", w)
+            if st.get("potions") is not None:
+                self.potion_shop and setattr(self.potion_shop, "last_count", st["potions"])
+        except Exception as e:  # noqa: BLE001
+            log.warning("시작 점검 실패 (계속 진행): %s", e)
 
     def _focus_game_window(self):
         """제어판 버튼을 누르면 제어판이 게임 위로 올라와 봇이 '게임 창이 앞에 없음'으로 멈춘다 → 게임 창을 앞으로 가져온다."""
@@ -1034,6 +1053,7 @@ class Bot:
             except Exception as e:  # noqa: BLE001
                 log.debug("게임 창 포커스 실패: %s", e)
         self.activity.ignore_until_now()   # 실행 직전의 입력(브리지 포커스 등)은 사용자 조작이 아님
+        self._startup_check()
         waiting_logged = False
         while True:
             if self.stop_event.is_set():

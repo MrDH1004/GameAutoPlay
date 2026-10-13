@@ -831,7 +831,12 @@ class Window(QMainWindow):
             w, h = bot.window.width, bot.window.height
             mode = "풀스크린" if w >= 1900 else "창 모드"
             self.lbl_window.setText(f"{w} × {h}")
-            self.lbl_window_sub.setText(f"{mode} · 배율 {w / 1920:.2f}")
+            sub = f"{mode} · 배율 {w / 1920:.2f}"
+            st = getattr(bot, "startup_state", None)
+            if st and st.get("screen") == "필드":                       # 시작 점검 결과: 지도 · 물약 · 퀘스트 수
+                q = (st.get("quests") or {}).get("total")
+                sub += f"  |  시작 시 {st.get('map') or '?'} · 물약 {st.get('potions', '?')}개" + (f" · 퀘스트 {q}개" if q else "")
+            self.lbl_window_sub.setText(sub)
         else:
             self.lbl_window.setText("찾는 중")
             self.lbl_window_sub.setText("게임 창이 없거나 맨 앞에 있지 않습니다")
