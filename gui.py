@@ -56,8 +56,8 @@ QTabBar::tab {{ background: transparent; color: {C['sub']}; padding: 10px 22px; 
 QTabBar::tab:selected {{ color: {C['text']}; border-bottom: 2px solid {C['accent']}; }}
 QTabBar::tab:hover {{ color: {C['text']}; }}
 QFrame#card {{ background: {C['panel']}; border: 1px solid {C['line']}; border-radius: 12px; }}
-QLabel#cardTitle {{ color: {C['sub']}; font-size: 12px; }}
-QLabel#big {{ font-size: 26px; font-weight: 700; }}
+QLabel#cardTitle {{ color: {C['sub']}; font-size: 11px; }}
+QLabel#big {{ font-size: 13px; font-weight: 700; }}
 QLabel#sub {{ color: {C['sub']}; }}
 QGroupBox {{ background: {C['panel']}; border: 1px solid {C['line']}; border-radius: 12px; margin-top: 14px; padding: 18px 14px 12px 14px; }}
 QGroupBox::title {{ subcontrol-origin: margin; left: 14px; padding: 0 6px; color: {C['sub']}; }}
@@ -366,7 +366,7 @@ class Window(QMainWindow):
     def _build_header(self):
         row = QHBoxLayout()
         title = QLabel("도깨비헬퍼")
-        title.setStyleSheet("font-size:22px; font-weight:800;")
+        title.setStyleSheet("font-size:12px; font-weight:800;")
         from version import VERSION
         sub = QLabel(f"도깨비의세계 자동 진행  ·  v{VERSION}")
         sub.setObjectName("sub")
@@ -441,19 +441,19 @@ class Window(QMainWindow):
         top.addWidget(c3, 2)
         lay.addLayout(top)
 
-        # 실시간 상황판: 동기화 · 현재 위치 · 잡는 몹 · 물약 · 하는 퀘스트
+        # 실시간 상황판: 동기화 · 현재 위치 · 잡는 몹 · 하는 퀘스트
         live = QHBoxLayout()
         live.setSpacing(12)
         self.live_lbl = {}
         for key, title, stretch in (("sync", "동기화", 2), ("map", "현재 위치", 2), ("mob", "잡는 몹", 2),
-                                    ("potion", "물약", 1), ("quest", "하는 퀘스트", 3)):
+                                    ("quest", "하는 퀘스트", 3)):
             c, l = card(title)
             v = QLabel("-")
             v.setObjectName("big")
             v.setWordWrap(True)
-            v.setMinimumHeight(40)
+            v.setMinimumHeight(40)                              # 카드 높이는 그대로 유지 (글씨만 줄임)
             if key in ("map", "mob", "quest"):
-                v.setStyleSheet("font-size:18px;")             # 지도·몹·퀘스트 이름은 길어서 글씨를 줄임
+                v.setStyleSheet("font-size:11px;")             # 지도·몹·퀘스트 이름은 길어서 더 작게
             sub_l = QLabel("")
             sub_l.setObjectName("sub")
             sub_l.setWordWrap(True)
@@ -853,7 +853,7 @@ class Window(QMainWindow):
         def put(key, big, small="", color=None):
             v, sm = self.live_lbl[key]
             v.setText(big)
-            size = "font-size:18px;" if key in ("map", "mob", "quest") else ""
+            size = "font-size:11px;" if key in ("map", "mob", "quest") else ""
             v.setStyleSheet(size + (f"color:{color};" if color else ""))
             sm.setText(small)
 
@@ -867,7 +867,7 @@ class Window(QMainWindow):
             put("sync", f"{rate * 100:.0f}%", f"최근 화면 인식률 · 마지막 인식 {age:.0f}초 전" if age is not None else "화면 인식률", col)
 
         if not d or d.get("at") is None or time.monotonic() - d["at"] > 20:
-            for k in ("map", "mob", "potion", "quest"):
+            for k in ("map", "mob", "quest"):
                 put(k, "-", "읽는 중…" if k == "map" else "")
             return
         if not d.get("field"):
@@ -880,9 +880,6 @@ class Window(QMainWindow):
             put("mob", t["name"], f"{pw} · 체력 {t['fill'] * 100:.0f}%".strip(" ·"))
         else:
             put("mob", "없음", "타겟 몹이 없음")
-        p = d.get("potions")
-        low = p is not None and p < 50
-        put("potion", f"{p}개" if p is not None else "?", "50개 미만" if low else "", C["warn"] if low else None)
         put("quest", d.get("quest") or "-", getattr(bot, "_source", "") and f"출처: {bot._source}" or "")
 
     def _refresh_running(self, bot):
