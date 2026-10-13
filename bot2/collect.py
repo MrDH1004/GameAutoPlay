@@ -604,10 +604,15 @@ class Collector:
                 self._close_sources(False)
                 self.exit_screen()
                 return False
-            for m in read_monsters(self.drv.shot()):
+            rows = read_monsters(self.drv.shot())
+            log.info("수집: 요귀 목록 %s", ", ".join(r["name"] for r in rows) or "-")
+            for m in rows:
                 if _similar(m["name"], monster["name"]):
                     self.drv.click(1636, m["cy"])       # 발자국 → 화면이 닫히고 자동 이동 시작
                     self.drv.sleep(2.0)
+                    img = self.drv.shot()
+                    moving = bool(_matches(img, _tpl("collect_moving.png"), (700, 960, 1250, 1060), 0.7)) if os.path.exists(os.path.join(TPL_DIR, "collect_moving.png")) else None
+                    log.info("수집: '%s' 발자국 클릭 (y=%d) → 자동 이동 표시 %s", m["name"], m["cy"], moving)
                     return True
             log.warning("수집: 목록에서 '%s'를 찾지 못함", monster["name"])
             self._close_sources(True)

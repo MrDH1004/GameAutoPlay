@@ -75,9 +75,38 @@ def _crop(img, box):
     return img[int(y0 * sy):int(y1 * sy), int(x0 * sx):int(x1 * sx)]
 
 
+_last_power = None          # 마지막으로 믿을 만하게 읽은 전투력 (자릿수 빠짐 같은 오독을 걸러내는 기준)
+_odd_power = []             # 기준과 많이 다르게 읽힌 값들 (같은 값이 3번 연속이면 진짜 변화로 받아들임)
+
+
+def _plausible(v):
+    """직전 값에서 절반 미만으로 급락하거나 두 배를 넘는 값은 오독으로 본다 (예: 66,682 → 6,682)."""
+    return _last_power is None or _last_power / 2 <= v <= _last_power * 2
+
+
 def read_power(frame):
     """필드 화면에서 내 전투력(숫자)을 읽는다. 원본/이진화 여러 번 읽어 다수결. 못 읽으면 None.
     창 모드(작은 글씨)에서는 원본 OCR이 숫자를 틀리게 읽어 이진화 결과가 더 정확하다."""
+    global _last_power
+    v = _read_power_raw(frame)
+    if v is None:
+        return None
+    if not _plausible(v):
+        _odd_power.append(v)
+        del _odd_power[:-3]
+        if len(_odd_power) == 3 and len(set(_odd_power)) == 1:       # 진짜로 크게 바뀐 것 (장비 교체 등)
+            log.info("전투력이 크게 바뀐 것으로 받아들임: %s → %s", f"{_last_power:,}", f"{v:,}")
+            _last_power = v
+            _odd_power.clear()
+            return v
+        log.warning("전투력 오독으로 판단해 무시: %s (직전 %s)", f"{v:,}", f"{_last_power:,}")
+        return None
+    _odd_power.clear()
+    _last_power = v
+    return v
+
+
+def _read_power_raw(frame):
     from collections import Counter
     global _power_reads
     crop = _crop(frame, POWER_BOX)

@@ -86,3 +86,17 @@ class IgnoreUserTest(unittest.TestCase):
         self.make(manual=True).check()                      # 수동 앵벌 모드: 감지 끔
         with self.assertRaises(UserInterrupt):
             self.make(manual=True, ignore_cfg=False).check()  # 설정으로 다시 켤 수 있음
+
+
+class PowerGuardTest(unittest.TestCase):
+    def test_digit_drop_is_ignored_but_real_change_accepted(self):
+        import bot2.farm as farm
+        seq = iter([66682, 6682, 66100, 140000, 140000, 140000])
+        farm._read_power_raw = lambda frame: next(seq)
+        farm._last_power, farm._odd_power[:] = None, []
+        self.assertEqual(farm.read_power(None), 66682)
+        self.assertIsNone(farm.read_power(None))           # 자릿수 빠진 6,682는 버림
+        self.assertEqual(farm.read_power(None), 66100)     # 정상 값은 계속 통과
+        self.assertIsNone(farm.read_power(None))           # 2배를 넘는 값 1~2번째는 보류
+        self.assertIsNone(farm.read_power(None))
+        self.assertEqual(farm.read_power(None), 140000)    # 같은 값이 3번 연속이면 진짜 변화
