@@ -8,7 +8,8 @@ import pydirectinput
 pydirectinput.PAUSE = 0.05
 # 마우스를 화면 왼쪽 위 모서리로 옮기면 pydirectinput이 FailSafeException을 낸다.
 # 사용자가 마우스를 모서리로 치워 두는 일이 흔해서, 예외로 매크로가 죽지 않도록 아래 _safe()가 받아 처리한다
-# (입력을 건너뛰지 않고 마우스를 화면 안쪽으로 옮긴 뒤 한 번 다시 보낸다).
+# (입력을 건너뛰지 않고 마우스를 화면 안쪽으로 옮긴 뒤 한 번 다시 보낸다). 즉 '모서리 비상 정지'는 없다 —
+# 비상 정지는 F11(일시정지)/F12(종료)뿐이다 (사용자 결정).
 pydirectinput.FAILSAFE = True
 
 try:

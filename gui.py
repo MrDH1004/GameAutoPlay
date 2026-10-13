@@ -274,7 +274,7 @@ class Window(QMainWindow):
         tabs.addTab(self.stats_tab, "통계")
         tabs.addTab(self.preview_tab, "미리보기")
         tabs.addTab(SpotEditor(C), "사냥터")
-        tabs.addTab(self._build_skills(), "스킬 추천")
+        tabs.addTab(self._build_recommend(), "추천")
         tabs.addTab(self._build_log(), "로그")
         outer.addWidget(tabs, 1)
         self.tabs = tabs
@@ -284,7 +284,7 @@ class Window(QMainWindow):
         self._sched_day = None
         self._build_tray()
 
-        foot = QLabel("단축키  F11 일시정지/재개   ·   F12 종료   ·   직접 조작하면 자동으로 양보   ·   마우스를 화면 좌상단 구석으로 옮기면 비상 정지")
+        foot = QLabel("단축키  F11 일시정지/재개   ·   F12 종료   ·   직접 조작하면 자동으로 양보")
         foot.setObjectName("sub")
         outer.addWidget(foot)
 
@@ -610,6 +610,90 @@ class Window(QMainWindow):
         lay.addWidget(note)
         lay.addStretch(1)
         return scroll
+
+    def _build_recommend(self):
+        """추천 탭: 서브탭 — 스킬(기존) / 무기 / 방어구 / 투력 공략집."""
+        sub_tabs = QTabWidget()
+        sub_tabs.setDocumentMode(True)
+        sub_tabs.addTab(self._build_skills(), "스킬")
+        sub_tabs.addTab(self._build_gear_page("weapon"), "무기")
+        sub_tabs.addTab(self._build_gear_page("armor"), "방어구")
+        sub_tabs.addTab(self._build_power_guide(), "투력 공략집")
+        return sub_tabs
+
+    def _guide_browser(self):
+        tb = QTextBrowser()
+        tb.setOpenExternalLinks(True)
+        return tb
+
+    @staticmethod
+    def _tag(text):
+        """'[웹] …' / '[실측] …' 앞머리를 색 있는 뱃지로 바꿔 출처를 한눈에 보이게 한다."""
+        from html import escape
+        for tag, color in (("[실측]", C["ok"]), ("[웹]", C["warn"])):
+            if text.startswith(tag):
+                return (f"<span style='color:{color};font-weight:600'>{escape(tag)}</span> "
+                        f"{escape(text[len(tag):].strip())}")
+        return escape(text)
+
+    def _build_gear_page(self, kind):
+        """무기 / 방어구 서브탭 (gear_guide.py 데이터). 아이템 이름은 지어내지 않고 확인된 원칙·재료만 보여 준다."""
+        import gear_guide as g
+        from html import escape
+        data = g.WEAPON if kind == "weapon" else g.ARMOR
+        title = "무기" if kind == "weapon" else "방어구"
+        h = f"<body style='color:{C['text']}'>"
+        h += f"<p style='color:{C['sub']}'>{escape(g.CAVEAT)}</p>"
+        h += (f"<table width='100%' cellpadding=10 style='background:{C['panel2']}'><tr><td>"
+              f"<b style='color:{C['warn']}'>추천 {title} 목록은 없습니다.</b><br>{escape(g.NO_ITEM_LIST)}</td></tr></table>")
+        h += f"<h2>{title} 점검 원칙</h2><ul>" + "".join(f"<li>{self._tag(t)}</li>" for t in data["principles"]) + "</ul>"
+        if data.get("materials"):
+            h += ("<h2>강화 재료와 수급처</h2><table cellpadding=5><tr><th align=left>재료</th>"
+                  "<th align=left>수급처</th><th align=left>출처</th></tr>")
+            for name, where, src in data["materials"]:
+                col = C["ok"] if src == "실측" else C["warn"]
+                h += (f"<tr><td>{escape(name)}</td><td>{escape(where)}</td>"
+                      f"<td><span style='color:{col}'>[{escape(src)}]</span></td></tr>")
+            h += "</table>"
+        if data.get("measured"):
+            h += "<h2>이 PC에서 확인한 것</h2><ul>" + "".join(f"<li>{self._tag(t)}</li>" for t in data["measured"]) + "</ul>"
+        h += "<h2>출처</h2><ul>" + "".join(
+            f"<li><a style='color:{C['accent']}' href='{u}'>{escape(t)}</a> <span style='color:{C['sub']}'>— {escape(n)}</span></li>"
+            for t, u, n in g.SOURCES) + "</ul></body>"
+        tb = self._guide_browser()
+        tb.setHtml(h)
+        return tb
+
+    def _build_power_guide(self):
+        """투력(전투력) 공략집: 올리는 순서 + 이 PC 실측 + 사냥터 사다리."""
+        import gear_guide as g
+        from html import escape
+        pg = g.POWER_GUIDE
+        h = f"<body style='color:{C['text']}'>"
+        h += f"<p style='color:{C['sub']}'>{escape(g.CAVEAT)}</p>"
+        h += "<h2>전투력 올리는 순서</h2><table cellpadding=6>"
+        for n, title, text, src in pg["steps"]:
+            col = C["ok"] if src == "실측" else C["warn"]
+            h += (f"<tr><td valign=top style='color:{C['accent']};font-size:18px'><b>{n}</b></td>"
+                  f"<td><b>{escape(title)}</b> <span style='color:{col}'>[{escape(src)}]</span><br>"
+                  f"<span style='color:{C['sub']}'>{escape(text)}</span></td></tr>")
+        h += "</table>"
+        h += "<h2>이 PC에서 확인한 것</h2><ul>" + "".join(f"<li>{self._tag(t)}</li>" for t in pg["measured"]) + "</ul>"
+        ladder = g.ladder()
+        if ladder:
+            h += (f"<h2>사냥터 사다리 <span style='color:{C['ok']};font-size:13px'>[실측]</span></h2>"
+                  f"<p style='color:{C['sub']}'>길라잡이(F5) '사냥터 바로가기'는 무료 순간이동입니다. 권장 전투력 = 그 사냥터 몬스터 전투력. "
+                  "도깨비헬퍼는 내 전투력의 90% 이하 중 가장 센 곳을 고릅니다.</p>"
+                  "<table cellpadding=4><tr><th align=left>사냥터</th><th align=right>권장 전투력</th></tr>")
+            for name, power in ladder:
+                h += f"<tr><td>{escape(name)}</td><td align=right>{power:,}</td></tr>"
+            h += "</table>"
+        h += "<h2>출처</h2><ul>" + "".join(
+            f"<li><a style='color:{C['accent']}' href='{u}'>{escape(t)}</a> <span style='color:{C['sub']}'>— {escape(n)}</span></li>"
+            for t, u, n in g.SOURCES) + "</ul></body>"
+        tb = self._guide_browser()
+        tb.setHtml(h)
+        return tb
 
     def _build_skills(self):
         """무과금 도술 추천 (skill_guide.py 데이터)."""
