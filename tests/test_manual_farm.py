@@ -31,6 +31,8 @@ def make(cfg_farm=False):
     b._idle_since = 1.0
     b._verify = "v"
     b.notifier = types.SimpleNamespace(send=lambda *a, **k: None)
+    b.activity = types.SimpleNamespace(ignore_until_now=lambda sec=1.5: None)
+    b.waiting_user = False
     b.focused = []
     b._focus_game_window = lambda: b.focused.append(1)
     b.request_manual_farm = types.MethodType(Bot.request_manual_farm, b)
@@ -68,24 +70,29 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class IgnoreUserTest(unittest.TestCase):
-    def make(self, manual, ignore_cfg=True, idle=0.5):
-        b = types.SimpleNamespace()
-        b.manual_farm = manual
-        b.cfg = {"farm": {"manual_ignore_user": ignore_cfg}}
-        b.user_resume = 120
-        b.activity = types.SimpleNamespace(idle_seconds=lambda: idle)
-        b._ignore_user = types.MethodType(Bot._ignore_user, b)
-        b.check = types.MethodType(Bot._check_user, b)
-        return b
+class GraceTest(unittest.TestCase):
+    def run_on(self, grace_cfg):
+        b = make()
+        b.cfg = {"farm": {} if grace_cfg is None else {"manual_grace_seconds": grace_cfg}}
+        b.waiting_user = True
+        calls = []
+        b.activity = types.SimpleNamespace(ignore_until_now=lambda sec=1.5: calls.append(sec))
+        b.request_manual_farm(True)
+        b.apply(1)
+        return b, calls
 
-    def test_user_input_detection_toggle(self):
-        from bot.actions import UserInterrupt
-        with self.assertRaises(UserInterrupt):
-            self.make(manual=False).check()                 # 평소: 조작 직후면 양보
-        self.make(manual=True).check()                      # 수동 앵벌 모드: 감지 끔
-        with self.assertRaises(UserInterrupt):
-            self.make(manual=True, ignore_cfg=False).check()  # 설정으로 다시 켤 수 있음
+    def test_grace_only_when_turned_on(self):
+        b, calls = self.run_on(None)
+        self.assertEqual(calls, [12.0])                     # 기본 12초만 조작 감지를 풂
+        self.assertFalse(b.waiting_user)                    # 조작 대기 중이었어도 바로 풀림
+        b.request_manual_farm(False)
+        calls.clear()
+        b.apply(2)
+        self.assertEqual(calls, [])                         # 끌 때는 아무것도 안 함 → 평소 감지로 복귀
+
+    def test_grace_zero_disables(self):
+        _, calls = self.run_on(0)
+        self.assertEqual(calls, [])
 
 
 class PowerGuardTest(unittest.TestCase):

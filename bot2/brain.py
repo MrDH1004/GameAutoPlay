@@ -166,13 +166,7 @@ class Bot:
         log.warning("현재 화면 저장: %s", path)
         return path
 
-    def _ignore_user(self):
-        """앵벌 모드를 수동으로 켠 동안에는 사용자 조작을 감지해 멈추지 않는다 (설정 farm.manual_ignore_user)."""
-        return self.manual_farm and bool((self.cfg.get("farm") or {}).get("manual_ignore_user", True))
-
     def _check_user(self):
-        if self._ignore_user():
-            return
         idle = self.activity.idle_seconds()
         if idle is not None and idle < self.user_resume:
             raise actions.UserInterrupt()
@@ -473,6 +467,10 @@ class Bot:
             self._hunt_press_at = 0.0
             log.warning("앵벌 모드 켬 (수동 버튼) → 퀘스트는 멈추고 사냥터에서 자동 사냥 (끄면 퀘스트 재개)")
             self._focus_game_window()
+            grace = float((self.cfg.get("farm") or {}).get("manual_grace_seconds", 12))
+            if grace > 0:                           # 버튼을 누르느라 쓴 마우스 조작 때문에 2분씩 기다리지 않게, 켠 직후 잠깐만 감지를 푼다
+                self.activity.ignore_until_now(grace)
+            self.waiting_user = False
             self.notifier.send("앵벌 모드 켬 (수동)", key="manual_farm")
         else:
             self.farm_mode = self._cfg_farm_mode
@@ -1055,7 +1053,7 @@ class Bot:
                 waiting_logged = False
                 self.activity.ignore_until_now()
 
-            if not self.dry_run and not self._ignore_user():
+            if not self.dry_run:
                 idle = self.activity.idle_seconds()
                 if idle is not None and idle < self.user_resume:
                     if not self.waiting_user:
@@ -1067,9 +1065,6 @@ class Bot:
                 if self.waiting_user:
                     log.info("조작 없음 → 재개")
                     self.waiting_user = False
-            elif self.waiting_user:
-                self.waiting_user = False                       # 앵벌 모드 중에는 조작 대기를 풀고 계속 진행
-                log.info("앵벌 모드: 사용자 조작 감지를 끄고 계속 진행")
 
             try:
                 self._tick()
