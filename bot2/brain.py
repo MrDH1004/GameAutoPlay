@@ -85,6 +85,8 @@ class Bot:
         self.collect = CollectTask(self, cl) if (cl.get("enabled", True) and self.farm) else None
         self._collect_pending = False   # 앵벌이 시작되면 수집 몬스터로 먼저 가 본다
         self._collect_check = 0.0       # 수집 사냥 교대 조건을 마지막으로 본 시각
+        self._walk_started = 0.0        # 수집 이동을 시작한 시각 (도착할 때까지 자동 사냥 T 금지, 0이면 이동 중 아님)
+        self._walk_last = 0.0           # 이동 바를 마지막으로 본 시각
         ps = config.get("potion_shop") or {}
         self.potion_shop = PotionShop(self, ps) if ps.get("enabled", True) else None
         en = config.get("enhance") or {}
@@ -509,6 +511,7 @@ class Bot:
             self.farm_mode = self._cfg_farm_mode
             self._farm_until = 0.0
             self._collect_pending = False
+            self._walk_started = 0.0
             if self.collect:
                 self.collect.stop()
             self._fails = 0
@@ -566,6 +569,8 @@ class Bot:
             self._idle_since = None
             self._moving_since = None
         if ok:
+            self._walk_started = now                # 도착 신호가 올 때까지 자동 사냥(T)을 막는다
+            self._walk_last = now
             self.farm.need_travel = False
             self.farm.current = None
             self.farm.next_eval = max(self._farm_until, now + 60) if not self.farm_mode else now + self.farm.reselect * 4
@@ -626,13 +631,31 @@ class Bot:
             self._hunt_tries = 0
             self._hunt_press_at = 0.0
 
+    def _walk_guard(self, snap, now):
+        """수집 이동을 시작한 뒤 '도착'할 때까지 True. 이동 바가 깜빡여도 그 틈에 T를 누르지 않게 하는 안전망.
+        풀리는 조건: 이동 바가 walk_end 초 넘게 안 보임(도착/취소) 또는 최대 walk_max 초 경과."""
+        t0 = getattr(self, "_walk_started", 0.0)
+        if not t0:
+            return False
+        if snap.walking:
+            self._walk_last = now
+            if now - t0 > float(self.cfg.get("walk_max", 600)):          # 10분이 넘으면 비정상 → 풀어 준다
+                self._walk_started = 0.0
+                return False
+            return True
+        if now - getattr(self, "_walk_last", t0) > float(self.cfg.get("walk_end", 6.0)):
+            self._walk_started = 0.0                                      # 바가 한참 안 보임 = 도착(또는 취소)
+            log.info("수집 이동 종료 감지 → 자동 사냥 허용")
+            return False
+        return True
+
     def _ensure_hunt(self, snap, now):
         """사망 복귀 후 자동 사냥(T)이 꺼져 있으면 켠다. 켜졌는지 색으로 확인하고 최대 3번만 누른다."""
         if snap.auto_on:
             log.info("자동 사냥 켜짐 확인")
             self._want_hunt = False
             return
-        if snap.walking:
+        if snap.walking or self._walk_guard(snap, now):
             return                      # 웨이포인트 이동 중에 켜면 주변 몹을 공격하느라 이동이 취소된다 → 도착한 뒤에 켠다
         if now - self._hunt_press_at < 3.0:
             return
@@ -813,7 +836,8 @@ class Bot:
                 if self._go_collect(now):
                     return
             self.farm.tick(snap, now)
-            if (not snap.auto_on and snap.state != "MOVING" and not snap.walking and not self._want_hunt
+            if (not snap.auto_on and snap.state != "MOVING" and not snap.walking and not self._walk_guard(snap, now)
+                    and not self._want_hunt
                     and now - self._hunt_check > 15 and now >= self.farm.next_try):
                 self._hunt_check = now
                 log.info("사냥터 모드: 자동 사냥이 꺼져 있음 → 켜기")

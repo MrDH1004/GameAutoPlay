@@ -1,5 +1,7 @@
 """토글 스위치: QCheckBox 호환(값 읽기/쓰기·시그널)과 애니메이션 진행값."""
 import os
+
+os.environ.setdefault("DOKKAEBI_TEST", "1")      # 테스트가 실제 로그 파일에 쓰지 않게
 import sys
 import unittest
 

@@ -293,10 +293,11 @@ class Window(QMainWindow):
         root_log = logging.getLogger()
         root_log.setLevel(logging.INFO)
         root_log.addHandler(self.log_handler)
-        os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-        fh = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=5_000_000, backupCount=5, encoding="utf-8")
-        fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
-        root_log.addHandler(fh)
+        if not os.environ.get("DOKKAEBI_TEST"):          # 자동 테스트가 창을 만들 때는 실제 로그 파일에 쓰지 않는다 (테스트 로그가 섞여 실제 상황으로 오해되던 문제)
+            os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
+            fh = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=5_000_000, backupCount=5, encoding="utf-8")
+            fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
+            root_log.addHandler(fh)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._refresh)
@@ -1154,6 +1155,8 @@ def main():
     else:
         QTimer.singleShot(800, win.show_changelog_if_new)     # 자동 시작 때는 팝업이 게임 창 포커스를 뺏으므로 생략
     if "--autostart" in sys.argv:
+        if "--farm" in sys.argv:                  # 시작하면서 바로 앵벌 모드 (제어판 버튼을 누르지 않고도 켜기)
+            win._pending_farm = True
         QTimer.singleShot(1500, win.start)
     sys.exit(app.exec())
 

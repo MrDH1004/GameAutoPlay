@@ -1,5 +1,7 @@
 """추천 탭 데이터: 모든 항목에 출처([웹]/[실측])가 붙어 있고, 아이템 이름을 지어내지 않는지."""
 import os
+
+os.environ.setdefault("DOKKAEBI_TEST", "1")      # 테스트가 실제 로그 파일에 쓰지 않게
 import sys
 import unittest
 

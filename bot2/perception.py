@@ -94,7 +94,11 @@ class Perceiver:
 
         # 하단 '자동 이동 중 202m' 바 (길라잡이/발자국/퀘스트 웨이포인트 이동). 이 동안 자동 사냥(T)을 켜면
         # 주변 몹을 공격하느라 이동이 취소되므로, 이동 중인지 따로 알아 둔다.
-        snap.walking = bool(self._find(frame, "collect_moving.png", [0.30, 0.60, 0.45, 0.40], 0.8))
+        seen_bar = bool(self._find(frame, "collect_moving.png", [0.30, 0.60, 0.45, 0.40], 0.8))
+        if seen_bar:
+            self._walk_seen_at = now
+        # 이동 바는 이동 중에도 1~2초씩 깜빡이며 사라진다(실측) → 마지막으로 보인 뒤 grace초 안이면 계속 이동 중으로 본다
+        snap.walking = seen_bar or (now - getattr(self, "_walk_seen_at", -1e9) < self.cfg.get("walk_grace", 4.0))
 
         ci = c.get("combat_indicator") or {}
         snap.combat = any(self._find(frame, t, ci.get("region")) for t in ci.get("templates", []))
