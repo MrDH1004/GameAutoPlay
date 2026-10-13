@@ -58,11 +58,14 @@ class RestTest(unittest.TestCase):
         self.assertIsNone(b._rest)
 
     def test_finish_timeout(self):
+        # 사용자 지시: 잡던 몹은 죽을 때까지 기다린다. 30초로는 끄지 않고, 비정상적으로 긴 5분만 포기 기준
         b = make_bot()
         b.hp = 0.3
         b.tick(snap("COMBAT", True), 0)
-        self.assertTrue(b.tick(snap("COMBAT", True), 31))       # 30초 넘게 전투 → 그냥 끈다
-        self.assertEqual(b.presses, ["t"])
+        self.assertTrue(b.tick(snap("COMBAT", True), 31))       # 30초가 지나도 전투 중이면 계속 기다림
+        self.assertEqual(b.presses, [])
+        self.assertTrue(b.tick(snap("COMBAT", True), 301))      # 5분 넘으면 끄는 단계로
+        self.assertEqual(b._rest, "off")
 
     def test_rest_max_and_attacked(self):
         b = make_bot()
@@ -111,7 +114,9 @@ class TargetBarRestTest(unittest.TestCase):
         self.assertEqual(b.presses, ["t"])
 
 
-class FinishCapTest(unittest.TestCase):
+class FinishUntilKillTest(unittest.TestCase):
+    """사용자 지시: 잡던 몹은 HP·시간과 상관없이 죽을 때까지(타겟 체력바가 빌 때까지) 끄지 않는다."""
+
     def setUp(self):
         import bot2.brain as brain
         self.brain = brain
@@ -121,27 +126,25 @@ class FinishCapTest(unittest.TestCase):
     def tearDown(self):
         self.brain.target_fill = self.orig
 
-    def test_low_hp_shortens_finish_wait(self):
-        b = make_bot()
-        b.hp = 0.45
-        b.tick(snap("COMBAT", True, 0.9), 0)                          # 45%: 마무리 시작 (몹 체력 90%)
-        self.assertEqual(b._rest, "finish")
-        b.hp = 0.28                                                   # 30% 이하: 대기 10초로 단축
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 5))         # 5초 → 아직 기다림
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 11))        # 10초 지남 → 끄는 단계로 넘어감
-        self.assertEqual(b._rest, "off")
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 12))        # 다음 틱에 T로 끈다
-        self.assertEqual(b.presses, ["t"])
-
-    def test_very_low_hp_turns_off_immediately(self):
+    def test_does_not_turn_off_while_target_alive_even_at_low_hp_or_long_time(self):
         b = make_bot()
         b.hp = 0.45
         b.tick(snap("COMBAT", True, 0.9), 0)
-        b.hp = 0.15                                                   # 20% 이하: 바로 끈다
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 1))         # 기다리지 않고 끄는 단계로
+        b.hp = 0.12                                                   # HP가 아주 낮아도
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 40))        # 40초가 지나도 몹이 살아 있으면 계속 싸움
+        self.assertEqual(b._rest, "finish")
+        self.assertEqual(b.presses, [])
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.0), 41))        # 몹이 죽으면(바가 빔) 그때 끈다
         self.assertEqual(b._rest, "off")
-        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 5))         # (T 연타 방지 3초 간격이 지난 뒤 눌림)
-        self.assertEqual(b.presses, ["t"])
+
+    def test_only_a_very_long_wait_gives_up(self):
+        b = make_bot()
+        b.hp = 0.45
+        b.tick(snap("COMBAT", True, 0.9), 0)
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 299))
+        self.assertEqual(b._rest, "finish")
+        self.assertTrue(b.tick(snap("COMBAT", True, 0.9), 301))       # 5분이 넘으면 비정상으로 보고 끔
+        self.assertEqual(b._rest, "off")
 
 
 if __name__ == "__main__":
