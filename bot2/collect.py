@@ -247,14 +247,15 @@ def save_db(db, path):
     os.replace(tmp, path)
 
 
-def candidates(db, power, max_ratio=2.0, banned=()):
+def candidates(db, power, max_ratio=2.0, banned=(), use_relics=True):
     """사냥 후보 몬스터: [(power, -모을것수, monster, via)] 약한 순.
     via = 그 몬스터 목록을 다시 여는 경로 (화첩 그림 / 유물 아이템)."""
     if not power:
         return []
     mons = {}
     entries = [("album", e) for e in db.get("album", []) if not e.get("done")]
-    entries += [("relic", e) for e in db.get("relics", []) if not e.get("done")]
+    if use_relics:
+        entries += [("relic", e) for e in db.get("relics", []) if not e.get("done")]
     for kind, e in entries:
         for m in e.get("monsters", []):
             p = usable_power(m, power, max_ratio)
@@ -753,7 +754,7 @@ class CollectTask:
         try:
             if self.need_scan():
                 self.scan()
-            for p, negc, m, via in candidates(self.db, power, self.max_ratio, self._bans(now))[:3]:
+            for p, negc, m, via in candidates(self.db, power, self.max_ratio, self._bans(now), self.cfg.get("relics", True))[:3]:
                 what = via[1].get("name")
                 log.info("수집 사냥: '%s'(%s, %dK) ← %s '%s' 외 %d건 (전투력 %s, 상한 %d%%)", m["name"], m.get("region"),
                          p // 1000, "화첩" if via[0] == "album" else "유물", what, -negc - 1,

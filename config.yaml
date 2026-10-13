@@ -232,7 +232,7 @@ collect:
   enabled: true
   max_ratio: 2.0          # 몬스터 전투력이 내 전투력의 이 배수 이하인 것까지 (빨간 이름은 확실히 읽힌 값만)
   album: true             # 화첩
-  relics: true            # 유물 수집
+  relics: false           # 유물 수집: 스캔/등록 모두 끔 (유물 등록은 아이템이 인벤토리에서 사라지는 확인 창이 떠서 자동화하지 않음)
   scan_hours: 24          # 이 시간마다 화첩/유물 목록을 다시 스캔 (앵벌 시작 때, 십여 분)
   relic_max_items: 150
   register_minutes: 60    # 모은 조각/유물 등록(화첩 표지 빨간 점 → 모두 등록) 주기
