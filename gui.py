@@ -714,7 +714,8 @@ class Window(QMainWindow):
         """앵벌 모드 수동 켜기/끄기. 정지 상태면 매크로를 시작하면서 앵벌 모드로."""
         bot = self.thread.bot if self.thread else None
         if bot:
-            on = not bot.manual_farm
+            pending = bot._manual_farm_request          # 아직 봇이 처리 못 한 요청이 있으면 그것을 기준으로 토글
+            on = not (pending if pending is not None else bot.manual_farm)
             bot.request_manual_farm(on)
             if on and bot.paused:
                 self.toggle_pause()
@@ -776,7 +777,8 @@ class Window(QMainWindow):
         if self._pending_farm and bot:
             bot.request_manual_farm(True)
             self._pending_farm = False
-        on = bool(bot and bot.manual_farm)
+        pending = bot._manual_farm_request if bot else None
+        on = bool(bot and (pending if pending is not None else bot.manual_farm))
         self.btn_farm.setText("⚔  앵벌 모드 끄기" if on else "⚔  앵벌 모드 켜기")
         self.btn_farm.setProperty("on", on)
         self.btn_farm.style().unpolish(self.btn_farm)

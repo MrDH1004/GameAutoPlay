@@ -944,7 +944,6 @@ class Bot:
             self._on_stall(snap, now)
             return
 
-        self._apply_manual_farm(now)
         self._watch_hp(snap, now)
         if self.preset and not self.dry_run and self.preset.tick(snap, now):
             return
@@ -998,6 +997,7 @@ class Bot:
                     self.activity.ignore_until_now()
                     self.waiting_user = False
                     self._idle_since = self._verify = None
+            self._apply_manual_farm(time.monotonic())      # 제어판 버튼: 게임 창이 뒤에 있어도 바로 처리
             if self.paused:
                 time.sleep(0.1)
                 continue
