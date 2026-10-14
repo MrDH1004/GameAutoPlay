@@ -646,12 +646,14 @@ class Collector:
         self.reset_ui()
         sc = ItemDictScanner(d, db={"items": [], "monsters": {}}, save_fn=lambda: None)
         try:
-            shot = d.shot()
-            if not self.menu_open(shot):
+            d.sleep(1.0)                                # 직전 화면(등록 등)이 닫히는 중일 수 있다
+            for _try in range(3):                       # ☰은 열기/닫기 겸용이라, 열렸는지 확인하고 안 열렸을 때만 다시 누른다
+                if self.menu_open(d.shot()):
+                    break
                 d.click(*MENU)
-                d.sleep(1.3)
-                if not self.menu_open(d.shot()):
-                    raise RuntimeError("메뉴가 열리지 않음")
+                d.sleep(1.6)
+            else:
+                raise RuntimeError("메뉴가 열리지 않음")
             d.click(*MENU_ITEM_DICT)
             d.sleep(2.0)
             if not sc.dict_open(d.shot()):
