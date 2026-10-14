@@ -620,6 +620,7 @@ class Window(QMainWindow):
         sub_tabs.addTab(self._build_gear_page("weapon"), "무기")
         sub_tabs.addTab(self._build_gear_page("armor"), "방어구")
         sub_tabs.addTab(self._build_power_guide(), "투력 공략집")
+        sub_tabs.addTab(self._build_hunt_page(), "사냥터")
         return sub_tabs
 
     def _guide_browser(self):
@@ -664,6 +665,79 @@ class Window(QMainWindow):
         tb = self._guide_browser()
         tb.setHtml(h)
         return tb
+
+    def _build_hunt_page(self):
+        """사냥터 추천: 내 전투력(자동으로 채움, 직접 바꿔 볼 수도 있음)에 맞는 사냥터 — [사냥터 추천] 버튼."""
+        import gear_guide as g
+        from gui_extra import load_power
+        page = QWidget()
+        lay = QVBoxLayout(page)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("내 전투력"))
+        self.spin_hunt_power = QSpinBox()
+        self.spin_hunt_power.setRange(0, 10_000_000)
+        self.spin_hunt_power.setSingleStep(1000)
+        self.spin_hunt_power.setGroupSeparatorShown(True)
+        hist = load_power(1)
+        self.spin_hunt_power.setValue(int(hist[-1][1]) if hist else 0)
+        row.addWidget(self.spin_hunt_power)
+        btn = QPushButton("🗺  사냥터 추천")
+        btn.clicked.connect(self._show_hunt_reco)
+        row.addWidget(btn)
+        row.addStretch(1)
+        lay.addLayout(row)
+        self.hunt_view = self._guide_browser()
+        lay.addWidget(self.hunt_view)
+        self._show_hunt_reco()
+        return page
+
+    def _show_hunt_reco(self):
+        import gear_guide as g
+        from html import escape
+        power = self.spin_hunt_power.value()
+        try:
+            with open(CONFIG_PATH, encoding="utf-8") as f:
+                margin = float(((yaml.safe_load(f) or {}).get("farm") or {}).get("margin", 0.9))
+        except Exception:                                    # noqa: BLE001
+            margin = 0.9
+        h = f"<body style='color:{C['text']}'>"
+        h += f"<p style='color:{C['sub']}'>{escape(g.CAVEAT)}</p>"
+        if power <= 0:
+            h += "<p>전투력을 아직 읽지 못했습니다. 위 칸에 전투력을 직접 넣고 [사냥터 추천]을 누르세요.</p>"
+        else:
+            r = g.recommend_hunt(power, margin)
+
+            def fmt(x):
+                return f"<b>{escape(x[0])}</b> (권장 {x[1]:,})" if x else "없음 (더 낮은 곳을 직접 확인)"
+            h += (f"<table width='100%' cellpadding=10 style='background:{C['panel2']}'><tr><td>"
+                  f"전투력 <b>{power:,}</b> 기준<br>"
+                  f"<span style='color:{C['ok']}'>도깨비헬퍼(앵벌 모드)가 가는 곳</span>: {fmt(r['macro'])} "
+                  f"<span style='color:{C['sub']}'>— 전투력의 {margin * 100:.0f}% 이하</span><br>"
+                  f"<span style='color:{C['warn']}'>웹 원칙(권장 전투력을 넘긴 가장 높은 곳)</span>: {fmt(r['web'])}"
+                  + ("" if not r["web"] or r["web"][2] else " <span style='color:" + C['sub'] + "'>— 도깨비헬퍼는 이 구간으로 이동하지 못함</span>")
+                  + f"<br>다음 목표: {fmt(r['next'])}"
+                  + (f" — 전투력 {r['next'][1] - power:,} 더 필요" if r["next"] else "")
+                  + "</td></tr></table>")
+        h += "<h2>사냥터 목록</h2><table cellpadding=4><tr><th align=left>사냥터</th><th align=right>권장 전투력</th>"              "<th align=left>메모</th></tr>"
+        mark = g.recommend_hunt(power, margin) if power > 0 else {"macro": None, "web": None}
+        for name, need, movable in g.hunt_ladder():
+            tags = ""
+            if mark["macro"] and mark["macro"][0] == name:
+                tags += f" <span style='color:{C['ok']}'>◀ 도깨비헬퍼</span>"
+            if mark["web"] and mark["web"][0] == name and (not mark["macro"] or mark["macro"][0] != name):
+                tags += f" <span style='color:{C['warn']}'>◀ 웹 원칙</span>"
+            ok = power >= need if power > 0 else False
+            style = "" if ok or power <= 0 else f" style='color:{C['sub']}'"
+            note = g.HUNT_WEB.get(name) or next((n for nm, _p, n in g.HUNT_WEB_LATE if nm == name), "")
+            src = "[실측]" if movable else "[웹]"
+            h += (f"<tr{style}><td>{escape(name)}{tags}</td><td align=right>{need:,}</td>"
+                  f"<td>{escape(note)} <span style='color:{C['sub']}'>{src}</span></td></tr>")
+        h += "</table>"
+        h += "<h2>알아둘 점</h2><ul>" + "".join(f"<li>{self._tag(t) if t[:4] in ('[웹]', '[실측]') else escape(t)}</li>" for t in g.HUNT_NOTES) + "</ul>"
+        h += "<h2>출처</h2><ul>" + "".join(
+            f"<li><a style='color:{C['accent']}' href='{u}'>{escape(t)}</a> <span style='color:{C['sub']}'>— {escape(n)}</span></li>"
+            for t, u, n in g.SOURCES) + "</ul></body>"
+        self.hunt_view.setHtml(h)
 
     def _build_power_guide(self):
         """투력(전투력) 공략집: 올리는 순서 + 이 PC 실측 + 사냥터 사다리."""
