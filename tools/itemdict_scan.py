@@ -3,6 +3,7 @@
     사전 창(메뉴 → 아이템 사전)을 열어 둔 상태에서:
     python tools/itemdict_scan.py                  # 수집 재료 → 화첩 조각 전부
     python tools/itemdict_scan.py "수집 재료"        # 한 카테고리만
+    python tools/itemdict_scan.py "화첩 조각" --here   # 탭을 누르지 않고 지금 열려 있는 목록을 스캔 (직접 '화첩 조각 > 화첩 조각'을 열어 둔 경우)
     python tools/itemdict_scan.py --list           # 지금 보이는 목록 줄만 읽어 보기 (시험용)
     python tools/itemdict_scan.py --finalize       # 저장된 item_dict.json의 이름 철자·전투력만 정리
 
@@ -60,7 +61,7 @@ def main():
         print(sc.list_rows(sc.drv.shot()))
         return
     for cat in (args or list(CATEGORY_TAB)):
-        n = sc.scan_category(cat)
+        n = sc.scan_category(cat, select="--here" not in sys.argv)
         logging.info("%s: 새로 읽은 아이템 %d개 (누적 %d)", cat, n, len(sc.db["items"]))
     logging.info("정리: 이름 통일 %d · 전투력 채움 %d", *finalize(sc.db))
     save(sc.db)

@@ -1,5 +1,5 @@
 {
- "updated": 1791969214.3792477,
+ "updated": 1791973083.9240313,
  "items": [
   {
    "name": "작은 가축",
@@ -506,7 +506,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "1 기습 구미호",
+     "name": "기습 구미호",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -629,7 +629,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "1 기습 구미호",
+     "name": "기습 구미호",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -734,7 +734,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "우물 오염된! 요기쥐",
+     "name": "우물 오염된 요기쥐",
      "region": "우물 동굴",
      "power": 215000
     },
@@ -788,7 +788,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "1 기습 구미호",
+     "name": "기습 구미호",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -911,7 +911,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "1 기습 구미호",
+     "name": "기습 구미호",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -1016,7 +1016,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "우물 오염된! 요기쥐",
+     "name": "우물 오염된 요기쥐",
      "region": "우물 동굴",
      "power": 215000
     },
@@ -1215,7 +1215,8 @@
      "section": "획득가능한요귀",
      "name": "후불 요수화된 공주!",
      "region": "우불동쿨",
-     "power": 70000
+     "power": 170000,
+     "power_fixed": true
     },
     {
      "section": "획득가능한요귀",
@@ -1252,7 +1253,8 @@
      "section": "획득가능한요귀",
      "name": "후불 요수화된 공주!",
      "region": "우불동쿨",
-     "power": 70000
+     "power": 170000,
+     "power_fixed": true
     },
     {
      "section": "획득가능한요귀",
@@ -1758,7 +1760,8 @@
      "section": "추천요귀",
      "name": "청산 세뇌된 흑호",
      "region": "산신의 영역",
-     "power": null
+     "power": 84500,
+     "power_filled": true
     },
     {
      "section": "추천요귀",
@@ -1782,7 +1785,8 @@
      "section": "추천요귀",
      "name": "청산 세뇌된 흑호",
      "region": "산신의 영역",
-     "power": null
+     "power": 84500,
+     "power_filled": true
     },
     {
      "section": "추천요귀",
@@ -1822,7 +1826,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000
     },
@@ -1873,7 +1877,7 @@
     },
     {
      "section": "",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000
     },
@@ -1966,7 +1970,7 @@
     },
     {
      "section": "",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -2009,7 +2013,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000
     },
@@ -2153,7 +2157,7 @@
     },
     {
      "section": "",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -2285,7 +2289,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "폐광 맹독 백사마귀",
+     "name": "폐광 맹독 사마귀",
      "region": "음산한 폐광",
      "power": 290000,
      "power_fixed": true
@@ -2427,7 +2431,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "폐광 맹독 백사마귀",
+     "name": "폐광 맹독 사마귀",
      "region": "음산한 폐광",
      "power": 290000,
      "power_fixed": true
@@ -2531,7 +2535,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "폐광 맹독 백사마귀",
+     "name": "폐광 맹독 사마귀",
      "region": "음산한 폐광",
      "power": 290000,
      "power_fixed": true
@@ -2724,7 +2728,7 @@
     },
     {
      "section": "",
-     "name": "독기 지대 곰팡이 영균",
+     "name": "1 독기 지대 곰팡이 영균",
      "region": "독기 지대",
      "power": 335000
     },
@@ -2828,7 +2832,7 @@
     },
     {
      "section": "",
-     "name": "독기 지대 곰팡이 영균",
+     "name": "1 독기 지대 곰팡이 영균",
      "region": "독기 지대",
      "power": 335000
     },
@@ -3094,7 +3098,7 @@
     },
     {
      "section": "",
-     "name": "독기 지대 곰팡이 영균",
+     "name": "1 독기 지대 곰팡이 영균",
      "region": "독기 지대",
      "power": 335000
     },
@@ -3198,7 +3202,7 @@
     },
     {
      "section": "",
-     "name": "독기 지대 곰팡이 영균",
+     "name": "1 독기 지대 곰팡이 영균",
      "region": "독기 지대",
      "power": 335000
     },
@@ -3330,7 +3334,7 @@
     },
     {
      "section": "",
-     "name": "비탄이 걸신들린 식인거미",
+     "name": "1 비탄의 걸신들린 식인거미",
      "region": "비탄의 울림",
      "power": 45000
     },
@@ -3471,7 +3475,7 @@
     },
     {
      "section": "",
-     "name": "비탄의 걸신들린 독거미 ㉭",
+     "name": "비탄의 걸신들린 독거미",
      "region": "비탄의 울림",
      "power": 45000
     },
@@ -3509,7 +3513,7 @@
     },
     {
      "section": "",
-     "name": "비탄이 걸신들린 식인거미",
+     "name": "1 비탄의 걸신들린 식인거미",
      "region": "비탄의 울림",
      "power": 45000
     },
@@ -3766,13 +3770,13 @@
      "section": "획득가능한요귀",
      "name": "동구밖 광기어린 원혼",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
      "name": "동구밖 광기어린 원혼",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     }
    ],
    "category": "수집 재료",
@@ -3797,13 +3801,13 @@
      "section": "획득가능한요귀",
      "name": "동구밖 광기어린 원혼",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
      "name": "동구밖 광기어린 원혼",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     }
    ],
    "category": "수집 재료",
@@ -3821,7 +3825,7 @@
      "section": "획득가능한요귀",
      "name": "동구밖 악귀도령",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
@@ -3845,7 +3849,7 @@
      "section": "획득가능한요귀",
      "name": "동구밖 악귀도령",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
@@ -3992,7 +3996,7 @@
      "section": "획득가능한요귀",
      "name": "동구밖 악귀도령",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
@@ -4016,7 +4020,7 @@
      "section": "획득가능한요귀",
      "name": "동구밖 악귀도령",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     },
     {
      "section": "획득가능한요귀",
@@ -4224,7 +4228,7 @@
      "section": "획특가능한요귀",
      "name": "동구밖 자색 굴레귀",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     }
    ],
    "category": "수집 재료",
@@ -4242,7 +4246,7 @@
      "section": "획특가능한요귀",
      "name": "동구밖 자색 굴레귀",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     }
    ],
    "category": "수집 재료",
@@ -4260,7 +4264,7 @@
      "section": "획특가능한요귀",
      "name": "동구밖 자색 굴레귀",
      "region": "동구밖",
-     "power": 35000
+     "power": null
     }
    ],
    "category": "수집 재료",
@@ -4654,7 +4658,7 @@
     },
     {
      "section": "추천요귀",
-     "name": "청산 지하 해골 파수건",
+     "name": "청산 지하 해골-파수건",
      "region": "산신의 영역 지하 동굴",
      "power": 94500
     },
@@ -4720,7 +4724,7 @@
     },
     {
      "section": "",
-     "name": "기슭 암흑 구미호",
+     "name": "1 기슭 암흑 구미호",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -4758,7 +4762,7 @@
     },
     {
      "section": "",
-     "name": "기습 희생된 해골 병사",
+     "name": "기습 희생된 해골 병사 ㉭",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -4771,7 +4775,7 @@
     },
     {
      "section": "",
-     "name": "기습 희생된 해골 병사",
+     "name": "기습 희생된 해골 병사 ㉭",
      "region": "안개 기슭",
      "power": 38500
     },
@@ -4849,7 +4853,7 @@
     },
     {
      "section": "",
-     "name": "1 기슭 지하 세뇌된 여우",
+     "name": "기슭 지하 세뇌된 여우",
      "region": "안개 기슭 지하 동굴",
      "power": 51000
     },
@@ -5491,7 +5495,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -5535,7 +5539,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -5598,7 +5602,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -5642,7 +5646,7 @@
     },
     {
      "section": "획득가능한요귀",
-     "name": "부화장 역병이빨거미",
+     "name": "부화장 역병이빨 독거미",
      "region": "역병의 부화장",
      "power": 385000,
      "power_filled": true
@@ -10471,26 +10475,1011 @@
    "scanned_at": 1791968391.01453
   },
   {
-   "name": "장식된 혼의 조각",
-   "name_header": "장식된",
+   "name": "해월 화첩 조각",
+   "name_header": "해월 호}닡",
+   "sources": [
+    "콘텐츠",
+    "임무"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "0",
+   "scanned_at": 1791971590.9859188
+  },
+  {
+   "name": "강이태 화첩 조각",
+   "name_header": "강이태",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "1",
+   "scanned_at": 1791971597.3052142
+  },
+  {
+   "name": "아산 화첩 조각",
+   "name_header": "아산 화들",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "2",
+   "scanned_at": 1791971603.6145995
+  },
+  {
+   "name": "토리 화첩 조각",
+   "name_header": "토기 호\\딅",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "3",
+   "scanned_at": 1791971609.8042412
+  },
+  {
+   "name": "해일 화첩 조각",
+   "name_header": "해일 호}닡",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "4",
+   "scanned_at": 1791971616.0955086
+  },
+  {
+   "name": "홍미희 화첩 조각",
+   "name_header": "홍미호`1",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "5",
+   "scanned_at": 1791971622.3143198
+  },
+  {
+   "name": "오작 화첩 조각",
+   "name_header": "오작 화들",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "6",
+   "scanned_at": 1791971628.5286775
+  },
+  {
+   "name": "여홀 화첩 조각",
+   "name_header": "여흘 화들",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "7",
+   "scanned_at": 1791971634.7487361
+  },
+  {
+   "name": "시현 화첩 조각",
+   "name_header": "시현 화?",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "8",
+   "scanned_at": 1791971641.1094706
+  },
+  {
+   "name": "소운 화첩 조각",
+   "name_header": "소문 외",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "9",
+   "scanned_at": 1791971651.876742
+  },
+  {
+   "name": "도적 화첩 조각",
+   "name_header": "도적 화들",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "마을 어귀 미치버린 원혼",
-     "region": "마을 어귀",
-     "power": 530000,
-     "power_est": true
+     "name": "황무지 도적",
+     "region": "황무지 마을",
+     "power": 135000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 석궁 도적",
+     "region": "황무지 마을",
+     "power": 135000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "무지 성역 짜움꾼",
+     "region": "황무지 마을",
+     "power": 150000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 성역 도굴꾼",
+     "region": "황무지 마을",
+     "power": 150000
     }
    ],
    "category": "화첩 조각",
-   "key": "0",
-   "scanned_at": 1791968663.2931325
+   "key": "10",
+   "scanned_at": 1791971669.8430605
   },
   {
-   "name": "장식된 혼의 조각",
+   "name": "첩자 화첩 조각",
+   "name_header": "첩자 호\\딅",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "결계 동굴 세뇌된 악귀가면 ㉭",
+     "region": "주술 결계 동굴",
+     "power": null
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "11",
+   "scanned_at": 1791971691.7826195
+  },
+  {
+   "name": "선인 화첩 조각",
+   "name_header": "선인 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "추천요귀",
+     "name": "청산 귀신들린 도사",
+     "region": "산신의 영역",
+     "power": 84500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "계곡 가면과수",
+     "region": "암석 계곡",
+     "power": 16500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 짐卜식된 영산장 장로",
+     "region": "요기의 동굴",
+     "power": 370000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "12",
+   "scanned_at": 1791971712.9129505
+  },
+  {
+   "name": "자습 화첩 조각",
+   "name_header": "사슴 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 흑사습",
+     "region": "신령의 연못",
+     "power": 5000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 요수화된 암사습",
+     "region": "신령의 연못",
+     "power": 5000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 요수화된 암사습",
+     "region": "신령의 연못",
+     "power": 5000,
+     "power_filled": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "13",
+   "scanned_at": 1791971735.6824915
+  },
+  {
+   "name": "공 화첩 조각",
+   "name_header": "곰 화첩",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 공",
+     "region": "암석 계곡",
+     "power": 18000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 회색공",
+     "region": "암석 계곡",
+     "power": 17000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 공",
+     "region": "암석 계곡",
+     "power": 18000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "물 이)기가죽 불곰",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "14",
+   "scanned_at": 1791971757.1897292
+  },
+  {
+   "name": "선인 화점 조각",
+   "name_header": "선인 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "추천요귀",
+     "name": "청산 귀신들린 도사",
+     "region": "산신의 영역",
+     "power": 84500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "계곡 가면과수",
+     "region": "암석 계곡",
+     "power": 16500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 짐卜식된 영산장 장로",
+     "region": "요기의 동굴",
+     "power": 370000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "15",
+   "scanned_at": 1791971783.03747
+  },
+  {
+   "name": "사승 호법 조각",
+   "name_header": "사슴 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 흑사습",
+     "region": "신령의 연못",
+     "power": 5000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 요수화된 암사습",
+     "region": "신령의 연못",
+     "power": 5000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 요수화된 암사습",
+     "region": "신령의 연못",
+     "power": 5000,
+     "power_filled": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "16",
+   "scanned_at": 1791971804.9419532
+  },
+  {
+   "name": "곰 화첩",
+   "name_header": "곰 화첩",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 공",
+     "region": "암석 계곡",
+     "power": 18000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 회색공",
+     "region": "암석 계곡",
+     "power": 17000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 요수화된 공",
+     "region": "암석 계곡",
+     "power": 18000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "물 이)기가죽 불곰",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "17",
+   "scanned_at": 1791971826.4952042
+  },
+  {
+   "name": "호랑이 화첩 조각",
+   "name_header": "호랑이 !",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "추천요귀",
+     "name": "청산 사풍흑호",
+     "region": "산신의 영역",
+     "power": 84500
+    },
+    {
+     "section": "추천요귀",
+     "name": "청산 세뇌된 흑호",
+     "region": "산신의 영역",
+     "power": 84500
+    },
+    {
+     "section": "추천요귀",
+     "name": "청산 창귀들린 호랑이",
+     "region": "산신의 영역",
+     "power": 84500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "청산 요수화된 호랑이",
+     "region": "산신의 영역",
+     "power": 68000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "청산 세뇌되 호랑이",
+     "region": "산신의 영역",
+     "power": 68000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "18",
+   "scanned_at": 1791971853.9492273
+  },
+  {
+   "name": "대지 화첩 조각",
+   "name_header": "돼지 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "늪지 오염된 돼지",
+     "region": "메마른 늪",
+     "power": 20500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "늪지 맹독도H지",
+     "region": "메마른 늪",
+     "power": 27000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "늪지 하얀칼기 멧돼지",
+     "region": "에마른늪",
+     "power": 27000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 청멧도H지",
+     "region": "우물 동굴",
+     "power": 215000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 청멧도H지",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "19",
+   "scanned_at": 1791971873.0262992
+  },
+  {
+   "name": "여우 화첩 조각",
+   "name_header": "여우 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "기슭 요수화된 여우",
+     "region": "안개 기슭",
+     "power": 37000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "1 기습 여우",
+     "region": "안개 기슭",
+     "power": 38500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "기습 안개불꽃 흑여우",
+     "region": "안개 기슭",
+     "power": 38500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "기슭 요수화된 여우",
+     "region": "안개 기슭",
+     "power": 37000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "기습 안개불꽃 흑여우",
+     "region": "안개 기슭",
+     "power": 38500
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "20",
+   "scanned_at": 1791971899.3659534
+  },
+  {
+   "name": "취 화첩 조각",
+   "name_header": "짐 호별",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 역병쥐",
+     "region": "우물 동굴",
+     "power": 170000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "후불 요수화된 공주!",
+     "region": "우불동쿨",
+     "power": 170000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 요기쥐",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 세노`돈! 검은주`",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 잠식된 왕곰쥐",
+     "region": "우물 동굴",
+     "power": 215000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 요기쥐",
+     "region": "우물 동굴",
+     "power": 215000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 요수화된 곰쥐",
+     "region": "우물 동굴",
+     "power": 170000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 요기쥐",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 세뇌된 검은쥐",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 장식된! 왕곰쥐",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "21",
+   "scanned_at": 1791971932.6831095
+  },
+  {
+   "name": "박쥐 화첩 조각",
+   "name_header": "박쥐 호}늳",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 박쥐",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 박쥐",
+     "region": "우물 동굴",
+     "power": 215000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 박쥐",
+     "region": "우물 동굴",
+     "power": 215000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "4 독기 지대 역빙1날개 박쥐",
+     "region": "독기 지대",
+     "power": 335000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "독기 지대 오염된 박쥐",
+     "region": "독기 지대",
+     "power": 335000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 박쥐",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "22",
+   "scanned_at": 1791971963.7686088
+  },
+  {
+   "name": "화첩 조각",
+   "name_header": "뱀 화첩",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "연못 흑청 독사",
+     "region": "신령의 연못",
+     "power": 5000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "늪지 요기뱀",
+     "region": "메마른 늪",
+     "power": 20500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "1 황무지 요기뱀",
+     "region": "황무지 마을",
+     "power": 135000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 독사",
+     "region": "황무지 마을",
+     "power": 135000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 사막뱀",
+     "region": "황무지 마을",
+     "power": 150000,
+     "power_fixed": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "23",
+   "scanned_at": 1791971984.1586342
+  },
+  {
+   "name": "전같 화첩 조각",
+   "name_header": "전갈 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 전갈",
+     "region": "황무지 마을",
+     "power": 135000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 난폭한 맹독전갈",
+     "region": "황무지 마을",
+     "power": null
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 맹독전갈",
+     "region": "황무지 마을",
+     "power": 150000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 난폭한 전갈",
+     "region": "황무지 마을",
+     "power": null
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "독기 지대 맹독 전갈",
+     "region": "독기 지대",
+     "power": 335000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "24",
+   "scanned_at": 1791972022.9868407
+  },
+  {
+   "name": "거미 화첩 조각",
+   "name_header": "거미 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "부화장 창백한 거미",
+     "region": "역병의 부화장",
+     "power": 385000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "부화장 맹독이쁸卜 거미",
+     "region": "역병의 부화장",
+     "power": 385000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "부화장 역병이빨 독거미",
+     "region": "역병의 부화장",
+     "power": 385000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "부화장 맹독이빨 땅거미",
+     "region": "역병의 부화장",
+     "power": 385000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "부화장 역병이빨 독거미",
+     "region": "역병의 부화장",
+     "power": 385000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "25",
+   "scanned_at": 1791972045.2774863
+  },
+  {
+   "name": "가재 화점 조각",
+   "name_header": "가재 화?",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 장식된 요기 가재",
+     "region": "요기의 동굴",
+     "power": 370000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 요수화된 가재",
+     "region": "요기의 동굴",
+     "power": 370000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 잠식된 가재",
+     "region": "요기의 동굴",
+     "power": 370000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 부패한 가재",
+     "region": "요기의 동굴",
+     "power": 370000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 사나운 요기 가재",
+     "region": "요기의 동굴",
+     "power": 370000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "26",
+   "scanned_at": 1791972068.870809
+  },
+  {
+   "name": "두꺼비 화첩 조각",
+   "name_header": "두꺼비",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 돌두꺼비",
+     "region": "우물 동굴",
+     "power": 215000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "동구밖 유령두꺼비",
+     "region": "동구밖",
+     "power": 695000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "27",
+   "scanned_at": 1791972086.819658
+  },
+  {
+   "name": "물고기 화점 조각",
+   "name_header": "물고기 !",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 바위물고기",
+     "region": "암석 계곡",
+     "power": 16500
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "폐광 푸른비늘 너울치",
+     "region": "음산한 폐광",
+     "power": 260000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "폐광 장백한 너울치",
+     "region": "음산한 폐광",
+     "power": 260000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "28",
+   "scanned_at": 1791972109.5870743
+  },
+  {
+   "name": "살쾡이 호법 조각",
+   "name_header": "물고기 !",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "계곡 바위물고기",
+     "region": "암석 계곡",
+     "power": 16500
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "폐광 푸른비늘 너울치",
+     "region": "음산한 폐광",
+     "power": 260000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "폐광 장백한 너울치",
+     "region": "음산한 폐광",
+     "power": 260000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "29",
+   "scanned_at": 1791972127.8846426
+  },
+  {
+   "name": "크불소 화첩 조각",
+   "name_header": "",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "30",
+   "scanned_at": 1791972138.7415242
+  },
+  {
+   "name": "거북이 화첩 조각",
+   "name_header": "거북이 1",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 이끼등껍질 거북",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "31",
+   "scanned_at": 1791972156.703961
+  },
+  {
+   "name": "양각수 화첩 조각",
+   "name_header": "양각수 1",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "청산 지하 세뇌된 양각수",
+     "region": "산신의 영역 지하 동굴",
+     "power": 110000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "격계 동글 요수화된 양각수",
+     "region": "결계 동굴",
+     "power": null
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "32",
+   "scanned_at": 1791972180.1764286
+  },
+  {
+   "name": "산양 화첩 조각",
+   "name_header": "산양 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "추천요귀",
+     "name": "청산 지하 장식된 세양이리",
+     "region": "산신의 영역 지하 동굴",
+     "power": 94500
+    },
+    {
+     "section": "추천요귀",
+     "name": "청산 지하 새암이리",
+     "region": "산신의 영역 지하 동굴",
+     "power": 94500
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "33",
+   "scanned_at": 1791972199.135759
+  },
+  {
+   "name": "두더지 화첩 조각",
+   "name_header": "두더지 !",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "34",
+   "scanned_at": 1791972205.3649342
+  },
+  {
+   "name": "백로 화첩 조각",
+   "name_header": "백로 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "늪지 가시백로",
+     "region": "에마륜 늪",
+     "power": 20500
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "35",
+   "scanned_at": 1791972225.6739163
+  },
+  {
+   "name": "악어 화첩 조각",
+   "name_header": "악어 호}늳",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 요수화된| 악어",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "36",
+   "scanned_at": 1791972248.1534922
+  },
+  {
+   "name": "백운 화첩 조각",
+   "name_header": "백운 하",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "37",
+   "scanned_at": 1791972254.4700472
+  },
+  {
+   "name": "벌 화첩 조각",
    "name_header": "",
    "sources": [
     "요귀"
@@ -10498,69 +11487,724 @@
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "마을 어귀 미치버린 원혼",
+     "name": "늪지 가위벌",
+     "region": "메마른 늪",
+     "power": 27000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "기습 요기말낼",
+     "region": "안개 기슭",
+     "power": 37000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "청산 고지대 가위벌",
+     "region": "산신의 영역",
+     "power": 68000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 가위벌",
+     "region": "황무지 마을",
+     "power": 150000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 사나운 요기 말벌",
+     "region": "요기의 동굴",
+     "power": 370000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "38",
+   "scanned_at": 1791972278.5477962
+  },
+  {
+   "name": "나방 화첩 조각",
+   "name_header": "나방 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "계곡 요기나방",
+     "region": "암석 계곡",
+     "power": 17000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "독기 지대 바람나방",
+     "region": "독기 지대",
+     "power": 310000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "해골 동굴 요기나방",
+     "region": "숨겨진 해골 동굴",
+     "power": 310000,
+     "power_fixed": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "39",
+   "scanned_at": 1791972296.6988382
+  },
+  {
+   "name": "매미 화첩 조각",
+   "name_header": "매미 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "추천요귀",
+     "name": "청산 지하 동굴매미",
+     "region": "산신의 영역 지하 동굴",
+     "power": 94500
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "청산 지하 맹독매미",
+     "region": "산신의 영역 지하 동굴",
+     "power": 110000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "폐광 맹독 매미",
+     "region": "음산한 폐광",
+     "power": 290000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "폐광 요기뾸 꽃매미",
+     "region": "음산한 폐광",
+     "power": 290000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "40",
+   "scanned_at": 1791972319.3549864
+  },
+  {
+   "name": "봉조 화첩 조각",
+   "name_header": "봉조 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "계곡 봉조",
+     "region": "암석 계곡",
+     "power": 20000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 봉조",
+     "region": "우물 동굴",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 세뇌된 봉조",
+     "region": "우물 동굴",
+     "power": 215000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 오염된 봉조",
+     "region": "우불동쿨",
+     "power": 170000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "우물 세뇌된 봉조",
+     "region": "우물 동굴",
+     "power": 215000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "41",
+   "scanned_at": 1791972353.1787376
+  },
+  {
+   "name": "목령 화첩 조각",
+   "name_header": "복령 호\\1",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "폐광 고목나무 요귀",
+     "region": "음산한 폐광",
+     "power": 290000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "폐광 독초나무 요귀",
+     "region": "음산한 폐광",
+     "power": 290000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 구목령",
      "region": "마을 어귀",
-     "power": 530000,
+     "power": 530000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마: 폐-허 구목령",
+     "region": "폐허",
+     "power": 565000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "42",
+   "scanned_at": 1791972376.5201812
+  },
+  {
+   "name": "토병 화첩 조각",
+   "name_header": "토병 호\\딅",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 토병 일꾼",
+     "region": "황무지 마을",
+     "power": 150000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 토병 장수",
+     "region": "황무지 마을",
+     "power": 150000,
+     "power_fixed": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "황무지 토방1 수호자",
+     "region": "황무지 마을",
+     "power": 150000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "폐광 토병”광부",
+     "region": "음산한 폐광",
+     "power": 290000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "43",
+   "scanned_at": 1791972395.7217083
+  },
+  {
+   "name": "대형 토병 화첩 조각",
+   "name_header": "대형 토틒",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 토병 수호자",
+     "region": "요기의 동굴",
+     "power": 370000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "44",
+   "scanned_at": 1791972414.7994537
+  },
+  {
+   "name": "활잡이 토병 화첩 조각",
+   "name_header": "활잡이 !",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "동구밖 대형 활잡이 토병",
+     "region": "동구밖",
+     "power": null
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "45",
+   "scanned_at": 1791972433.8486679
+  },
+  {
+   "name": "몽련 화첩 조각",
+   "name_header": "몽련 하",
+   "sources": [
+    "상자"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "46",
+   "scanned_at": 1791972444.6188452
+  },
+  {
+   "name": "과량 화첩 조각",
+   "name_header": "과량",
+   "sources": [
+    "상자"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "47",
+   "scanned_at": 1791972450.9321668
+  },
+  {
+   "name": "공원아 화첩 조각",
+   "name_header": "공원아",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "48",
+   "scanned_at": 1791972457.239795
+  },
+  {
+   "name": "독각 화첩 조각",
+   "name_header": "독각 호}늳",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 독각귀",
+     "region": "마을 어귀",
+     "power": 530000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "49",
+   "scanned_at": 1791972476.177769
+  },
+  {
+   "name": "도귀 화첩 조각",
+   "name_header": "도귀 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "해골 동굴 몽달도귀",
+     "region": "숨겨진 해골 동굴",
+     "power": 310000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "해골 동굴 처녀도귀",
+     "region": "숨겨진 해골 동굴",
+     "power": 310000,
      "power_est": true
     }
    ],
    "category": "화첩 조각",
-   "key": "1",
-   "scanned_at": 1791968685.718663
+   "key": "50",
+   "scanned_at": 1791972500.5184505
   },
   {
-   "name": "귀신의 부산물",
-   "name_header": "귀신이 -",
+   "name": "도깨비불 화첩 조각",
+   "name_header": "도깨비틑",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "해골 동굴 몽달도귀",
-     "region": "숨겨진 해골 동굴",
-     "power": 310000
+     "name": "독기 지대 도)개비블",
+     "region": "독기 지대",
+     "power": 335000
     },
     {
      "section": "획득가능한요귀",
-     "name": "해골 동굴 몽달도귀",
-     "region": "숨겨진 해골 동굴",
-     "power": 310000,
-     "power_filled": true
+     "name": "요기굴 푸른 도깨비불",
+     "region": "요기의 동굴",
+     "power": 370000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마: 폐허 백도)개비블",
+     "region": "폐허",
+     "power": 565000,
+     "power_est": true
     }
    ],
    "category": "화첩 조각",
-   "key": "2",
-   "scanned_at": 1791968709.6351185
+   "key": "51",
+   "scanned_at": 1791972526.8917453
   },
   {
-   "name": "귀신의 부산물",
-   "name_header": "귀신이 -",
+   "name": "상급 도귀 화첩 조각",
+   "name_header": "상급 도",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "해골 동굴 몽달도귀",
+     "name": "해골 동굴 변이된 야생 도귀",
      "region": "숨겨진 해골 동굴",
-     "power": 310000
+     "power": 610000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "52",
+   "scanned_at": 1791972549.3580475
+  },
+  {
+   "name": "두억시LI 화첩 조각",
+   "name_header": "루억시L",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "53",
+   "scanned_at": 1791972555.6693254
+  },
+  {
+   "name": "공명 화접 조각",
+   "name_header": "공명 하",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "54",
+   "scanned_at": 1791972561.8660655
+  },
+  {
+   "name": "해골 화첩 조각",
+   "name_header": "해골 호}닡",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 폐허 방황하는 해골",
+     "region": "마을 폐허",
+     "power": 565000
     },
     {
      "section": "획득가능한요귀",
-     "name": "해골 동굴 몽달도귀",
-     "region": "숨겨진 해골 동굴",
-     "power": 310000,
+     "name": "마을 폐허 걸신들린 해골",
+     "region": "마을 폐허",
+     "power": 565000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 폐허 해골 보초",
+     "region": "마을 폐허",
+     "power": 565000,
+     "power_est": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "55",
+   "scanned_at": 1791972583.9836147
+  },
+  {
+   "name": "유령 화첩 조각",
+   "name_header": "유령 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "마을 어귀 미쳐버린 원횬",
+     "region": "마을 어귀",
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 길 잃은 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 분노하는 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 광기어린 원혼",
+     "region": "동구밖",
+     "power": null
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 미쳐버린 원혼",
+     "region": "동구밖",
+     "power": null
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 길 잃은 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 분노하는 원혼",
+     "region": "동구밖",
+     "power": 695000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "56",
+   "scanned_at": 1791972621.576436
+  },
+  {
+   "name": "인형 화첩 조각",
+   "name_header": "인형 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 양철인형",
+     "region": "마을 어귀",
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 폐허 양철인형",
+     "region": "마을 폐허",
+     "power": 565000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "57",
+   "scanned_at": 1791972643.81505
+  },
+  {
+   "name": "기시 丞가",
+   "name_header": "",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "비탄의 원한서린 달갈귀신",
+     "region": "비탄의 울림",
+     "power": 45000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "비탄의 푸른뿔 달걀귀신",
+     "region": "비탄의 울림",
+     "power": 45000,
      "power_filled": true
     }
    ],
    "category": "화첩 조각",
-   "key": "3",
-   "scanned_at": 1791968733.5149717
+   "key": "58",
+   "scanned_at": 1791972668.199137
   },
   {
-   "name": "신비한 정신독",
-   "name_header": "신비한盞",
+   "name": "유령 화첩 조각",
+   "name_header": "유령 하",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "마을 어귀 미쳐버린 원횬",
+     "region": "마을 어귀",
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 길 잃은 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 분노하는 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 광기어린 원혼",
+     "region": "동구밖",
+     "power": null
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 미쳐버린 원혼",
+     "region": "동구밖",
+     "power": null
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 길 잃은 원혼",
+     "region": "동구밖",
+     "power": 695000
+    },
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 분노하는 원혼",
+     "region": "동구밖",
+     "power": 695000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "59",
+   "scanned_at": 1791972702.7297142
+  },
+  {
+   "name": "인형 화첩 조각",
+   "name_header": "인형 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 양철인형",
+     "region": "마을 어귀",
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 폐허 양철인형",
+     "region": "마을 폐허",
+     "power": 565000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "60",
+   "scanned_at": 1791972724.8027766
+  },
+  {
+   "name": "달랄귀신 화첩 조각",
+   "name_header": "",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "비탄의 원한서린 달갈귀신",
+     "region": "비탄의 울림",
+     "power": 45000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "비탄의 푸른뿔 달걀귀신",
+     "region": "비탄의 울림",
+     "power": 45000,
+     "power_filled": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "61",
+   "scanned_at": 1791972749.0106514
+  },
+  {
+   "name": "버섯 화첩 조각",
+   "name_header": "버섯 호}i",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "결계 동굴 독버섯 괴물",
+     "region": "주술 결계 동굴",
+     "power": null
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "결계 동굴 독버섯 괴물",
+     "region": "주술 결계 동굴",
+     "power": null
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "62",
+   "scanned_at": 1791972777.930933
+  },
+  {
+   "name": "귀선 화첩 조각",
+   "name_header": "귀선 화들",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "동구밖 악귀도령",
+     "region": "동구밖",
+     "power": null
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "고갯마루 귀도검",
+     "region": "고갯마루",
+     "power": 960000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "63",
+   "scanned_at": 1791972796.9478877
+  },
+  {
+   "name": "천부관 화첩 조각",
+   "name_header": "느 천부관",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "요기굴 장식된 타바로 병사",
+     "region": "요기의 동굴",
+     "power": 370000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "결계 동급 잊64진 타바로 병사",
+     "region": "주술 결계 동굴",
+     "power": null
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "64",
+   "scanned_at": 1791972823.542608
+  },
+  {
+   "name": "외는개 화첩 조각",
+   "name_header": "외눈개 !",
    "sources": [
     "요귀"
    ],
@@ -10573,1052 +12217,284 @@
     }
    ],
    "category": "화첩 조각",
-   "key": "4",
-   "scanned_at": 1791968755.431225
+   "key": "65",
+   "scanned_at": 1791972845.8201246
   },
   {
-   "name": "신비한 정신독",
-   "name_header": "신비한盞",
+   "name": "무투깨비 화첩 조각",
+   "name_header": "부두깨B",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "66",
+   "scanned_at": 1791972852.1183624
+  },
+  {
+   "name": "사마귀 인간 화첩 조각",
+   "name_header": "사마귀",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "67",
+   "scanned_at": 1791972862.718069
+  },
+  {
+   "name": "유령주술사 화첩 조각",
+   "name_header": "",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "결계 동굴 외눈 파수견",
-     "region": "주술 결계 동굴",
+     "name": "마을 어귀 마도술사",
+     "region": "마을 어귀",
+     "power": 530000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "68",
+   "scanned_at": 1791972880.6149788
+  },
+  {
+   "name": "인면조 화첩 조각",
+   "name_header": "인면조!",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "69",
+   "scanned_at": 1791972886.9264314
+  },
+  {
+   "name": "소머리 요귀 화첩 조각",
+   "name_header": "소머리 5",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "70",
+   "scanned_at": 1791972893.237751
+  },
+  {
+   "name": "불발굽 화첩 조각",
+   "name_header": "뿔발굽",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 청색갈기 뿔발굽",
+     "region": "마을 어귀",
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "동구밖 자색갈기 뿔발굽",
+     "region": "동구밖",
+     "power": 695000,
+     "power_filled": true
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "71",
+   "scanned_at": 1791972920.5092509
+  },
+  {
+   "name": "쿨레귀 화첩 조각",
+   "name_header": "쿨레귀",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획특가능한요귀",
+     "name": "동구밖 자색 굴레귀",
+     "region": "동구밖",
      "power": null
     }
    ],
    "category": "화첩 조각",
-   "key": "5",
-   "scanned_at": 1791968777.4182928
+   "key": "72",
+   "scanned_at": 1791972939.4779868
   },
   {
-   "name": "사념의 가루",
-   "name_header": "사념이",
+   "name": "화묘 하철 조각",
+   "name_header": "향묘 화들",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "마을 어귀 구목령",
+     "name": "기슭 지하 스라소니",
+     "region": "안개 기슭 지하 동굴",
+     "power": 51000
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "기습 지하 검은 스라소니",
+     "region": "안개 기슭 지하 동굴",
+     "power": 51000
+    }
+   ],
+   "category": "화첩 조각",
+   "key": "73",
+   "scanned_at": 1791972957.3800433
+  },
+  {
+   "name": "사마귀 인간 화첩 조각",
+   "name_header": "사마귀",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "74",
+   "scanned_at": 1791972968.1355486
+  },
+  {
+   "name": "유령주술사 화첩 조각",
+   "name_header": "",
+   "sources": [
+    "요귀"
+   ],
+   "monsters": [
+    {
+     "section": "획득가능한요귀",
+     "name": "마을 어귀 마도술사",
      "region": "마을 어귀",
      "power": 530000
     }
    ],
    "category": "화첩 조각",
-   "key": "6",
-   "scanned_at": 1791968796.2054706
+   "key": "75",
+   "scanned_at": 1791972985.8469214
   },
   {
-   "name": "사념의 가루",
-   "name_header": "사념이",
+   "name": "인면조 화첩 조각",
+   "name_header": "인면조!",
+   "sources": [
+    "임부"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "76",
+   "scanned_at": 1791972992.0474365
+  },
+  {
+   "name": "소머리 요귀 화첩 조각",
+   "name_header": "소머리 5",
+   "sources": [
+    "콘텐츠"
+   ],
+   "monsters": [],
+   "category": "화첩 조각",
+   "key": "77",
+   "scanned_at": 1791972998.3635893
+  },
+  {
+   "name": "불발굽 화첩 조각",
+   "name_header": "뿔발굽",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "마을 어귀 구목령",
+     "name": "마을 어귀 청색갈기 뿔발굽",
      "region": "마을 어귀",
-     "power": 530000
+     "power": 530000,
+     "power_est": true
+    },
+    {
+     "section": "획득가능한요귀",
+     "name": "동구밖 자색갈기 뿔발굽",
+     "region": "동구밖",
+     "power": 695000,
+     "power_filled": true
     }
    ],
    "category": "화첩 조각",
-   "key": "7",
-   "scanned_at": 1791968814.9783957
+   "key": "78",
+   "scanned_at": 1791973021.5719473
   },
   {
-   "name": "염원의 조각",
-   "name_header": "염원이",
+   "name": "쿨레귀 화첩 조각",
+   "name_header": "쿨레귀",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
-     "section": "획득가능한요귀",
-     "name": "마을 어귀 독각귀",
-     "region": "마을 어귀",
-     "power": 530000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "8",
-   "scanned_at": 1791968833.8245032
-  },
-  {
-   "name": "염원의 조각",
-   "name_header": "염원이",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "획득가능한요귀",
-     "name": "마을 어귀 독각귀",
-     "region": "마을 어귀",
-     "power": 530000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "9",
-   "scanned_at": 1791968857.050835
-  },
-  {
-   "name": "1 고급 청동 장식패",
-   "name_header": "고급 청!",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "추천요귀",
-     "name": "청산 형체를 잃은 야수",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 희생된 산적 유령",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 장식된 태대신의 사병",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "1 청산 희생된 착호감사 유령",
-     "region": "산신의 영역",
-     "power": null
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 암흑 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 세뇌된 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 요기말법",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 창백한 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 희생된 낭월문 문도",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기슭 세뇌된 흑여우",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 되살아난 해골",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 되살아난 해골",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기슭 암흑 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 공탈령",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기슭 목 없는 귀신",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 귀신",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기수 흑마귀붙이",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 여우각시",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 해골 병사",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 여우각시",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 해골 병사",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 요수화된 구령이",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하가위법",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 되살아난 해골",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 되살아난 해골",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개불꽃 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 구목령",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 독나방",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기슭 지하 세뇌된 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 장식된 도귀",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 홍도깨비불",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 암흑 구미호",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "10",
-   "scanned_at": 1791968920.0622249
-  },
-  {
-   "name": "고급 청동 장식패",
-   "name_header": "고급 청!",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "추천요귀",
-     "name": "청산 형체를 잃은 야수",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 희생된 산적 유령",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 장식된 태대신의 사병",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "1 청산 희생된 착호감사 유령",
-     "region": "산신의 영역",
-     "power": null
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 암흑 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 세뇌된 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 요기말법",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 창백한 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 희생된 낭월문 문도",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기슭 세뇌된 흑여우",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 되살아난 해골",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기슭 암흑 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 공탈령",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기슭 목 없는 귀신",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 귀신",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_fixed": true
-    },
-    {
-     "section": "",
-     "name": "기수 흑마귀붙이",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 여우각시",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 해골 병사",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 여우각시",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기슭 요수화된 여우",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하가위법",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 되살아난 해골",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개불꽃 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 구목령",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 독나방",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기슭 지하 세뇌된 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 장식된 도귀",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기슭 지하 백도깨H|불",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 암흑 구미호",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 홍도깨비불",
-     "region": "아기 기소 꽃 슈 트구",
+     "section": "획특가능한요귀",
+     "name": "동구밖 자색 굴레귀",
+     "region": "동구밖",
      "power": null
     }
    ],
    "category": "화첩 조각",
-   "key": "11",
-   "scanned_at": 1791968976.2307355
+   "key": "79",
+   "scanned_at": 1791973040.58082
   },
   {
-   "name": "공양용 질그훗",
-   "name_header": "공양용",
-   "sources": [
-    "상자"
-   ],
-   "monsters": [],
-   "category": "화첩 조각",
-   "key": "12",
-   "scanned_at": 1791968982.5203085
-  },
-  {
-   "name": "공양용 질그훗",
-   "name_header": "공양용",
-   "sources": [
-    "상자"
-   ],
-   "monsters": [],
-   "category": "화첩 조각",
-   "key": "13",
-   "scanned_at": 1791968988.692992
-  },
-  {
-   "name": "물 항아리",
-   "name_header": "물 항아,",
-   "sources": [
-    "상자"
-   ],
-   "monsters": [],
-   "category": "화첩 조각",
-   "key": "14",
-   "scanned_at": 1791968994.8652382
-  },
-  {
-   "name": "사념의 가루",
-   "name_header": "사념이",
+   "name": "향묘 화첩 조각",
+   "name_header": "향묘 화들",
    "sources": [
     "요귀"
    ],
    "monsters": [
     {
      "section": "획득가능한요귀",
-     "name": "마을 어귀 구목령",
-     "region": "마을 어귀",
-     "power": 530000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "15",
-   "scanned_at": 1791969018.3182342
-  },
-  {
-   "name": "사념의 가루",
-   "name_header": "사념이",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "획득가능한요귀",
-     "name": "마을 어귀 구목령",
-     "region": "마을 어귀",
-     "power": 530000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "16",
-   "scanned_at": 1791969037.1450403
-  },
-  {
-   "name": "염원의 조각",
-   "name_header": "염원이",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "획득가능한요귀",
-     "name": "마을 어귀 독각귀",
-     "region": "마을 어귀",
-     "power": 530000
-    }
-   ],
-   "category": "화첩 조각",
-   "key": "17",
-   "scanned_at": 1791969055.8871233
-  },
-  {
-   "name": "고급 청동 장식패",
-   "name_header": "고급 청!",
-   "sources": [
-    "요귀"
-   ],
-   "monsters": [
-    {
-     "section": "추천요귀",
-     "name": "청산 형체를 잃은 야수",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 희생된 산적 유령",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 장식된 태대신의 사병",
-     "region": "산신의 영역",
-     "power": 84500
-    },
-    {
-     "section": "추천요귀",
-     "name": "1 청산 희생된 착호감사 유령",
-     "region": "산신의 영역",
-     "power": null
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 암흑 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 세뇌된 스라소니",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 요기말법",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "추천요귀",
-     "name": "청산 지하 창백한 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
-    },
-    {
-     "section": "",
-     "name": "청산 지하 창백한 해골 파수건",
-     "region": "산신의 영역 지하 동굴",
-     "power": 94500
+     "name": "기슭 지하 스라소니",
+     "region": "안개 기슭 지하 동굴",
+     "power": 51000
     },
     {
      "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 희생된 낭월문 문도",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 검은 스라소니",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기슭 세뇌된 흑여우",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 되살아난 해골",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "획득가능한요귀",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 되살아난 해골",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "",
-     "name": "기습 산삼 요귀",
-     "region": "안개 기슭",
-     "power": 37000
-    },
-    {
-     "section": "",
-     "name": "기습 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기슭 암흑 구미호",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 공탈령",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기슭 목 없는 귀신",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 귀신",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기수 흑마귀붙이",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 여우각시",
-     "region": "안개 기슭",
-     "power": 38500,
-     "power_filled": true
-    },
-    {
-     "section": "",
-     "name": "기습 희생된 해골 병사",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 요수화된 구령이",
-     "region": "안개 기슭",
-     "power": 38500
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 백여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하가위법",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 되살아난 해골",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 맹독박취",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 안개불꽃 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 구목령",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 독나방",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "1 기슭 지하 세뇌된 여우",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 장식된 도귀",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 홍도깨비불",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 암흑 구미호",
-     "region": "안개 기슭 지하 동굴",
-     "power": 51000
-    },
-    {
-     "section": "",
-     "name": "기습 지하 홍도깨비불",
+     "name": "기습 지하 검은 스라소니",
      "region": "안개 기슭 지하 동굴",
      "power": 51000
     }
    ],
    "category": "화첩 조각",
-   "key": "18",
-   "scanned_at": 1791969110.0191653
+   "key": "80",
+   "scanned_at": 1791973058.4282155
   },
   {
-   "name": "공양용 질그훗",
-   "name_header": "공양용",
+   "name": "어득시니 화첩 조각",
+   "name_header": "어룩시L",
    "sources": [
     "상자"
    ],
    "monsters": [],
    "category": "화첩 조각",
-   "key": "19",
-   "scanned_at": 1791969116.2808259
+   "key": "81",
+   "scanned_at": 1791973064.7373366
   },
   {
-   "name": "공양용 질그훗",
-   "name_header": "공양용",
+   "name": "불가살이 화첩 조각",
+   "name_header": "불가살0",
    "sources": [
     "상자"
    ],
    "monsters": [],
    "category": "화첩 조각",
-   "key": "20",
-   "scanned_at": 1791969122.4739013
-  },
-  {
-   "name": "물 항아리",
-   "name_header": "물 항아,",
-   "sources": [
-    "상자"
-   ],
-   "monsters": [],
-   "category": "화첩 조각",
-   "key": "21",
-   "scanned_at": 1791969128.7741847
-  },
-  {
-   "name": "1 물 항아리",
-   "name_header": "물 항아,",
-   "sources": [
-    "상자"
-   ],
-   "monsters": [],
-   "category": "화첩 조각",
-   "key": "22",
-   "scanned_at": 1791969134.9420228
+   "key": "82",
+   "scanned_at": 1791973071.0372589
   }
  ],
  "monsters": {
   "기슭 요수화된 여우|안개 기슭": {
-   "power": 38500,
+   "power": 37000,
    "region": "안개 기슭"
   },
   "청산 지하 암흑 스라소니|산신의 영역 지하 동굴": {
@@ -11737,7 +12613,7 @@
    "power": 37000,
    "region": "안개 기슭"
   },
-  "1 기습 구미호|안개 기슭": {
+  "기습 구미호|안개 기슭": {
    "power": 38500,
    "region": "안개 기슭"
   },
@@ -11754,10 +12630,6 @@
    "region": "안개 기슭"
   },
   "기습 희생된 귀신|안개 기슭": {
-   "power": 38500,
-   "region": "안개 기슭"
-  },
-  "기습 구미호|안개 기슭": {
    "power": 38500,
    "region": "안개 기슭"
   },
@@ -11781,15 +12653,11 @@
    "power": 215000,
    "region": "우물 동굴"
   },
-  "우물 오염된! 요기쥐|우물 동굴": {
+  "우물 오염된 요기쥐|우물 동굴": {
    "power": 215000,
    "region": "우물 동굴"
   },
   "OE2 八卜시 되 오y곰쥐|우물 동굴": {
-   "power": 215000,
-   "region": "우물 동굴"
-  },
-  "우물 오염된 요기쥐|우물 동굴": {
    "power": 215000,
    "region": "우물 동굴"
   },
@@ -11818,7 +12686,7 @@
    "region": "우물 동굴"
   },
   "후불 요수화된 공주!|우불동쿨": {
-   "power": 70000,
+   "power": 170000,
    "region": "우불동쿨"
   },
   "우물 요기쥐|우물 동굴": {
@@ -11878,7 +12746,7 @@
    "region": "산신의 영역"
   },
   "청산 세뇌된 흑호|산신의 영역": {
-   "power": null,
+   "power": 84500,
    "region": "산신의 영역"
   },
   "청산 창귀들린 호랑이|산신의 영역": {
@@ -11897,15 +12765,11 @@
    "power": 385000,
    "region": "역병의 부화장"
   },
-  "부화장 역병이빨거미|역병의 부화장": {
+  "부화장 역병이빨 독거미|역병의 부화장": {
    "power": 385000,
    "region": "역병의 부화장"
   },
   "부화장 오염된 흑마귀붙이|역병의 부화장": {
-   "power": 385000,
-   "region": "역병의 부화장"
-  },
-  "부화장 역병이빨 독거미|역병의 부화장": {
    "power": 385000,
    "region": "역병의 부화장"
   },
@@ -11997,10 +12861,6 @@
    "power": 290000,
    "region": "음산한 폐광"
   },
-  "폐광 맹독 백사마귀|음산한 폐광": {
-   "power": 290000,
-   "region": "음산한 폐광"
-  },
   "폐광 맹독 매미|음산한 폐광": {
    "power": 290000,
    "region": "음산한 폐광"
@@ -12062,10 +12922,6 @@
    "region": "독기 지대"
   },
   "독기 지대 바위껍집 황전칼|독기 지대": {
-   "power": 335000,
-   "region": "독기 지대"
-  },
-  "독기 지대 곰팡이 영균|독기 지대": {
    "power": 335000,
    "region": "독기 지대"
   },
@@ -12141,15 +12997,7 @@
    "power": 45000,
    "region": "비탄의 울림"
   },
-  "비탄이 걸신들린 식인거미|비탄의 울림": {
-   "power": 45000,
-   "region": "비탄의 울림"
-  },
   "비탄의 [|비탄의 울림": {
-   "power": 45000,
-   "region": "비탄의 울림"
-  },
-  "비탄의 걸신들린 독거미 ㉭|비탄의 울림": {
    "power": 45000,
    "region": "비탄의 울림"
   },
@@ -12178,11 +13026,11 @@
    "region": "마을 폐허"
   },
   "동구밖 광기어린 원혼|동구밖": {
-   "power": 35000,
+   "power": null,
    "region": "동구밖"
   },
   "동구밖 악귀도령|동구밖": {
-   "power": 35000,
+   "power": null,
    "region": "동구밖"
   },
   "고갯마루 귀도검|고갯마루": {
@@ -12250,7 +13098,7 @@
    "region": "동구밖"
   },
   "동구밖 자색 굴레귀|동구밖": {
-   "power": 35000,
+   "power": null,
    "region": "동구밖"
   },
   "독기 지대 역병날개 박쥐|독기 지대": {
@@ -12301,25 +13149,9 @@
    "power": null,
    "region": "산신의 영역"
   },
-  "청산 지하 해골 파수건|산신의 영역 지하 동굴": {
-   "power": 94500,
-   "region": "산신의 영역 지하 동굴"
-  },
   "기슭 세뇌된 흑여우|안개 기슭": {
    "power": 37000,
    "region": "안개 기슭"
-  },
-  "기슭 암흑 구미호|안개 기슭": {
-   "power": 38500,
-   "region": "안개 기슭"
-  },
-  "기습 희생된 해골 병사|안개 기슭": {
-   "power": 38500,
-   "region": "안개 기슭"
-  },
-  "1 기슭 지하 세뇌된 여우|안개 기슭 지하 동굴": {
-   "power": 51000,
-   "region": "안개 기슭 지하 동굴"
   },
   "기습 지하 백도)개비불|안개 기슭 지하 동굴": {
    "power": 51000,
@@ -12422,16 +13254,292 @@
    "region": "마을 폐허"
   },
   "우물 박쥐|우물 동굴": {
+   "power": 215000,
+   "region": "우물 동굴"
+  },
+  "황무지 도적|황무지 마을": {
+   "power": 135000,
+   "region": "황무지 마을"
+  },
+  "황무지 석궁 도적|황무지 마을": {
+   "power": 135000,
+   "region": "황무지 마을"
+  },
+  "무지 성역 짜움꾼|황무지 마을": {
+   "power": 150000,
+   "region": "황무지 마을"
+  },
+  "황무지 성역 도굴꾼|황무지 마을": {
+   "power": 150000,
+   "region": "황무지 마을"
+  },
+  "청산 귀신들린 도사|산신의 영역": {
+   "power": 84500,
+   "region": "산신의 영역"
+  },
+  "계곡 가면과수|암석 계곡": {
+   "power": 16500,
+   "region": "암석 계곡"
+  },
+  "요기굴 짐卜식된 영산장 장로|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "연못 흑사습|신령의 연못": {
+   "power": 5000,
+   "region": "신령의 연못"
+  },
+  "연못 요수화된 암사습|신령의 연못": {
+   "power": 5000,
+   "region": "신령의 연못"
+  },
+  "계곡 요수화된 공|암석 계곡": {
+   "power": 18000,
+   "region": "암석 계곡"
+  },
+  "계곡 요수화된 회색공|암석 계곡": {
+   "power": 17000,
+   "region": "암석 계곡"
+  },
+  "늪지 오염된 돼지|메마른 늪": {
+   "power": 20500,
+   "region": "메마른 늪"
+  },
+  "늪지 맹독도H지|메마른 늪": {
+   "power": 27000,
+   "region": "메마른 늪"
+  },
+  "늪지 하얀칼기 멧돼지|에마른늪": {
+   "power": 27000,
+   "region": "에마른늪"
+  },
+  "1 기습 여우|안개 기슭": {
+   "power": 38500,
+   "region": "안개 기슭"
+  },
+  "우물 세노`돈! 검은주`|우물 동굴": {
    "power": 170000,
    "region": "우물 동굴"
   },
-  "기슭 지하 백도깨H|불|안개 기슭 지하 동굴": {
-   "power": 51000,
-   "region": "안개 기슭 지하 동굴"
+  "우물 요수화된 곰쥐|우물 동굴": {
+   "power": 170000,
+   "region": "우물 동굴"
   },
-  "기습 지하 홍도깨비불|아기 기소 꽃 슈 트구": {
+  "우물 장식된! 왕곰쥐|우물 동굴": {
+   "power": 215000,
+   "region": "우물 동굴"
+  },
+  "우물 오염된 박쥐|우물 동굴": {
+   "power": 215000,
+   "region": "우물 동굴"
+  },
+  "4 독기 지대 역빙1날개 박쥐|독기 지대": {
+   "power": 335000,
+   "region": "독기 지대"
+  },
+  "연못 흑청 독사|신령의 연못": {
+   "power": 5000,
+   "region": "신령의 연못"
+  },
+  "늪지 요기뱀|메마른 늪": {
+   "power": 20500,
+   "region": "메마른 늪"
+  },
+  "황무지 사막뱀|황무지 마을": {
+   "power": 150000,
+   "region": "황무지 마을"
+  },
+  "황무지 난폭한 맹독전갈|황무지 마을": {
    "power": null,
-   "region": "아기 기소 꽃 슈 트구"
+   "region": "황무지 마을"
+  },
+  "황무지 맹독전갈|황무지 마을": {
+   "power": 150000,
+   "region": "황무지 마을"
+  },
+  "황무지 난폭한 전갈|황무지 마을": {
+   "power": null,
+   "region": "황무지 마을"
+  },
+  "부화장 맹독이빨 땅거미|역병의 부화장": {
+   "power": 385000,
+   "region": "역병의 부화장"
+  },
+  "요기굴 잠식된 가재|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "요기굴 부패한 가재|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "요기굴 사나운 요기 가재|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "우물 돌두꺼비|우물 동굴": {
+   "power": 215000,
+   "region": "우물 동굴"
+  },
+  "동구밖 유령두꺼비|동구밖": {
+   "power": 695000,
+   "region": "동구밖"
+  },
+  "계곡 바위물고기|암석 계곡": {
+   "power": 16500,
+   "region": "암석 계곡"
+  },
+  "폐광 푸른비늘 너울치|음산한 폐광": {
+   "power": 260000,
+   "region": "음산한 폐광"
+  },
+  "폐광 장백한 너울치|음산한 폐광": {
+   "power": 260000,
+   "region": "음산한 폐광"
+  },
+  "격계 동글 요수화된 양각수|결계 동굴": {
+   "power": null,
+   "region": "결계 동굴"
+  },
+  "늪지 가시백로|에마륜 늪": {
+   "power": 20500,
+   "region": "에마륜 늪"
+  },
+  "늪지 가위벌|메마른 늪": {
+   "power": 27000,
+   "region": "메마른 늪"
+  },
+  "기습 요기말낼|안개 기슭": {
+   "power": 37000,
+   "region": "안개 기슭"
+  },
+  "청산 고지대 가위벌|산신의 영역": {
+   "power": 68000,
+   "region": "산신의 영역"
+  },
+  "요기굴 사나운 요기 말벌|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "계곡 요기나방|암석 계곡": {
+   "power": 17000,
+   "region": "암석 계곡"
+  },
+  "독기 지대 바람나방|독기 지대": {
+   "power": 310000,
+   "region": "독기 지대"
+  },
+  "해골 동굴 요기나방|숨겨진 해골 동굴": {
+   "power": 310000,
+   "region": "숨겨진 해골 동굴"
+  },
+  "청산 지하 동굴매미|산신의 영역 지하 동굴": {
+   "power": 94500,
+   "region": "산신의 영역 지하 동굴"
+  },
+  "청산 지하 맹독매미|산신의 영역 지하 동굴": {
+   "power": 110000,
+   "region": "산신의 영역 지하 동굴"
+  },
+  "계곡 봉조|암석 계곡": {
+   "power": 20000,
+   "region": "암석 계곡"
+  },
+  "우물 오염된 봉조|우물 동굴": {
+   "power": 170000,
+   "region": "우물 동굴"
+  },
+  "우물 세뇌된 봉조|우물 동굴": {
+   "power": 215000,
+   "region": "우물 동굴"
+  },
+  "우물 오염된 봉조|우불동쿨": {
+   "power": 170000,
+   "region": "우불동쿨"
+  },
+  "폐광 고목나무 요귀|음산한 폐광": {
+   "power": 290000,
+   "region": "음산한 폐광"
+  },
+  "폐광 독초나무 요귀|음산한 폐광": {
+   "power": 290000,
+   "region": "음산한 폐광"
+  },
+  "마: 폐-허 구목령|폐허": {
+   "power": 565000,
+   "region": "폐허"
+  },
+  "황무지 토병 장수|황무지 마을": {
+   "power": 150000,
+   "region": "황무지 마을"
+  },
+  "폐광 토병”광부|음산한 폐광": {
+   "power": 290000,
+   "region": "음산한 폐광"
+  },
+  "요기굴 토병 수호자|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "동구밖 대형 활잡이 토병|동구밖": {
+   "power": null,
+   "region": "동구밖"
+  },
+  "해골 동굴 처녀도귀|숨겨진 해골 동굴": {
+   "power": 310000,
+   "region": "숨겨진 해골 동굴"
+  },
+  "요기굴 푸른 도깨비불|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "마: 폐허 백도)개비블|폐허": {
+   "power": 565000,
+   "region": "폐허"
+  },
+  "해골 동굴 변이된 야생 도귀|숨겨진 해골 동굴": {
+   "power": 610000,
+   "region": "숨겨진 해골 동굴"
+  },
+  "마을 폐허 해골 보초|마을 폐허": {
+   "power": 565000,
+   "region": "마을 폐허"
+  },
+  "마을 어귀 미쳐버린 원횬|마을 어귀": {
+   "power": 530000,
+   "region": "마을 어귀"
+  },
+  "동구밖 길 잃은 원혼|동구밖": {
+   "power": 695000,
+   "region": "동구밖"
+  },
+  "동구밖 분노하는 원혼|동구밖": {
+   "power": 695000,
+   "region": "동구밖"
+  },
+  "동구밖 미쳐버린 원혼|동구밖": {
+   "power": null,
+   "region": "동구밖"
+  },
+  "마을 어귀 양철인형|마을 어귀": {
+   "power": 530000,
+   "region": "마을 어귀"
+  },
+  "결계 동굴 독버섯 괴물|주술 결계 동굴": {
+   "power": null,
+   "region": "주술 결계 동굴"
+  },
+  "요기굴 장식된 타바로 병사|요기의 동굴": {
+   "power": 370000,
+   "region": "요기의 동굴"
+  },
+  "결계 동급 잊64진 타바로 병사|주술 결계 동굴": {
+   "power": null,
+   "region": "주술 결계 동굴"
+  },
+  "마을 어귀 청색갈기 뿔발굽|마을 어귀": {
+   "power": 530000,
+   "region": "마을 어귀"
   }
  }
 }

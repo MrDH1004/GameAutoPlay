@@ -253,18 +253,33 @@ class ItemDictScanner:
             self.db.setdefault("monsters", {})[f"{m['name']}|{m['region']}"] = {"power": m["power"], "region": m["region"]}
         return rec
 
-    def select_category(self, cat):
-        """왼쪽 탭 목록(스크롤 위치에 따라 y가 달라짐)에서 글자로 찾아 누른다."""
+    def select_category(self, cat, max_scrolls=8):
+        """왼쪽 탭 목록(스크롤 위치에 따라 y가 달라지고, 화면 밖에 있을 수도 있음)에서 글자로 찾아 누른다. 못 찾으면 목록을 스크롤해 다시 찾는다."""
         d = self.drv
         want = re.sub(r"\s", "", cat)
-        hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)           # '화첩'을 '화접'으로 읽는 식의 흔들림 허용
-                if len(l["text"]) <= len(cat) + 3 and _similar(want, re.sub(r"\s", "", l["text"]))]
-        if not hits:
-            return False
-        top = min(hits, key=lambda l: l["cy"])
-        d.click(top["x"] + 60, top["cy"])
-        d.sleep(1.5)
-        return True
+        for _ in range(max_scrolls + 1):
+            hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)           # '화첩'을 '화접'으로 읽는 식의 흔들림 허용
+                    if len(l["text"]) <= len(cat) + 3 and _similar(want, re.sub(r"\s", "", l["text"]))]
+            if hits:
+                top = min(hits, key=lambda l: l["cy"])
+                before = [n for n, _y in self.list_rows(d.shot())]
+                d.click(top["x"] + 60, top["cy"])
+                d.sleep(1.5)
+                # 탭을 누르면 그 아래에 하위 항목(예: '화첩 조각' 아래 '화첩 조각', '수집 재료' 아래 '유물')이 펼쳐지고,
+                # 하위 항목을 눌러야 아이템 목록이 바뀐다 → 목록이 그대로면 바로 아래 항목을 누른다
+                after = [n for n, _y in self.list_rows(d.shot())]
+                if len(after) == len(before) and all(_similar(a, b) for a, b in zip(after, before)):
+                    subs = sorted([l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)
+                                   if top["cy"] + 30 < l["cy"] < top["cy"] + 130], key=lambda l: l["cy"])
+                    d.click(subs[0]["x"] + 40 if subs else 532, subs[0]["cy"] if subs else top["cy"] + 63)     # 하위 항목 글자는 흐려 못 읽을 때가 있어 못 읽으면 탭 바로 아래(+63px)를 누른다
+                    d.sleep(1.8)
+                    again = [n for n, _y in self.list_rows(d.shot())]
+                    if len(again) == len(before) and all(_similar(a, b) for a, b in zip(again, before)):
+                        raise RuntimeError(f"'{cat}' 하위 항목을 눌러도 아이템 목록이 바뀌지 않음")
+                return True
+            d.drag(532, 850, 532, 350)                 # 탭 목록을 아래로 스크롤
+            d.sleep(1.0)
+        return False
 
     def scroll_top(self, max_drags=40):
         """목록을 맨 위로 (이어서 스캔할 때 같은 순번으로 세려면 항상 맨 위에서 시작해야 한다)."""
@@ -279,12 +294,13 @@ class ItemDictScanner:
             d.sleep(0.8)
 
     # ---------- 카테고리 전체 ----------
-    def scan_category(self, cat, max_items=400, max_minutes=60):
+    def scan_category(self, cat, max_items=400, max_minutes=60, select=True):
+        """select=False면 탭을 누르지 않고 지금 보이는 목록을 그대로 스캔한다 (이미 그 목록을 열어 둔 경우)."""
         d = self.drv
         end = time.monotonic() + max_minutes * 60
         if not self.close_panel():
             raise RuntimeError("요귀 패널을 닫지 못함")
-        if not self.select_category(cat):
+        if select and not self.select_category(cat):
             raise RuntimeError(f"'{cat}' 탭을 찾지 못함")
         self.scroll_top()
         done = {(r["category"], r["key"]) for r in self.db["items"]}
@@ -332,7 +348,7 @@ def canonicalize(db):
             continue
         canon[name] = name
         for other in cnt:
-            if other not in canon and _similar(name, other) and abs(len(name) - len(other)) <= 1:
+            if other not in canon and _close(name, other):
                 canon[other] = name
     changed = 0
     for it in db.get("items", []):
@@ -390,6 +406,13 @@ def finalize(db):
     return c, f
 
 
+def _close(a, b):
+    """OCR 흔들림으로 같은 이름이라고 볼 만큼 비슷한가 (글자 85% 이상 일치). 앞부분이 같은 서로 다른 이름은 합치지 않는다."""
+    from difflib import SequenceMatcher
+    a, b = re.sub(r"\s", "", a or ""), re.sub(r"\s", "", b or "")
+    return bool(a and b) and abs(len(a) - len(b)) <= 1 and SequenceMatcher(None, a, b).ratio() >= 0.85
+
+
 def pick_item_names(db):
     """아이템 이름: 목록 글자와 상세 제목 글자 중 서로 비슷하면 긴 쪽, 다르면 한글이 더 많은 쪽. 그다음 같은 이름끼리 철자를 통일."""
     from collections import Counter
@@ -400,18 +423,7 @@ def pick_item_names(db):
         a, b = it.get("name", ""), it.get("name_header", "")
         if b and (han(b) > han(a) or (han(b) == han(a) and len(b) > len(a) and _similar(a, b))):
             it["name"] = b
-    cnt = Counter(it.get("name", "") for it in db.get("items", []))
-    canon = {}
-    for name, _n in cnt.most_common():
-        if name in canon:
-            continue
-        canon[name] = name
-        for other in cnt:
-            if other not in canon and _similar(name, other) and abs(len(name) - len(other)) <= 1:
-                canon[other] = name
-    for it in db.get("items", []):
-        if "name" in it:
-            it["name"] = canon.get(it["name"], it["name"])
+    # (아이템 이름은 'OO 화첩 조각'처럼 앞 두세 글자만 다른 것이 많아서 비슷하다고 합치면 서로 다른 아이템이 한 이름이 된다 → 합치지 않는다)
 
 
 def canonicalize_regions(db):
@@ -436,7 +448,7 @@ def canonicalize_regions(db):
             continue
         canon[name] = name
         for other in cnt:
-            if other not in canon and _similar(name, other) and abs(len(name) - len(other)) <= 1:
+            if other not in canon and _close(name, other):
                 canon[other] = name
     n = n0
     for it in db.get("items", []):
