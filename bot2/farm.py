@@ -594,6 +594,7 @@ GUIDE_GO = (1322, 865)                   # '사냥터 바로가기'
 GUIDE_CLAIM = (1322, 790)                # '보상 받기' (사냥터 미션: 그 사냥터 권장 전투력 달성)
 GUIDE_REC_BOX = (1195, 428, 1300, 460)   # 오른쪽 '권장' 숫자
 GUIDE_CLOSE = (1485, 195)
+GUIDE_TAB_RECO = (982, 257)              # 상단 탭 '추천 사냥터' (맞춤 추천 | 추천 사냥터 | 둘러보기)
 GUIDE_NODES = [
     ("안개 기슭 1", 37000, (547, 800)),
     ("안개 기슭 2", 38500, (675, 800)),
@@ -643,14 +644,19 @@ class GuideNav:
         return mx > 0.8
 
     def open(self):
-        if self.is_open():
-            return True
-        self.drv.click(*GUIDE_ICON)
-        for _ in range(6):
-            self.drv.sleep(0.6)
-            if self.is_open():
-                return True
-        return False
+        """길라잡이를 열고 '추천 사냥터' 탭으로 맞춘다 (열 때마다 '맞춤 추천' 탭으로 시작할 수 있어, 사냥터 노드 좌표가 어긋났다)."""
+        ok = self.is_open()
+        if not ok:
+            self.drv.click(*GUIDE_ICON)
+            for _ in range(6):
+                self.drv.sleep(0.6)
+                if self.is_open():
+                    ok = True
+                    break
+        if ok:
+            self.drv.click(*GUIDE_TAB_RECO)
+            self.drv.sleep(1.0)
+        return ok
 
     def close(self):
         if self.is_open():
