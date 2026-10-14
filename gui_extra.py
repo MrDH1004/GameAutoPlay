@@ -9,6 +9,8 @@ from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QImage, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QHeaderView, QInputDialog, QLabel,
                                QMessageBox, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from toggle_switch import Toggle
+import icons
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 POWER_LOG = os.path.join(ROOT, "logs", "power.jsonl")
@@ -115,6 +117,7 @@ class StatsTab(QWidget):
         self.death_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.death_table.verticalHeader().setVisible(False)
         self.death_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.death_table.setAlternatingRowColors(True)
         QVBoxLayout(g2).addWidget(self.death_table)
         row.addWidget(g2, 2)
         lay.addLayout(row, 1)
@@ -148,7 +151,8 @@ class PreviewTab(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 12, 0, 0)
         top = QHBoxLayout()
-        self.chk = QCheckBox("미리보기 켜기 (2초마다 화면 캡처)")
+        self.chk = Toggle("실시간 미리보기", on_color=colors['accent'], off_color=colors['idle'])
+        self.chk.setToolTip("이 화면이 보일 때만 2초마다 캡처합니다. 게임 입력은 보내지 않습니다.")
         top.addWidget(self.chk)
         top.addStretch(1)
         self.info = QLabel("")
@@ -221,11 +225,14 @@ class SpotEditor(QWidget):
         self.table.setHorizontalHeaderLabels(self.COLS)
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.table.verticalHeader().setVisible(False)
+        self.table.setAlternatingRowColors(True)
         lay.addWidget(self.table, 1)
         row = QHBoxLayout()
         b1 = QPushButton("다시 불러오기")
+        b1.setIcon(icons.make("map", colors['accent']))
         b1.clicked.connect(self.load)
         b2 = QPushButton("저장")
+        b2.setIcon(icons.make("save", colors['accent']))
         b2.setObjectName("primary")
         b2.clicked.connect(self.save)
         self.msg = QLabel("")

@@ -71,6 +71,61 @@ def _draw(name, p, color):
         p.drawRoundedRect(QRectF(5.5, 2.8, 9, 14.4), 4.5, 4.5)
         p.drawLine(QPointF(10, 3), QPointF(10, 9))
         p.drawLine(QPointF(5.5, 9), QPointF(14.5, 9))
+    else:
+        pen = QPen(color, 1.5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
+        p.setPen(pen)
+        p.setBrush(Qt.NoBrush)
+        if name == "dashboard":
+            for x, y, h in ((3, 3, 6), (11, 3, 9), (3, 11, 6), (11, 14, 3)):
+                p.drawRoundedRect(QRectF(x, y, 6, h), 1.3, 1.3)
+        elif name == "settings":
+            for y, x in ((5, 7), (10, 13), (15, 8)):
+                p.drawLine(QPointF(3, y), QPointF(17, y))
+                p.setBrush(QColor("#182130"))
+                p.drawEllipse(QPointF(x, y), 2, 2)
+        elif name == "stats":
+            p.drawLine(QPointF(3, 3), QPointF(3, 17))
+            p.drawLine(QPointF(3, 17), QPointF(17, 17))
+            path = QPainterPath(QPointF(6, 13))
+            for x, y in ((10, 9), (13, 11), (17, 5)):
+                path.lineTo(x, y)
+            p.drawPath(path)
+        elif name == "preview":
+            p.drawRoundedRect(QRectF(2.5, 3.5, 15, 10), 2, 2)
+            p.drawLine(QPointF(10, 14), QPointF(10, 17))
+            p.drawLine(QPointF(6, 17), QPointF(14, 17))
+        elif name == "map":
+            path = QPainterPath(QPointF(3, 5))
+            for x, y in ((7.5, 3), (12.5, 5), (17, 3), (17, 15), (12.5, 17), (7.5, 15), (3, 17), (3, 5)):
+                path.lineTo(x, y)
+            p.drawPath(path)
+            p.drawLine(QPointF(7.5, 3), QPointF(7.5, 15))
+            p.drawLine(QPointF(12.5, 5), QPointF(12.5, 17))
+        elif name == "book":
+            p.drawRoundedRect(QRectF(4, 3, 12, 14), 2, 2)
+            p.drawLine(QPointF(7, 3), QPointF(7, 17))
+            p.drawLine(QPointF(10, 7), QPointF(13, 7))
+            p.drawLine(QPointF(10, 10), QPointF(13, 10))
+        elif name == "log":
+            p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
+            for y in (6, 10, 14):
+                p.drawLine(QPointF(6, y), QPointF(14, y))
+        elif name == "save":
+            p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
+            p.drawRect(QRectF(7, 3, 6, 5))
+            p.drawRoundedRect(QRectF(6, 11, 8, 6), 1, 1)
+        elif name == "brand":
+            path = QPainterPath(QPointF(4, 7))
+            path.lineTo(3, 2)
+            path.lineTo(8, 5)
+            path.quadTo(10, 4, 12, 5)
+            path.lineTo(17, 2)
+            path.lineTo(16, 7)
+            path.cubicTo(20, 19, 0, 19, 4, 7)
+            p.drawPath(path)
+            p.drawLine(QPointF(6.5, 9), QPointF(8, 10))
+            p.drawLine(QPointF(13.5, 9), QPointF(12, 10))
+            p.drawArc(QRectF(7, 10, 6, 4), 180 * 16, 180 * 16)
 
 
 def make(name, color="#e6e9f0", disabled="#5b6478"):

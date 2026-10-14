@@ -36,50 +36,19 @@ from datetime import datetime
 from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal
 from toggle_switch import Toggle
 import icons
-from PySide6.QtGui import QColor, QIcon, QFont, QTextCharFormat, QTextCursor
+from PySide6.QtGui import QColor, QIcon, QFont, QKeySequence, QShortcut, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
                                QTabWidget, QTextBrowser, QVBoxLayout, QWidget, QLineEdit, QScrollArea,
-                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox)
+                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox, QButtonGroup, QProgressBar)
 
 CONFIG_PATH = os.path.join(ROOT, "config.yaml")
 SETTINGS_PATH = os.path.join(ROOT, "gui_settings.json")
 LOG_PATH = os.path.join(ROOT, "logs", "bot2.log")
+LOCKED_SETTINGS = {("collect", "enabled"), ("rewards", "enabled")}
 
 # ---------------------------------------------------------------- 색상/스타일
-C = dict(bg="#14161c", panel="#1c1f27", panel2="#232733", line="#2c3140", text="#e6e9f0", sub="#8a93a6",
-         accent="#6c8cff", ok="#3ecf8e", warn="#f5b942", bad="#ef5b5b", idle="#5b6478")
-
-QSS = f"""
-* {{ font-family: 'Malgun Gothic','Segoe UI'; font-size: 13px; color: {C['text']}; }}
-QMainWindow, QWidget#root {{ background: {C['bg']}; }}
-QTabWidget::pane {{ border: none; }}
-QTabBar::tab {{ background: transparent; color: {C['sub']}; padding: 10px 22px; border-bottom: 2px solid transparent; }}
-QTabBar::tab:selected {{ color: {C['text']}; border-bottom: 2px solid {C['accent']}; }}
-QTabBar::tab:hover {{ color: {C['text']}; }}
-QFrame#card {{ background: {C['panel']}; border: 1px solid {C['line']}; border-radius: 12px; }}
-QLabel#cardTitle {{ color: {C['sub']}; font-size: 11px; }}
-QLabel#big {{ font-size: 13px; font-weight: 700; }}
-QLabel#sub {{ color: {C['sub']}; }}
-QGroupBox {{ background: {C['panel']}; border: 1px solid {C['line']}; border-radius: 12px; margin-top: 14px; padding: 18px 14px 12px 14px; }}
-QGroupBox::title {{ subcontrol-origin: margin; left: 14px; padding: 0 6px; color: {C['sub']}; }}
-QPushButton {{ background: {C['panel2']}; border: 1px solid {C['line']}; border-radius: 10px; padding: 10px 18px; font-weight: 600; }}
-QPushButton:hover {{ border-color: {C['accent']}; }}
-QPushButton:disabled {{ color: {C['idle']}; background: {C['panel']}; }}
-QPushButton#start {{ background: {C['ok']}; color: #07281a; border: none; }}
-QPushButton#start:hover {{ background: #55dca0; }}
-QPushButton#start:disabled {{ background: {C['panel2']}; color: {C['idle']}; }}
-QPushButton#stop {{ background: {C['bad']}; color: #2b0a0a; border: none; }}
-QPushButton#stop:disabled {{ background: {C['panel2']}; color: {C['idle']}; }}
-QPushButton[on="true"] {{ background: {C['warn']}; color: #2b1d00; border: none; }}
-QPlainTextEdit {{ background: #0f1116; border: 1px solid {C['line']}; border-radius: 10px; padding: 8px;
-                  font-family: Consolas,'Malgun Gothic'; font-size: 12px; }}
-QSpinBox, QDoubleSpinBox {{ background: {C['panel2']}; border: 1px solid {C['line']}; border-radius: 8px; padding: 5px 8px; min-width: 80px; }}
-QCheckBox {{ padding: 4px 0; }}
-QScrollBar:vertical {{ background: transparent; width: 10px; }}
-QScrollBar::handle:vertical {{ background: {C['line']}; border-radius: 5px; min-height: 30px; }}
-QScrollBar::add-line, QScrollBar::sub-line {{ height: 0; }}
-"""
+from ui_theme import C, QSS
 
 STATE_INFO = {   # 내부 상태 → (표시 이름, 설명, 색)
     "DEAD": ("사망", "나가기 / 거점 부활 처리 중", C["bad"]),
@@ -97,8 +66,8 @@ SETTING_FIELDS = [
     ("toggle", ("yield_only_game_input",), "게임 창 조작에만 양보", "다른 창에서 하는 작업은 무시하고, 게임을 직접 조작할 때만 멈춤"),
     ("toggle", ("notify", "enabled"), "폰 알림/원격 제어", "사망·일시정지·멈춤을 텔레그램/디스코드로 알림 (아래 토큰 입력 필요)"),
     ("toggle", ("rewards", "enabled"), "보상 자동 받기", "1시간마다 우편함·업적·길라잡이 보상의 '받기' 버튼만 누름 (현재 모두 제외 설정이라 꺼 둠)"),
-    ("toggle", ("hp", "enabled"), "HP 낮으면 물약", "체력 45% 아래면 물약 단축키(물약 있는 칸)"),
-    ("toggle", ("collect", "enabled"), "앵벌 때 화첩 수집", "앵벌 시간에 못 모은 화첩 조각을 주는 몬스터(내 전투력 2배 이하, 약한 것부터)를 사냥, 1시간마다 조각 등록 (유물은 자동화 안 함)"),
+    ("toggle", ("hp", "enabled"), "HP 회복 관리", "평소 물약은 게임에 맡기고, 휴식·자리 회피 중에만 Ctrl+1로 회복"),
+    ("toggle", ("collect", "enabled"), "화첩 자동 수집", "사용자가 직접 수집하므로 자동 사냥·등록·스캔은 꺼 둡니다"),
     ("toggle", ("hp", "rest_enabled"), "HP 낮으면 쉬고 회복", "보스가 아닐 때 HP 50% 이하면 잡던 몹까지만 잡고 자동 사냥 끔 → 100% 차면 다시 켬"),
     ("toggle", ("preset", "enabled"), "보스면 도술 프리셋 전환", "보스 체력바가 보이면 2 보스, 끝나면 1 일반 프리셋"),
     ("toggle", ("potion_shop", "enabled"), "물약 자동 구매", "HP 물약 50개 미만이면 하루 1회 자동 구매 (위 버튼으로 수동 구매는 언제든)"),
@@ -174,6 +143,7 @@ class BotThread(QThread):
         super().__init__()
         self.config, self.dry_run, self.debug = config, dry_run, debug
         self.bot = None
+        self.stop_requested = False
 
     def run(self):
         try:
@@ -184,6 +154,8 @@ class BotThread(QThread):
             except Exception:
                 pass
             self.bot = Bot(self.config, dry_run=self.dry_run)
+            if self.stop_requested:
+                return
             self.bot.run()
         except Exception as e:      # 화면에 보여주고 스레드 종료
             from bot2.farm import StopRequested
@@ -244,6 +216,8 @@ class Window(QMainWindow):
         from version import VERSION
         self.setWindowTitle(f"도깨비헬퍼 v{VERSION}")
         self.resize(1000, 720)
+        self.setMinimumSize(900, 640)
+        self.setWindowIcon(icons.make("brand", C["accent"]))
         self.thread = None
         self.started_at = 0.0
         self.paused_total = 0.0
@@ -262,7 +236,7 @@ class Window(QMainWindow):
         root.setObjectName("root")
         self.setCentralWidget(root)
         outer = QVBoxLayout(root)
-        outer.setContentsMargins(24, 18, 24, 14)
+        outer.setContentsMargins(16, 14, 16, 12)
         outer.setSpacing(12)
         outer.addLayout(self._build_header())
 
@@ -277,15 +251,20 @@ class Window(QMainWindow):
         tabs.addTab(SpotEditor(C), "사냥터")
         tabs.addTab(self._build_recommend(), "추천")
         tabs.addTab(self._build_log(), "로그")
-        outer.addWidget(tabs, 1)
         self.tabs = tabs
+        tabs.tabBar().hide()
+        body = QHBoxLayout()
+        body.setSpacing(16)
+        body.addWidget(self._build_navigation())
+        body.addWidget(tabs, 1)
+        outer.addLayout(body, 1)
         self._last_power = None
         self._power_rec_at = 0.0
         self._stats_at = 0.0
         self._sched_day = None
         self._build_tray()
 
-        foot = QLabel("단축키  F11 일시정지/재개   ·   F12 종료   ·   직접 조작하면 자동으로 양보")
+        foot = QLabel("F11 일시정지 / 재개   ·   F12 종료   ·   창을 닫으면 실행 중에는 트레이에서 계속 동작")
         foot.setObjectName("sub")
         outer.addWidget(foot)
 
@@ -304,6 +283,68 @@ class Window(QMainWindow):
         self.timer.timeout.connect(self._refresh)
         self.timer.start(500)
         self._set_running(False)
+        self._settings_snapshot = self._settings_values()
+        for w in self.controls.values():
+            signal = w.toggled if isinstance(w, QCheckBox) else w.textChanged if isinstance(w, QLineEdit) else w.valueChanged
+            signal.connect(self._settings_changed)
+        for w in (self.chk_debug, self.chk_dry, self.chk_sched_start, self.chk_sched_stop):
+            w.toggled.connect(self._settings_changed)
+        self.time_start.timeChanged.connect(self._settings_changed)
+        self.spin_stop_h.valueChanged.connect(self._settings_changed)
+        self.search_shortcut = QShortcut(QKeySequence("Ctrl+K"), self)
+        self.search_shortcut.activated.connect(self._focus_settings_search)
+
+    def _build_navigation(self):
+        rail = QFrame()
+        rail.setObjectName("sidebar")
+        rail.setFixedWidth(138)
+        col = QVBoxLayout(rail)
+        col.setContentsMargins(10, 14, 10, 12)
+        label = QLabel("WORKSPACE")
+        label.setObjectName("sub")
+        col.addWidget(label)
+        self.nav_group = QButtonGroup(self)
+        for i, name in enumerate(("dashboard", "settings", "stats", "preview", "map", "book", "log")):
+            button = QPushButton(self.tabs.tabText(i))
+            button.setObjectName("nav")
+            button.setIcon(icons.make(name, C["accent"]))
+            button.setIconSize(icons.ICON_SIZE)
+            button.setCheckable(True)
+            button.setCursor(Qt.PointingHandCursor)
+            button.setToolTip(self.tabs.tabText(i))
+            self.nav_group.addButton(button, i)
+            col.addWidget(button)
+        self.nav_group.button(0).setChecked(True)
+        self.nav_group.idClicked.connect(self.tabs.setCurrentIndex)
+        self.tabs.currentChanged.connect(lambda i: self.nav_group.button(i).setChecked(True))
+        col.addStretch()
+        help_label = QLabel("설정 검색\nCtrl + K\n\n무료 이동만 사용\n수집은 직접 진행")
+        help_label.setObjectName("sub")
+        col.addWidget(help_label)
+        return rail
+
+    def _focus_settings_search(self):
+        self.tabs.setCurrentIndex(1)
+        self.settings_search.setFocus()
+        self.settings_search.selectAll()
+
+    def _settings_values(self):
+        return (tuple((p, self._value(w)) for p, w in self.controls.items()),
+                self.chk_debug.isChecked(), self.chk_dry.isChecked(),
+                self.chk_sched_start.isChecked(), self.time_start.time().toString("HH:mm"),
+                self.chk_sched_stop.isChecked(), self.spin_stop_h.value())
+
+    def _settings_changed(self, *_):
+        if not hasattr(self, "_settings_snapshot"):
+            return
+        dirty = self._settings_values() != self._settings_snapshot
+        self.settings_status.setText("저장하지 않은 변경이 있습니다 · 다음 시작부터 적용" if dirty else
+                                     "저장된 설정 · 다음 시작부터 적용")
+        self.btn_save_settings.setEnabled(dirty)
+
+    def _save_settings(self):
+        if self._save():
+            self.settings_status.setText("설정을 저장했습니다 · 다음 시작부터 적용")
 
     # ---------- 저장된 설정
     def _load_saved(self):
@@ -330,8 +371,16 @@ class Window(QMainWindow):
         try:
             with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=1)
-        except OSError:
-            pass
+            self.saved = data
+            if hasattr(self, "_settings_snapshot"):
+                self._settings_snapshot = self._settings_values()
+                self._settings_changed()
+            return True
+        except OSError as e:
+            logging.error("설정을 저장하지 못했습니다: %s", e)
+            if hasattr(self, "settings_status"):
+                self.settings_status.setText("저장 실패 · 파일 권한과 디스크 공간을 확인하세요")
+            return False
 
     @staticmethod
     def _value(w):
@@ -347,13 +396,14 @@ class Window(QMainWindow):
             k = "/".join(path)
             if k not in data:
                 continue
-            v = data[k]
+            v = False if path in LOCKED_SETTINGS else data[k]
             if isinstance(w, QCheckBox):
                 w.setChecked(bool(v))
             elif isinstance(w, QLineEdit):
                 w.setText(str(v))
             else:
                 w.setValue(v)
+        self._settings_changed()
         logging.info("프로필 적용 (다음 시작부터)")
 
     def _collect_values(self):
@@ -361,19 +411,26 @@ class Window(QMainWindow):
                 if not isinstance(w, QLineEdit)}       # 토큰은 프로필에 넣지 않는다
 
     def _build_config(self):
-        cfg = yaml.safe_load(open(CONFIG_PATH, encoding="utf-8"))
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
         for path, w in self.controls.items():
-            set_path(cfg, path, self._value(w))
+            set_path(cfg, path, False if path in LOCKED_SETTINGS else self._value(w))
+        set_path(cfg, ("hp", "potion_normal"), False)
         cfg["user_detect"] = bool(getattr(self, "user_detect", True))       # 상단 토글 버튼 값
         return cfg
 
     # ---------- UI 구성
     def _build_header(self):
+        header = QVBoxLayout()
+        header.setSpacing(10)
         row = QHBoxLayout()
+        brand = QLabel()
+        brand.setPixmap(icons.make("brand", C["accent"]).pixmap(32, 32))
+        row.addWidget(brand)
         title = QLabel("도깨비헬퍼")
         title.setStyleSheet("font-size:12px; font-weight:800;")
         from version import VERSION
-        sub = QLabel(f"도깨비의세계 자동 진행  ·  v{VERSION}")
+        sub = QLabel(f"도깨비의세계  ·  v{VERSION}")
         sub.setObjectName("sub")
         col = QVBoxLayout()
         col.setSpacing(0)
@@ -393,7 +450,7 @@ class Window(QMainWindow):
         self.btn_pause.clicked.connect(self.toggle_pause)
         self.btn_stop = QPushButton(" 정지")
         self.btn_stop.setObjectName("stop")
-        self.btn_stop.setIcon(ic("stop", "#2b0a0a", C["idle"]))
+        self.btn_stop.setIcon(ic("stop", C["bad"], C["idle"]))
         self.btn_stop.clicked.connect(self.stop)
         self.btn_potion = QPushButton(" 물약 구매")
         self.btn_potion.setIcon(ic("potion"))
@@ -416,13 +473,26 @@ class Window(QMainWindow):
         self._refresh_detect_button()
         self._set_pause_label(False)
         for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_evade):
-            b.setMinimumHeight(42)
+            b.setMinimumHeight(36)
             b.setIconSize(icons.ICON_SIZE)
+            b.setCursor(Qt.PointingHandCursor)
+        for b in (self.btn_start, self.btn_pause, self.btn_stop):
             row.addWidget(b)
-        row.addSpacing(10)
+        self.btn_start.setToolTip("저장된 설정으로 자동 진행을 시작합니다")
+        self.btn_pause.setToolTip("봇 입력을 잠시 멈추거나 재개합니다 · F11")
+        self.btn_stop.setToolTip("자동 진행을 종료합니다 · F12")
+        header.addLayout(row)
+        toolbar = QFrame()
+        toolbar.setObjectName("toolbar")
+        actions = QHBoxLayout(toolbar)
+        actions.setContentsMargins(12, 7, 12, 7)
         for t in (self.btn_farm, self.btn_detect):
-            row.addWidget(t)
-        return row
+            actions.addWidget(t)
+        actions.addStretch()
+        actions.addWidget(self.btn_potion)
+        actions.addWidget(self.btn_evade)
+        header.addWidget(toolbar)
+        return header
 
     def _build_dashboard(self):
         w = QWidget()
@@ -430,6 +500,9 @@ class Window(QMainWindow):
         lay.setContentsMargins(0, 12, 0, 0)
         lay.setSpacing(12)
 
+        intro = QLabel("지금 진행 상황")
+        intro.setObjectName("pageTitle")
+        lay.addWidget(intro)
         top = QHBoxLayout()
         top.setSpacing(12)
         c1, l1 = card("현재 상태")
@@ -437,6 +510,7 @@ class Window(QMainWindow):
         self.lbl_state.setObjectName("big")
         self.lbl_state_sub = QLabel("매크로가 정지되어 있습니다")
         self.lbl_state_sub.setObjectName("sub")
+        self.lbl_state_sub.setWordWrap(True)
         l1.addWidget(self.lbl_state)
         l1.addWidget(self.lbl_state_sub)
         top.addWidget(c1, 3)
@@ -446,6 +520,7 @@ class Window(QMainWindow):
         self.lbl_window.setObjectName("big")
         self.lbl_window_sub = QLabel("")
         self.lbl_window_sub.setObjectName("sub")
+        self.lbl_window_sub.setWordWrap(True)
         l2.addWidget(self.lbl_window)
         l2.addWidget(self.lbl_window_sub)
         top.addWidget(c2, 2)
@@ -455,22 +530,23 @@ class Window(QMainWindow):
         self.lbl_source.setObjectName("big")
         self.lbl_source_sub = QLabel("")
         self.lbl_source_sub.setObjectName("sub")
+        self.lbl_source_sub.setWordWrap(True)
         l3.addWidget(self.lbl_source)
         l3.addWidget(self.lbl_source_sub)
         top.addWidget(c3, 2)
         lay.addLayout(top)
 
         # 실시간 상황판: 동기화 · 현재 위치 · 잡는 몹 · 하는 퀘스트
-        live = QHBoxLayout()
+        live = QGridLayout()
         live.setSpacing(12)
         self.live_lbl = {}
-        for key, title, stretch in (("sync", "동기화", 2), ("map", "현재 위치", 2), ("mob", "잡는 몹", 2),
-                                    ("quest", "하는 퀘스트", 3)):
+        for index, (key, title) in enumerate((("map", "현재 위치"), ("mob", "전투 대상"),
+                                             ("quest", "진행 중인 퀘스트"), ("sync", "화면 인식"))):
             c, l = card(title)
             v = QLabel("-")
             v.setObjectName("big")
             v.setWordWrap(True)
-            v.setMinimumHeight(40)                              # 카드 높이는 그대로 유지 (글씨만 줄임)
+            v.setMinimumHeight(24)
             if key in ("map", "mob", "quest"):
                 v.setStyleSheet("font-size:11px;")             # 지도·몹·퀘스트 이름은 길어서 더 작게
             sub_l = QLabel("")
@@ -479,7 +555,14 @@ class Window(QMainWindow):
             l.addWidget(v)
             l.addWidget(sub_l)
             self.live_lbl[key] = (v, sub_l)
-            live.addWidget(c, stretch)
+            if key == "map":
+                self.hp_bar = QProgressBar()
+                self.hp_bar.setRange(0, 100)
+                self.hp_bar.setTextVisible(False)
+                self.hp_bar.setValue(0)
+                self.hp_bar.hide()
+                l.addWidget(self.hp_bar)
+            live.addWidget(c, index // 2, index % 2)
         lay.addLayout(live)
 
         chips = QHBoxLayout()
@@ -510,7 +593,11 @@ class Window(QMainWindow):
         self.lbl_recent.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         l4.addWidget(self.lbl_recent, 1)
         lay.addWidget(c4, 1)
-        return w
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setWidget(w)
+        return scroll
 
     def _build_settings(self):
         w = QWidget()
@@ -521,10 +608,15 @@ class Window(QMainWindow):
         lay = QVBoxLayout(w)
         lay.setContentsMargins(0, 12, 0, 0)
         lay.setSpacing(12)
-
-        g1 = QGroupBox("기능")
-        gl1 = QGridLayout(g1)
-        gl1.setVerticalSpacing(8)
+        self.settings_rows = []
+        self.settings_groups = []
+        groups = {}
+        for name in ("진행과 사냥", "회복과 안전", "생활과 알림", "고급 동작"):
+            box = QGroupBox(name)
+            grid = QGridLayout(box)
+            grid.setColumnStretch(1, 1)
+            grid.setVerticalSpacing(10)
+            groups[name] = (box, grid)
         g2 = QGroupBox("수치")
         gl2 = QGridLayout(g2)
         gl2.setVerticalSpacing(8)
@@ -532,12 +624,18 @@ class Window(QMainWindow):
         for kind, path, label, extra in SETTING_FIELDS:
             saved = self.saved.get("/".join(path))
             if kind == "toggle":
+                group_name = "진행과 사냥" if path[0] in ("farm", "collect", "autohunt") else "회복과 안전" if path[0] in ("hp", "potion_shop", "yield_only_game_input") else "생활과 알림" if path[0] in ("notify", "rewards", "yeonggi") else "고급 동작"
+                box, gl1 = groups[group_name]
+                row = gl1.rowCount()
                 cb = Toggle(label, on_color=C["accent"], off_color=C["idle"])
                 cb.setChecked(bool(saved if saved is not None else get_path(self.base_config, path, False)))
                 hint = QLabel(extra)
                 hint.setObjectName("sub")
-                gl1.addWidget(cb, r1, 0)
-                gl1.addWidget(hint, r1, 1)
+                hint.setWordWrap(True)
+                cb.setToolTip(extra)
+                gl1.addWidget(cb, row, 0)
+                gl1.addWidget(hint, row, 1)
+                self.settings_rows.append((box, label + extra, (cb, hint)))
                 self.controls[path] = cb
                 r1 += 1
             else:
@@ -551,17 +649,23 @@ class Window(QMainWindow):
                 sp.setAlignment(Qt.AlignRight)
                 u = QLabel(unit)
                 u.setObjectName("sub")
-                gl2.addWidget(QLabel(label), r2, 0)
+                label_widget = QLabel(label)
+                label_widget.setWordWrap(True)
+                gl2.addWidget(label_widget, r2, 0)
                 gl2.addWidget(sp, r2, 1)
                 gl2.addWidget(u, r2, 2)
                 self.controls[path] = sp
+                self.settings_rows.append((g2, label, (label_widget, sp, u)))
                 r2 += 1
-        gl1.setColumnStretch(1, 1)
         gl2.setColumnStretch(3, 1)
         from gui_extra import ProfileBar
-        lay.addWidget(ProfileBar(self._collect_values, self._apply_values))
-        lay.addWidget(g1)
+        self.profile_bar = ProfileBar(self._collect_values, self._apply_values)
+        lay.addWidget(self.profile_bar)
+        for box, _ in groups.values():
+            lay.addWidget(box)
+            self.settings_groups.append(box)
         lay.addWidget(g2)
+        self.settings_groups.append(g2)
 
         gt = QGroupBox("알림 연결 (선택)")
         glt = QGridLayout(gt)
@@ -574,12 +678,14 @@ class Window(QMainWindow):
             glt.addWidget(QLabel(label), i, 0)
             glt.addWidget(le, i, 1)
             self.controls[path] = le
+            self.settings_rows.append((gt, label, (glt.itemAtPosition(i, 0).widget(), le)))
         tip = QLabel("텔레그램: @BotFather로 봇 생성 → 봇에게 아무 말 → api.telegram.org/bot(토큰)/getUpdates 에서 chat id 확인. "
                      "원격 명령: /상태 /화면 /일시정지 /재개 /정지")
         tip.setObjectName("sub")
         tip.setWordWrap(True)
         glt.addWidget(tip, len(TEXT_FIELDS), 0, 1, 2)
         lay.addWidget(gt)
+        self.settings_groups.append(gt)
 
         gs = QGroupBox("예약 실행")
         gls = QGridLayout(gs)
@@ -610,22 +716,66 @@ class Window(QMainWindow):
         gl3.addWidget(self.chk_dry)
         gl3.addWidget(self.chk_debug)
         lay.addWidget(g3)
+        self.settings_sections = [(self.profile_bar, "프로필 설정 묶음 불러오기 저장"),
+                                  (gs, "예약 실행 자동 시작 정지 시간"), (g3, "실행 옵션 연습 모드 디버그 로그")]
 
         from version import CHANGELOG, VERSION
         g4 = QGroupBox(f"버전 정보  ·  v{VERSION}")
         gl4 = QVBoxLayout(g4)
-        for ver, date, note in CHANGELOG:
+        for ver, date, note in CHANGELOG[:6]:
             lb = QLabel(f"v{ver}  ({date})  {note}")
             lb.setObjectName("sub")
             lb.setWordWrap(True)
             gl4.addWidget(lb)
         lay.addWidget(g4)
+        self.settings_sections.append((g4, "버전 정보 업데이트 변경 이력"))
 
         note = QLabel("※ 설정은 다음 '시작'부터 적용됩니다. 실행 중 변경하려면 정지 후 다시 시작하세요.")
         note.setObjectName("sub")
         lay.addWidget(note)
         lay.addStretch(1)
-        return scroll
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(0, 8, 0, 0)
+        search_row = QHBoxLayout()
+        self.settings_search = QLineEdit()
+        self.settings_search.setPlaceholderText("설정 검색 · 물약, 사냥, 회복…  (Ctrl+K)")
+        self.settings_search.setClearButtonEnabled(True)
+        self.settings_search.textChanged.connect(self._filter_settings)
+        search_row.addWidget(self.settings_search, 1)
+        self.btn_save_settings = QPushButton("설정 저장")
+        self.btn_save_settings.setIcon(icons.make("save", C["accent"]))
+        self.btn_save_settings.clicked.connect(self._save_settings)
+        self.btn_save_settings.setEnabled(False)
+        search_row.addWidget(self.btn_save_settings)
+        page_layout.addLayout(search_row)
+        self.settings_status = QLabel("저장된 설정 · 다음 시작부터 적용")
+        self.settings_status.setObjectName("sub")
+        page_layout.addWidget(self.settings_status)
+        self.settings_empty = QLabel("일치하는 설정이 없습니다. 다른 검색어를 입력하세요.")
+        self.settings_empty.setObjectName("sub")
+        self.settings_empty.hide()
+        page_layout.addWidget(self.settings_empty)
+        page_layout.addWidget(scroll, 1)
+        return page
+
+    def _filter_settings(self, query):
+        query = query.strip().casefold()
+        visible = set()
+        for group, text, widgets in self.settings_rows:
+            match = not query or query in (group.title() + text).casefold()
+            for widget in widgets:
+                widget.setVisible(match)
+            if match:
+                visible.add(group)
+        for group in self.settings_groups:
+            group.setVisible(group in visible)
+        found = bool(visible)
+        for group, text in self.settings_sections:
+            match = not query or query in text.casefold()
+            group.setVisible(match)
+            found = found or match
+        self.settings_empty.setVisible(not found)
 
     def _build_recommend(self):
         """추천 탭: 서브탭 — 스킬(기존) / 무기 / 방어구 / 투력 공략집."""
@@ -696,7 +846,8 @@ class Window(QMainWindow):
         hist = load_power(1)
         self.spin_hunt_power.setValue(int(hist[-1][1]) if hist else 0)
         row.addWidget(self.spin_hunt_power)
-        btn = QPushButton("🗺  사냥터 추천")
+        btn = QPushButton("사냥터 추천")
+        btn.setIcon(icons.make("map", C["accent"]))
         btn.clicked.connect(self._show_hunt_reco)
         row.addWidget(btn)
         row.addStretch(1)
@@ -710,11 +861,8 @@ class Window(QMainWindow):
         import gear_guide as g
         from html import escape
         power = self.spin_hunt_power.value()
-        try:
-            with open(CONFIG_PATH, encoding="utf-8") as f:
-                margin = float(((yaml.safe_load(f) or {}).get("farm") or {}).get("margin", 0.9))
-        except Exception:                                    # noqa: BLE001
-            margin = 0.9
+        bot = self.thread.bot if self.thread else None
+        margin = float(get_path(bot.cfg, ("farm", "margin"), 1.5)) if bot else self.controls[("farm", "margin")].value()
         h = f"<body style='color:{C['text']}'>"
         h += f"<p style='color:{C['sub']}'>{escape(g.CAVEAT)}</p>"
         if power <= 0:
@@ -726,8 +874,9 @@ class Window(QMainWindow):
                 return f"<b>{escape(x[0])}</b> (권장 {x[1]:,})" if x else "없음 (더 낮은 곳을 직접 확인)"
             h += (f"<table width='100%' cellpadding=10 style='background:{C['panel2']}'><tr><td>"
                   f"전투력 <b>{power:,}</b> 기준<br>"
-                  f"<span style='color:{C['ok']}'>도깨비헬퍼(앵벌 모드)가 가는 곳</span>: {fmt(r['macro'])} "
+                  f"<span style='color:{C['ok']}'>앵벌 허용 범위의 사냥터</span>: {fmt(r['macro'])} "
                   f"<span style='color:{C['sub']}'>— 전투력의 {margin * 100:.0f}% 이하</span><br>"
+                  f"길라잡이 무료 순간이동 후보: {fmt(g.recommend_hunt(power, min(margin, 1.0))['macro'])}<br>"
                   f"<span style='color:{C['warn']}'>웹 원칙(권장 전투력을 넘긴 가장 높은 곳)</span>: {fmt(r['web'])}"
                   + ("" if not r["web"] or r["web"][2] else " <span style='color:" + C['sub'] + "'>— 도깨비헬퍼는 이 구간으로 이동하지 못함</span>")
                   + f"<br>다음 목표: {fmt(r['next'])}"
@@ -773,7 +922,7 @@ class Window(QMainWindow):
         if ladder:
             h += (f"<h2>사냥터 사다리 <span style='color:{C['ok']};font-size:13px'>[실측]</span></h2>"
                   f"<p style='color:{C['sub']}'>길라잡이(F5) '사냥터 바로가기'는 무료 순간이동입니다. 권장 전투력 = 그 사냥터 몬스터 전투력. "
-                  "도깨비헬퍼는 내 전투력의 90% 이하 중 가장 센 곳을 고릅니다.</p>"
+                  "앵벌 허용 범위는 설정의 전투력 비율을 따릅니다. 길라잡이 무료 순간이동은 내 전투력 이하만 가능하며, 1.5배 구역으로 걸어 올라가는 기능은 아직 없습니다.</p>"
                   "<table cellpadding=4><tr><th align=left>사냥터</th><th align=right>권장 전투력</th></tr>")
             for name, power in ladder:
                 h += f"<tr><td>{escape(name)}</td><td align=right>{power:,}</td></tr>"
@@ -970,10 +1119,13 @@ class Window(QMainWindow):
             self.start()
 
     def stop(self):
-        if self.thread and self.thread.bot:
-            self.thread.bot.stop_event.set()
+        if self.thread:
+            self.thread.stop_requested = True
+            if self.thread.bot:
+                self.thread.bot.stop_event.set()
             self.btn_stop.setEnabled(False)
             self.btn_pause.setEnabled(False)
+            self.pill.set("정지 중…", C["warn"])
 
     def toggle_pause(self):
         bot = self.thread.bot if self.thread else None
@@ -1000,10 +1152,14 @@ class Window(QMainWindow):
         self.btn_start.setEnabled(not running)
         self.btn_stop.setEnabled(running)
         self.btn_pause.setEnabled(running)
-        for w in self.controls.values():
-            w.setEnabled(not running)
+        for path, w in self.controls.items():
+            w.setEnabled(not running and path not in LOCKED_SETTINGS)
+            if path in LOCKED_SETTINGS:
+                self._set_checked_quiet(w, False)
         self.chk_dry.setEnabled(not running)
         self.chk_debug.setEnabled(not running)
+        self.profile_bar.setEnabled(not running)
+        self.btn_evade.setEnabled(running)
         if not running:
             self.pill.set("정지됨", C["idle"])
             self._set_pause_label(False)
@@ -1026,6 +1182,10 @@ class Window(QMainWindow):
             self.lbl_state.setText("정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")
             self.lbl_state_sub.setText("▶ 시작을 누르면 게임 화면을 보고 자동으로 진행합니다")
+            self.hp_bar.hide()
+            for value, detail in self.live_lbl.values():
+                value.setText("—")
+                detail.setText("시작 후 확인합니다")
             for c in self.chips.values():
                 c.on(False)
             self.stat_lbl["time"].setText(fmt_time(self.session_total))
@@ -1059,9 +1219,17 @@ class Window(QMainWindow):
             put("sync", f"{rate * 100:.0f}%", f"최근 화면 인식률 · 마지막 인식 {age:.0f}초 전" if age is not None else "화면 인식률", col)
 
         if not d or d.get("at") is None or time.monotonic() - d["at"] > 20:
+            self.hp_bar.hide()
             for k in ("map", "mob", "quest"):
                 put(k, "-", "읽는 중…" if k == "map" else "")
             return
+        hp = d.get("hp") if d.get("field") else None
+        self.hp_bar.setVisible(hp is not None)
+        if hp is not None:
+            self.hp_bar.setValue(max(0, min(100, round(hp * 100))))
+            color = C["bad"] if hp < 0.3 else C["warn"] if hp < 0.5 else C["ok"]
+            self.hp_bar.setStyleSheet(f"QProgressBar::chunk {{ background: {color}; border-radius: 3px; }}")
+            self.hp_bar.setToolTip(f"마지막으로 읽은 HP {hp * 100:.0f}%")
         if not d.get("field"):
             put("map", "필드 아님", "메뉴·던전 화면·컷신 중일 수 있음", C["warn"])
         else:
@@ -1163,7 +1331,7 @@ class Window(QMainWindow):
         self._quitting = False
         if not QSystemTrayIcon.isSystemTrayAvailable():
             return
-        self.tray = QSystemTrayIcon(QIcon(os.path.join(ROOT, "assets", "app.ico")), self)
+        self.tray = QSystemTrayIcon(icons.make("brand", C["accent"]), self)
         m = QMenu()
         m.addAction("열기", self._show_from_tray)
         m.addAction("시작", self.start)
@@ -1222,7 +1390,10 @@ class Window(QMainWindow):
     def _save_geometry_now(self):
         if self.saved is not None:
             try:
-                self._save()
+                g = self.geometry() if not self.isMaximized() else self.normalGeometry()
+                self.saved["_geometry"] = [g.x(), g.y(), g.width(), g.height(), self.isMaximized()]
+                with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
+                    json.dump(self.saved, f, ensure_ascii=False, indent=1)
             except Exception:  # noqa: BLE001
                 pass
 
@@ -1248,7 +1419,7 @@ def main():
     except Exception:  # noqa: BLE001
         pass
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(os.path.join(ROOT, "assets", "app.ico")))
+    app.setWindowIcon(icons.make("brand", C["accent"]))
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
     win = Window()
