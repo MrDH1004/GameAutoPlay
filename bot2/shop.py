@@ -33,12 +33,18 @@ def _white_mask(crop):
 
 
 def _read_count(crop):
+    """여러 방식으로 읽어 가장 많이 나온 값을 쓴다 (한 번만 읽으면 '204'를 '2'나 '304'로 잘못 읽어 물약이 부족한 것으로 착각할 수 있다).
+    같은 표가 나오면 자릿수가 많은 쪽."""
+    from collections import Counter
     tries = [(_white_mask(crop), 4), (_white_mask(crop), 3), (crop, 3), (_binarize(crop, 170), 3), (crop, 4)]
+    votes = Counter()
     for img, sc in tries:
         m = re.search(r"\d{1,3}", _ocr(img, sc))
         if m:
-            return int(m.group(0))
-    return None
+            votes[int(m.group(0))] += 1
+    if not votes:
+        return None
+    return max(votes.items(), key=lambda kv: (kv[1], len(str(kv[0]))))[0]
 
 
 def read_potion_count(frame):

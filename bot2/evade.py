@@ -9,6 +9,7 @@
 import logging
 import math
 import re
+import time
 
 import numpy as np
 
@@ -27,6 +28,7 @@ LIST_CLICK_X = 250
 DIST_BOX = (1560, 945, 1760, 985)    # 지역을 누르면 오른쪽 아래에 나오는 '326m'
 ROW_BRIGHT = 130                     # 하위 지역 줄 배경 밝기 기준 (머리줄 82~92, 하위 지역 158~187)
 MIN_DIST = 50                        # 이 거리(m) 안의 지역은 '지금 내가 있는 지역'
+CACHE_SECS = 45 * 60                 # 미리 읽어 둔 지역 정보를 믿는 시간
 MAX_DIST = 900                       # 이보다 먼 지역으로는 걸어가지 않는다
 PX_PER_M = 27.0                      # 지도 190px ≈ 7m (실측)
 SPEED_MPS = 1.3                      # 걷는 속도 추정 (넉넉하게)
@@ -76,6 +78,7 @@ class Evader:
     def __init__(self, drv, dist_px=380):
         self.drv = drv
         self.dist = dist_px
+        self.cache = None                # prepare()로 미리 읽어 둔 지역 정보
 
     def _map_open(self, img):
         return bool(_matches(img, _tpl("world_map_title.png"), MAP_TITLE_BOX, 0.85))
@@ -162,21 +165,45 @@ class Evader:
                 return
         return
 
+    def _scan_areas(self):
+        """지도 지역 정보 목록의 하위 지역을 하나씩 눌러 거리를 읽는다 (지도 목록이 열려 있어야 함). [{name, cy, dist}]"""
+        d = self.drv
+        areas = []
+        for name, cy in self._list_rows(d.shot())[:6]:
+            d.click(LIST_CLICK_X, cy)
+            d.sleep(1.2)
+            dist = parse_dist(_ocr(_crop(d.shot(), DIST_BOX), 2))
+            if dist is not None:
+                areas.append({"name": name, "cy": cy, "dist": dist})
+        return areas
+
+    def prepare(self):
+        """안전할 때 미리 지역 정보(이름·거리)를 읽어 둔다: 지도를 열어 읽고 아무 곳도 가지 않고 닫는다. 성공하면 True."""
+        if not self._open_list():
+            return False
+        try:
+            areas = self._scan_areas()
+        finally:
+            self._close_map()
+        here, tgt = pick_target(areas)
+        self.cache = {"at": time.monotonic(), "areas": areas, "here": here, "tgt": tgt}
+        log.info("자리 회피 준비: 지금 있는 곳 %s · 피신할 곳 %s (%s)", here["name"] if here else "?", tgt["name"] if tgt else "없음",
+                 ", ".join(f"{a['name']} {a['dist']}m" for a in areas) or "-")
+        return bool(tgt)
+
     def flee_area(self):
         """지역 정보 목록에서 지금 있는 곳이 아닌 가장 가까운 지역을 골라 걸어간다.
         돌려주는 값: {"area": 원래 지역 이름 또는 None, "to": 간 지역, "dist": m} 또는 None."""
         d = self.drv
         if not self._open_list():
             return None
-        rows = self._list_rows(d.shot())[:6]
-        areas = []
-        for name, cy in rows:
-            d.click(LIST_CLICK_X, cy)
-            d.sleep(1.2)
-            dist = parse_dist(_ocr(_crop(d.shot(), DIST_BOX), 2))
-            if dist is not None:
-                areas.append({"name": name, "cy": cy, "dist": dist})
-        here, tgt = pick_target(areas)
+        if self.cache and time.monotonic() - self.cache["at"] < CACHE_SECS and self.cache.get("tgt"):
+            # 안전할 때 미리 읽어 둔 지역 정보로 바로 이동 (위험할 때 줄마다 눌러 거리를 읽으면 20초 넘게 걸려 그 사이에 죽는다)
+            here, tgt = self.cache.get("here"), self.cache["tgt"]
+            log.info("자리 회피: 미리 읽어 둔 지역 정보 사용 → '%s'", tgt["name"])
+        else:
+            areas = self._scan_areas()
+            here, tgt = pick_target(areas)
         if not tgt:
             log.warning("자리 회피: 지역 정보 목록에서 걸어갈 지역을 못 찾음 (%s)", ", ".join(f"{a['name']} {a['dist']}m" for a in areas) or "-")
             self._close_map()

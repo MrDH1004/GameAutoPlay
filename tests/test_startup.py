@@ -46,5 +46,27 @@ class StartupTest(unittest.TestCase):
         self.assertEqual(ls.read_quest(load("field_hp_95.png")), "[5장] 길목을 막는 요귀")
 
 
+class PotionCountVoteTest(unittest.TestCase):
+    """물약 개수는 한 번만 읽으면 '204'를 '2'/'304'로 잘못 읽을 수 있다 → 여러 방식의 다수결."""
+
+    def read(self, outputs):
+        import numpy as np
+        import bot2.shop as shop
+        it = iter(outputs)
+        orig = shop._ocr
+        try:
+            shop._ocr = lambda img, sc=3: next(it)
+            return shop._read_count(np.zeros((24, 40, 3), np.uint8))
+        finally:
+            shop._ocr = orig
+
+    def test_majority_wins_over_a_single_misread(self):
+        self.assertEqual(self.read(["204", "304", "204", "204", "204"]), 204)
+        self.assertEqual(self.read(["2", "204", "204", "", "204"]), 204)
+
+    def test_none_when_nothing_readable(self):
+        self.assertIsNone(self.read(["", "", "", "", ""]))
+
+
 if __name__ == "__main__":
     unittest.main()

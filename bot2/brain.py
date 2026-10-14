@@ -126,6 +126,8 @@ class Bot:
         self._evade_pending = False     # T를 끈 뒤 회피 이동을 시작해야 함
         self._evade_request = False     # 제어판/명령의 수동 회피 요청
         self._evade_last = -1e9
+        self._evade_prep_at = 0.0       # 자리 회피용 지역 정보를 마지막으로 미리 읽은 시각
+        self._evade_prep_key = None     # 그때의 사냥터
         self._rest_empty_since = None   # 타겟 체력바가 완전히 비어 보이기 시작한 시각 (잠깐 깜빡임 무시용)
         self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
         self._rest_press_at = 0.0
@@ -765,6 +767,27 @@ class Bot:
         self._fails = 0
         return True
 
+    def _maybe_prepare_evade(self, snap, now):
+        """사냥터에 자리 잡아 안전할 때(HP 90% 이상, 휴식·회피 중 아님) 자리 회피에 쓸 지역 정보를 미리 읽어 둔다.
+        사냥터가 바뀌었거나 마지막으로 읽은 지 25분이 지나면 다시 한다."""
+        c = self.hp_cfg
+        if (self.dry_run or not c.get("enabled", True) or not c.get("evade_enabled", True) or self._rest is not None
+                or self._evade or self._evade_pending or snap.state not in ("COMBAT", "IDLE") or snap.walking
+                or (self.hp or 0.0) < 0.9 or now - self._evade_prep_at < 60):
+            return
+        key = (self.farm.current or {}).get("id") if self.farm else None
+        if key == self._evade_prep_key and now - self._evade_prep_at < 1500:
+            return
+        if not self.farm_mode:                                  # 앵벌 사냥 중에만 (퀘스트 이동 중에는 하지 않는다)
+            return
+        self._evade_prep_at, self._evade_prep_key = now, key
+        try:
+            self.evader.prepare()
+        except actions.UserInterrupt:
+            raise
+        except Exception as e:                                # noqa: BLE001
+            log.warning("자리 회피 준비 중 오류: %s", e)
+
     @staticmethod
     def _main_menu_open(frame):
         """우측 ☰ 메뉴 패널이 열려 있는가 (수집 쪽 템플릿 재사용)."""
@@ -818,6 +841,7 @@ class Bot:
 
     def _on_field(self, snap, now):
         """필드 화면: COMBAT/MOVING은 아무것도 하지 않고, IDLE이 이어질 때만 퀘스트를 누른다."""
+        self._maybe_prepare_evade(snap, now)
         if self.farm and now - self._last_map_close > 4.0 and self.farm.guide.is_open(snap.frame):
             # 길라잡이 창은 필드 표시(오른쪽 아래 HUD)를 가리지 않아 '필드'로 보이지만 키 입력(T 등)을 막는다 → 닫는다
             log.info("열려 있는 길라잡이 화면을 닫음 (필드 화면에서)")
