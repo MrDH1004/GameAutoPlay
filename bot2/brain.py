@@ -119,6 +119,13 @@ class Bot:
         self._low_hp_warned = 0.0
         self.hp = None
         self.startup_state = None       # 시작 점검 결과 (bot2/startup.py)
+        self._map_name = ""             # 마지막으로 확인한 지도 이름
+        self._map_observed_at = -1.0    # 같은 LiveStatus 프레임을 중복 판정하지 않음
+        self._map_ocr_at = -1e9         # 봇 루프의 지도명 보조 OCR 시각
+        self._secret_realm = False      # [비경]: 지도 이동 없이 일반 자동사냥만 유지
+        self._secret_realm_base = ""   # 접두어만 OCR에서 빠진 경우를 일반 맵 복귀로 오인하지 않음
+        self._normal_map_candidate = ""
+        self._normal_map_confirm = 0    # 비경 종료는 같은 일반 지도명을 두 화면에서 확인
         from .livestatus import LiveStatus
         self.live = LiveStatus(self, float(config.get("live_interval", 3.0)))     # 대시보드 실시간 상황판
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
@@ -652,6 +659,8 @@ class Bot:
         try:
             from . import startup
             st = startup.check(self)
+            if st.get("map"):
+                self._observe_map(st["map"], time.monotonic())
             if st.get("power"):
                 self.power = st["power"]
             self.startup_state = st
@@ -662,6 +671,112 @@ class Bot:
                 self.potion_shop and setattr(self.potion_shop, "last_count", st["potions"])
         except Exception as e:  # noqa: BLE001
             log.warning("시작 점검 실패 (계속 진행): %s", e)
+
+    def _observe_map(self, name, observed_at=None):
+        """지도 OCR 결과로 비경 잠금을 갱신한다.
+
+        비경 진입은 즉시 적용한다. 비경 종료는 OCR 한 번의 누락 때문에 앵벌 이동을 시작하지
+        않도록 같은 일반 지도명을 서로 다른 두 화면에서 확인한 뒤 확정한다.
+        """
+        from .startup import clean_map_name, is_secret_realm_name
+        name = clean_map_name(str(name or ""))
+        if not name:
+            return self._secret_realm
+        observed_at = time.monotonic() if observed_at is None else float(observed_at)
+        if observed_at <= self._map_observed_at:
+            return self._secret_realm
+        self._map_observed_at = observed_at
+        self._map_name = name
+        if is_secret_realm_name(name):
+            self._secret_realm_base = re.sub(r"[^0-9A-Za-z가-힣]", "", name).replace("비경", "")
+            self._normal_map_candidate = ""
+            self._normal_map_confirm = 0
+            if not self._secret_realm:
+                self._secret_realm = True
+                self._rest = None
+                self._evade = None
+                self._evade_pending = False
+                self._evade_request = False
+                self._want_hunt = True
+                self._hunt_tries = 0
+                self._hunt_press_at = 0.0
+                if self.farm:
+                    self.farm.need_travel = True       # 비경 종료 뒤 원래 앵벌 선택을 시작
+                log.warning("비경 감지: '%s' → 지도 이동·부가 자동화 중지, 일반 자동사냥만 유지", name)
+            return True
+        if not self._secret_realm:
+            return False
+        normal_key = re.sub(r"[^0-9A-Za-z가-힣]", "", name)
+        if (self._secret_realm_base and len(normal_key) >= 4
+                and (normal_key == self._secret_realm_base
+                     or normal_key in self._secret_realm_base
+                     or self._secret_realm_base in normal_key)):
+            self._normal_map_candidate = ""
+            self._normal_map_confirm = 0
+            log.debug("비경 지도명에서 접두어만 빠진 OCR로 판단: '%s'", name)
+            return True
+        if name == self._normal_map_candidate:
+            self._normal_map_confirm += 1
+        else:
+            self._normal_map_candidate = name
+            self._normal_map_confirm = 1
+        if self._normal_map_confirm < 2:
+            log.info("비경 종료 확인 중: 일반 지도 '%s' (%d/2)", name, self._normal_map_confirm)
+            return True
+        self._secret_realm = False
+        self._secret_realm_base = ""
+        self._normal_map_candidate = ""
+        self._normal_map_confirm = 0
+        self._want_hunt = False
+        self._hunt_tries = 0
+        self._hunt_press_at = 0.0
+        if self.farm and (self.farm_mode or time.monotonic() < self._farm_until):
+            self.farm.need_travel = True
+            self.farm.next_try = 0.0
+            self.farm.next_eval = 0.0
+        self.risk_guard.arm(observed_at)
+        log.warning("비경 종료 확인: '%s' → 일반 맵 앵벌 선택·이동 재개", name)
+        return False
+
+    def _refresh_map_mode(self, snap, now):
+        """실시간 지도명과 현재 프레임 보조 OCR로 비경 여부를 안전하게 갱신한다."""
+        if not getattr(snap, "in_field", False):
+            return self._secret_realm
+        live = getattr(self, "live", None)
+        data = getattr(live, "data", {}) if live else {}
+        live_at = data.get("at")
+        if data.get("field") and data.get("map") and live_at is not None and now - live_at <= 12:
+            self._observe_map(data["map"], live_at)
+        # LiveStatus가 늦거나 OCR 스레드가 멈춰도 비경 종료를 놓치지 않는 보조 확인.
+        if now - self._map_ocr_at >= 12:
+            self._map_ocr_at = now
+            try:
+                from .startup import read_map_name
+                self._observe_map(read_map_name(snap.frame), now)
+            except Exception as e:  # noqa: BLE001
+                log.debug("지도 이름 보조 확인 실패: %s", e)
+        return self._secret_realm
+
+    def _on_secret_realm(self, snap, now):
+        """시간제한 비경에서는 T 자동사냥 외의 메뉴·지도·이동 입력을 보내지 않는다."""
+        self._last_progress = now                    # 의도적인 대기라 멈춤 복구도 실행하지 않음
+        self._idle_since = None
+        self._verify = None
+        self._evade_request = False
+        if snap.auto_on:
+            self._want_hunt = False
+            self._hunt_tries = 0
+            return
+        if snap.walking:
+            return
+        if not self._want_hunt and now - self._hunt_check >= 5:
+            self._hunt_check = now
+            self._want_hunt = True
+            self._hunt_tries = 0
+            self._hunt_press_at = 0.0
+            log.info("비경: 자동 사냥이 꺼져 있음 → T로 켜기")
+        if self._want_hunt:
+            self._ensure_hunt(snap, now)
 
     def _focus_game_window(self):
         """제어판 버튼을 누르면 제어판이 게임 위로 올라와 봇이 '게임 창이 앞에 없음'으로 멈춘다 → 게임 창을 앞으로 가져온다."""
@@ -1153,6 +1268,8 @@ class Bot:
                  f"전투력: {self.power:,}" if self.power else "전투력: ?",
                  f"퀘스트 출처: {self._source}",
                  f"사망 {self.stats['deaths']} · 임무 전환 {self.stats['missions']} · 영기 {self.stats['yeonggi']}"]
+        if self._secret_realm:
+            lines.append(f"비경: {self._map_name or '?'} · 지도 이동 없이 일반 자동사냥만")
         if self.farm and (self.farm_mode or time.monotonic() < self._farm_until):
             lines.append("사냥터: " + self.farm.describe())
         return "\n".join(lines)
@@ -1198,6 +1315,7 @@ class Bot:
         now = time.monotonic()
         snap = self.eyes.look(frame, now)
         state = snap.state
+        in_secret_realm = self._refresh_map_mode(snap, now)
         self.live.note_frame(state != "OVERLAY")       # 동기화: 이번 화면을 아는 화면으로 분류했는지
         if state != self._last_state:
             log.info("상태: %s → %s", self._last_state or "-", state)
@@ -1212,6 +1330,10 @@ class Bot:
             log.warning("시작 후 3분 동안 아는 화면(필드 HUD 등)을 한 번도 인식하지 못함 → 게임 업데이트로 UI가 바뀌었거나 해상도 문제일 수 있음")
             self._save_screen(snap.frame, "unknown_ui")
             self.notifier.send("아는 화면을 인식하지 못함 (게임 UI 변경 가능성)", snap.frame, key="ui")
+        if in_secret_realm and state != "DEAD":
+            if snap.in_field:
+                self._on_secret_realm(snap, now)
+            return
         if state in ("MOVING", "COMBAT", "DIALOG", "DEAD") or snap.world_motion > self.motion_threshold:
             self._last_progress = now
             self._stalls = 0

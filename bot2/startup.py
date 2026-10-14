@@ -32,6 +32,16 @@ def clean_map_name(txt):
     return t
 
 
+def is_secret_realm_name(name):
+    """지도 이름에 '[비경]' 표기가 있으면 시간제한 비경으로 본다.
+
+    OCR이 대괄호나 띄어쓰기를 빠뜨려도 '비경' 두 글자가 남으면 인식한다.
+    빈 값은 일반 맵으로 추측하지 않고 False만 반환한다.
+    """
+    compact = re.sub(r"[\s\[\](){}]", "", str(name or ""))
+    return "비경" in compact
+
+
 def read_map_name(frame):
     """지금 있는 지도 이름 ('안개 기슭 지하 동굴', '우물동굴' …). 못 읽으면 ''."""
     crop = _crop(frame, MAP_NAME_BOX)

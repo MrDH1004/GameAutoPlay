@@ -1435,7 +1435,7 @@ class Window(QMainWindow):
 
         power = getattr(bot, "power", None) or getattr(getattr(bot, "farm", None), "power", None)
         margin = get_path(getattr(bot, "cfg", {}), ("farm", "margin"), 1.5)
-        mode = "앵벌" if getattr(bot, "farm_mode", False) else "퀘스트"
+        mode = "비경 자동사냥" if getattr(bot, "_secret_realm", False) else "앵벌" if getattr(bot, "farm_mode", False) else "퀘스트"
         put("power", f"{power:,}" if power else "읽는 중", f"최근 확인값 · {mode} · 허용 {margin:g}배")
 
         rate, age, why = sy["rate"], sy["age"], sy["why"]
@@ -1497,7 +1497,10 @@ class Window(QMainWindow):
         else:
             self.lbl_window.setText("찾는 중")
             self.lbl_window_sub.setText("게임 창이 없거나 맨 앞에 있지 않습니다")
-        if getattr(bot, "farm", None):
+        if getattr(bot, "_secret_realm", False):
+            self.lbl_source.setText("비경 자동사냥")
+            self.lbl_source_sub.setText("시간 종료까지 지도 이동 없이 T 자동사냥만 유지")
+        elif getattr(bot, "farm", None):
             cur = bot.farm.current
             self.lbl_source.setText("사냥터 모드")
             self.lbl_source_sub.setText(bot.farm.describe() if cur or bot.farm.power else "사냥터 선택 대기")
