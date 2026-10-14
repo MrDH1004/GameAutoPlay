@@ -45,7 +45,7 @@ class GearGuideTest(unittest.TestCase):
 
 
 class RecommendTabTest(unittest.TestCase):
-    def test_tab_renamed_and_has_four_subtabs(self):
+    def test_tab_renamed_and_has_five_subtabs(self):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
         from PySide6.QtWidgets import QApplication
         import gui
@@ -56,7 +56,7 @@ class RecommendTabTest(unittest.TestCase):
         self.assertIn("추천", names)
         self.assertNotIn("스킬 추천", names)
         rec = w.tabs.widget(names.index("추천"))
-        self.assertEqual([rec.tabText(i) for i in range(rec.count())], ["스킬", "무기", "방어구", "투력 공략집"])
+        self.assertEqual([rec.tabText(i) for i in range(rec.count())], ["스킬", "무기", "방어구", "투력 공략집", "사냥터"])
         w.close()
         w.deleteLater()
 
