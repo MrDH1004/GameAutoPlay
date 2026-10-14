@@ -638,10 +638,23 @@ class GuideNav:
     def is_open(self, img=None):
         img = img if img is not None else self.drv.shot()
         area = _crop(img, (840, 160, 1080, 230))
-        if area.shape[0] < self._tpl.shape[0] or area.shape[1] < self._tpl.shape[1]:
-            return False
-        _, mx, _, _ = cv2.minMaxLoc(cv2.matchTemplate(area, self._tpl, cv2.TM_CCOEFF_NORMED))
-        return mx > 0.8
+        if area.shape[0] >= self._tpl.shape[0] and area.shape[1] >= self._tpl.shape[1]:
+            _, mx, _, _ = cv2.minMaxLoc(cv2.matchTemplate(area, self._tpl, cv2.TM_CCOEFF_NORMED))
+            if mx > 0.8:
+                return True
+        # 제목 줄을 시스템 공지 배너가 덮으면 제목으로는 못 찾는다 → 오른쪽 위 닫기 X로도 확인
+        xt = self._close_tpl()
+        xa = _crop(img, (1440, 160, 1530, 230))
+        if xt is not None and xa.shape[0] >= xt.shape[0] and xa.shape[1] >= xt.shape[1]:
+            _, mx, _, _ = cv2.minMaxLoc(cv2.matchTemplate(xa, xt, cv2.TM_CCOEFF_NORMED))
+            return mx > 0.85
+        return False
+
+    def _close_tpl(self):
+        if not hasattr(self, "_xtpl"):
+            p = os.path.join(ROOT, "templates", "guide_close.png")
+            self._xtpl = cv2.imdecode(np.fromfile(p, dtype=np.uint8), cv2.IMREAD_COLOR) if os.path.exists(p) else None
+        return self._xtpl
 
     def open(self):
         """길라잡이를 열고 '추천 사냥터' 탭으로 맞춘다 (열 때마다 '맞춤 추천' 탭으로 시작할 수 있어, 사냥터 노드 좌표가 어긋났다)."""
