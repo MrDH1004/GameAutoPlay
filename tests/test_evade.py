@@ -107,5 +107,34 @@ class EvadeFlowTest(unittest.TestCase):
         self.assertFalse(b._evade_pending)
 
 
+class AreaPickTest(unittest.TestCase):
+    def test_parse_dist(self):
+        self.assertEqual(evade.parse_dist("326m"), 326)
+        self.assertEqual(evade.parse_dist("1,250 m"), 1250)
+        self.assertIsNone(evade.parse_dist("축지술"))
+
+    def test_pick_nearest_other_area_and_remember_current(self):
+        areas = [{"name": "우물동굴 공터", "cy": 710, "dist": 12}, {"name": "아래광장", "cy": 784, "dist": 326},
+                 {"name": "위쪽광장", "cy": 858, "dist": 180}, {"name": "비명동굴 가는길", "cy": 932, "dist": 1500}]
+        here, tgt = evade.pick_target(areas)
+        self.assertEqual(here["name"], "우물동굴 공터")
+        self.assertEqual(tgt["name"], "위쪽광장")                 # 현재 지역 제외, MAX_DIST 안에서 가장 가까운 곳
+
+    def test_no_reachable_area(self):
+        self.assertEqual(evade.pick_target([{"name": "a", "cy": 1, "dist": 20}])[1], None)
+        self.assertEqual(evade.pick_target([{"name": "a", "cy": 1, "dist": 5000}])[1], None)
+        self.assertEqual(evade.pick_target([]), (None, None))
+
+    def test_back_dispatches_on_token_type(self):
+        calls = []
+        ev = evade.Evader.__new__(evade.Evader)
+        ev.back_area = lambda tok: calls.append(("area", tok)) or True
+        ev._go = lambda offs: calls.append(("pin", offs)) or (1, 1)
+        ev.back({"area": "아래광장", "dist": 300})
+        ev.back((380, 0))
+        self.assertEqual(calls[0][0], "area")
+        self.assertEqual(calls[1], ("pin", [(-380, 0)]))
+
+
 if __name__ == "__main__":
     unittest.main()

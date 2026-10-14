@@ -35,6 +35,7 @@ import yaml
 from datetime import datetime
 from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal
 from toggle_switch import Toggle
+import icons
 from PySide6.QtGui import QColor, QIcon, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
@@ -383,33 +384,44 @@ class Window(QMainWindow):
         self.pill = Pill("정지됨")
         row.addWidget(self.pill)
         row.addSpacing(14)
-        self.btn_start = QPushButton("▶  시작")
+        ic = lambda name, col=C["text"], dis=C["idle"]: icons.make(name, col, dis)       # noqa: E731
+        self.btn_start = QPushButton(" 시작")
         self.btn_start.setObjectName("start")
+        self.btn_start.setIcon(ic("play", "#07281a", C["idle"]))
         self.btn_start.clicked.connect(self.start)
-        self.btn_pause = QPushButton("⏸  일시정지")
+        self.btn_pause = QPushButton(" 일시정지")
         self.btn_pause.clicked.connect(self.toggle_pause)
-        self.btn_stop = QPushButton("■  정지")
+        self.btn_stop = QPushButton(" 정지")
         self.btn_stop.setObjectName("stop")
+        self.btn_stop.setIcon(ic("stop", "#2b0a0a", C["idle"]))
         self.btn_stop.clicked.connect(self.stop)
-        self.btn_potion = QPushButton("🧪  물약 구매")
+        self.btn_potion = QPushButton(" 물약 구매")
+        self.btn_potion.setIcon(ic("potion"))
         self.btn_potion.setToolTip("타바로 성 잡화 상점으로 가서 2단 체력 회복 물약을 한도까지 구매")
         self.btn_potion.clicked.connect(self.buy_potion)
         self._pending_potion = False
-        self.btn_farm = QPushButton("⚔  앵벌 모드 켜기")
-        self.btn_farm.setToolTip("퀘스트를 멈추고 전투력에 맞는 사냥터에서 자동 사냥만 합니다 (화첩/유물 수집 몬스터를 먼저 사냥). 다시 누르면 꺼지고 퀘스트를 재개합니다.")
-        self.btn_farm.clicked.connect(self.toggle_farm)
-        self.btn_evade = QPushButton("🏃  자리 회피")
-        self.btn_evade.setToolTip("지금 자리에서 세계지도 걸어가기(무료)로 몹이 적은 쪽으로 빠졌다가, HP가 차면 같은 거리만큼 돌아와 자동 사냥을 다시 켭니다. HP 30% 이하면 자동으로도 합니다.")
+        self.btn_evade = QPushButton(" 자리 회피")
+        self.btn_evade.setIcon(ic("evade"))
+        self.btn_evade.setToolTip("지금 자리에서 세계지도 '지역 정보' 목록의 가까운 지역으로 걸어가(무료) 빠졌다가, HP가 차면 원래 지역으로 돌아와 자동 사냥을 다시 켭니다. HP 30% 이하면 자동으로도 합니다.")
         self.btn_evade.clicked.connect(self.request_evade)
         self._pending_farm = False
-        self.btn_detect = QPushButton("🖱  조작 감지 켜짐")
+        # 켜고 끄는 기능은 설정 탭과 같은 토글 스위치로 (켜짐/꺼짐이 글자가 아니라 스위치 모양으로 보인다)
+        self.btn_farm = Toggle("앵벌 모드", on_color=C["ok"], off_color=C["idle"])
+        self.btn_farm.setToolTip("켜짐: 퀘스트를 멈추고 전투력에 맞는 사냥터에서 자동 사냥만 합니다.\n꺼짐: 퀘스트를 다시 진행합니다.")
+        self.btn_farm.clicked.connect(lambda _checked=False: self.toggle_farm())
+        self.btn_detect = Toggle("조작 감지", on_color=C["accent"], off_color=C["idle"])
         self.btn_detect.setToolTip("켜짐: 마우스·키보드를 쓰면 봇이 2분간 양보합니다.\n꺼짐: 마우스·키보드를 써도 봇이 멈추지 않습니다 (봇의 클릭과 겹칠 수 있으니 이동·등록 중에는 주의).")
-        self.btn_detect.clicked.connect(self.toggle_detect)
+        self.btn_detect.clicked.connect(lambda _checked=False: self.toggle_detect())
         self.user_detect = bool(self.saved.get("_user_detect", True))
         self._refresh_detect_button()
-        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm, self.btn_evade, self.btn_detect):
+        self._set_pause_label(False)
+        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_evade):
             b.setMinimumHeight(42)
+            b.setIconSize(icons.ICON_SIZE)
             row.addWidget(b)
+        row.addSpacing(10)
+        for t in (self.btn_farm, self.btn_detect):
+            row.addWidget(t)
         return row
 
     def _build_dashboard(self):
@@ -916,11 +928,20 @@ class Window(QMainWindow):
         self._refresh_detect_button()
 
     def _refresh_detect_button(self):
-        on = self.user_detect
-        self.btn_detect.setText("🖱  조작 감지 켜짐" if on else "🖱  조작 감지 꺼짐")
-        self.btn_detect.setProperty("on", not on)                 # 꺼진 상태를 노란색으로 눈에 띄게
-        self.btn_detect.style().unpolish(self.btn_detect)
-        self.btn_detect.style().polish(self.btn_detect)
+        self._set_checked_quiet(self.btn_detect, self.user_detect)
+
+    @staticmethod
+    def _set_checked_quiet(toggle, value):
+        """프로그램이 상태를 맞출 때는 신호 없이 바로 그 모양으로 (사용자가 누른 것으로 착각해 다시 실행하지 않게)."""
+        if toggle.isChecked() != bool(value):
+            toggle.blockSignals(True)
+            toggle.setChecked(bool(value))
+            toggle.blockSignals(False)
+
+    def _set_pause_label(self, paused):
+        """일시정지 버튼: 실행 중이면 ⏸ 일시정지, 멈춘 상태면 ▶ 재개 (아이콘도 같이 바꾼다)."""
+        self.btn_pause.setText(" 재개" if paused else " 일시정지")
+        self.btn_pause.setIcon(icons.make("play" if paused else "pause", C["accent"] if not paused else C["ok"], C["idle"]))
 
     def request_evade(self):
         """자리 회피 수동 실행 (봇이 필드에서 자동 사냥 중일 때)."""
@@ -985,7 +1006,7 @@ class Window(QMainWindow):
         self.chk_debug.setEnabled(not running)
         if not running:
             self.pill.set("정지됨", C["idle"])
-            self.btn_pause.setText("⏸  일시정지")
+            self._set_pause_label(False)
 
     # ---------- 주기 갱신
     def _refresh(self):
@@ -999,11 +1020,8 @@ class Window(QMainWindow):
             bot.request_manual_farm(True)
             self._pending_farm = False
         pending = bot._manual_farm_request if bot else None
-        on = bool(bot and (pending if pending is not None else bot.manual_farm))
-        self.btn_farm.setText("⚔  앵벌 모드 끄기" if on else "⚔  앵벌 모드 켜기")
-        self.btn_farm.setProperty("on", on)
-        self.btn_farm.style().unpolish(self.btn_farm)
-        self.btn_farm.style().polish(self.btn_farm)
+        on = bool((bot and (pending if pending is not None else bot.manual_farm)) or self._pending_farm)
+        self._set_checked_quiet(self.btn_farm, on)
         if not th:
             self.lbl_state.setText("정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")
@@ -1087,11 +1105,11 @@ class Window(QMainWindow):
 
         if bot.paused:
             self.pill.set("일시정지", C["warn"])
-            self.btn_pause.setText("▶  재개")
+            self._set_pause_label(True)
             msg = bot.alert_reason or "일시정지 중입니다"
             self._show_state("일시정지", msg, C["warn"], None)
             return
-        self.btn_pause.setText("⏸  일시정지")
+        self._set_pause_label(False)
         if bot.waiting_user:
             self.pill.set("사용자 조작 감지", C["accent"])
             self._show_state("양보 중", f"직접 조작을 감지했습니다 · {bot.user_resume}초간 조작이 없으면 재개", C["accent"], None)
