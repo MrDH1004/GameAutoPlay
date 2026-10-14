@@ -482,7 +482,10 @@ class FarmTask:
 
     def pick(self, power, now):
         usable = {"spots": [s for s in self.db["spots"] if s.get("power") and not s.get("disabled")]}
-        s = best_spot(usable, power, self.margin, self._active_bans(now))
+        # 길라잡이 '사냥터 바로가기'는 내 전투력이 그 사냥터 권장 전투력 이상일 때만 눌린다 ("사냥터로 이동하려면 권장 전투력을
+        # 달성해야 합니다") → 순간이동으로 갈 곳은 내 전투력 이하로 제한. 허용 비율(margin)이 1을 넘는 것은 '지금 사냥터를 유지해도 되는 한계'로만 쓴다.
+        margin = min(self.margin, 1.0) if self.use_guide else self.margin
+        s = best_spot(usable, power, margin, self._active_bans(now))
         if not s:
             return None
         ties = [x for x in usable["spots"] if x["power"] == s["power"] and x["id"] not in self.banned]
@@ -594,6 +597,8 @@ GUIDE_GO = (1322, 865)                   # '사냥터 바로가기'
 GUIDE_CLAIM = (1322, 790)                # '보상 받기' (사냥터 미션: 그 사냥터 권장 전투력 달성)
 GUIDE_REC_BOX = (1195, 428, 1300, 460)   # 오른쪽 '권장' 숫자
 GUIDE_CLOSE = (1485, 195)
+GUIDE_ALERT_BOX = (740, 420, 1180, 560)     # 길라잡이 위에 뜨는 '알림' 팝업 글
+GUIDE_ALERT_OK = (960, 624)              # 알림 팝업의 [확인]
 GUIDE_INFO_BOX = (1160, 355, 1480, 395)    # 추천 사냥터 탭 오른쪽 '사냥터 정보' 제목 칸
 GUIDE_TAB_RECO = (982, 257)              # 상단 탭 '추천 사냥터' (맞춤 추천 | 추천 사냥터 | 둘러보기)
 GUIDE_NODES = [
@@ -702,7 +707,14 @@ class GuideNav:
             return False
         log.info("길라잡이 바로가기(무료 순간이동): %s (권장 %s)", spot["name"], f"{spot['power']:,}")
         self.drv.click(*GUIDE_GO)
-        self.drv.sleep(8.0)                      # 로딩
+        self.drv.sleep(1.2)
+        if "달성" in _ocr(_crop(self.drv.shot(), GUIDE_ALERT_BOX), 2):      # '권장 전투력을 달성해야 합니다' 알림 → 이동 안 됨
+            log.warning("길라잡이: '%s'는 권장 전투력 %s을 달성해야 이동할 수 있음 (내 전투력 부족) → 이동 안 함", spot["name"], f"{spot['power']:,}")
+            self.drv.click(*GUIDE_ALERT_OK)
+            self.drv.sleep(0.8)
+            self.close()
+            return False
+        self.drv.sleep(6.8)                      # 로딩
         return True
 
     def claim_rewards(self, power):
