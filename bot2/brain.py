@@ -250,6 +250,9 @@ class Bot:
                     log.warning("물약을 %d번 눌러도 HP가 오르지 않음 → 물약이 없거나 다른 키일 수 있음", self._potion_miss)
                     self.notifier.send("물약 부족 가능 (눌러도 HP가 오르지 않음)", snap.frame, key="potion")
         keys = c.get("potion_keys") or []
+        # 평소 사냥 중 물약은 게임 자체 자동 물약에 맡기고, 헬퍼는 휴식·자리 회피로 쉬는 동안에만 누른다 (potion_normal: true면 예전처럼 평소에도 누름)
+        if self._rest != "rest" and not c.get("potion_normal", False):
+            keys = []
         below = c.get("rest_resume", 0.98) if self._rest == "rest" else c.get("potion_below", 0.45)
         if keys and self.hp < below and now - self._potion_at > c.get("potion_gap", 6.0):
             key = self._potion_key(snap.frame, keys)
