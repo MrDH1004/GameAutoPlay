@@ -550,6 +550,13 @@ class Bot:
             self.farm.need_travel = True
             self.farm.next_try = 0.0
             self.farm.next_eval = 0.0
+            if os.environ.pop("DOKKAEBI_STAY", ""):
+                # --stay: 지금 서 있는 곳에서 시작한다 (사냥터를 새로 고르지 않음). 시험·관찰용 — 사망/HP 낮음 처리를 보려고
+                # 직접 센 곳으로 간 뒤 켜는 경우. 재선택 주기가 오면 평소 규칙(허용 비율 초과면 내려감)을 따른다.
+                self.farm.current = {"id": "stay", "name": "현재 위치(유지)", "power": int(os.environ.get("DOKKAEBI_STAY_POWER", "200000"))}
+                self.farm.need_travel = False
+                self.farm.next_eval = now + self.farm.reselect
+                log.warning("--stay: 지금 자리에서 앵벌 시작 (사냥터 선택 건너뜀, %d분 뒤 재평가)", self.farm.reselect // 60)
             self._collect_pending = bool(self.collect)
             self._want_hunt = True
             self._hunt_tries = 0
