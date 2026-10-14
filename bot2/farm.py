@@ -594,6 +594,7 @@ GUIDE_GO = (1322, 865)                   # '사냥터 바로가기'
 GUIDE_CLAIM = (1322, 790)                # '보상 받기' (사냥터 미션: 그 사냥터 권장 전투력 달성)
 GUIDE_REC_BOX = (1195, 428, 1300, 460)   # 오른쪽 '권장' 숫자
 GUIDE_CLOSE = (1485, 195)
+GUIDE_INFO_BOX = (1160, 355, 1480, 395)    # 추천 사냥터 탭 오른쪽 '사냥터 정보' 제목 칸
 GUIDE_TAB_RECO = (982, 257)              # 상단 탭 '추천 사냥터' (맞춤 추천 | 추천 사냥터 | 둘러보기)
 GUIDE_NODES = [
     ("안개 기슭 1", 37000, (547, 800)),
@@ -666,10 +667,16 @@ class GuideNav:
                 if self.is_open():
                     ok = True
                     break
-        if ok:
+        if not ok:
+            return False
+        for _ in range(3):
+            self.drv.sleep(1.0)                      # 창이 뜨는 애니메이션이 끝난 뒤에 눌러야 탭이 바뀐다
             self.drv.click(*GUIDE_TAB_RECO)
-            self.drv.sleep(1.0)
-        return ok
+            self.drv.sleep(1.2)
+            if "사냥터" in _ocr(_crop(self.drv.shot(), GUIDE_INFO_BOX), 2):      # 오른쪽 '사냥터 정보' 칸이 보이면 추천 사냥터 탭
+                return True
+        log.warning("길라잡이: '추천 사냥터' 탭으로 바뀌지 않음")
+        return False
 
     def close(self):
         if self.is_open():
