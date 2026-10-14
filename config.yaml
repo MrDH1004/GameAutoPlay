@@ -248,6 +248,7 @@ collect:
   db_file: collect_db.json
   min_hunt_minutes: 3     # 한 수집 몬스터에서 최소 이만큼은 사냥
   max_hunt_minutes: 25    # 한 수집 몬스터에서 이만큼 사냥하면 다음 후보로 (완성된 그림은 후보에서 빠짐)
+  use_item_dict: true     # 다음에 잡을 몬스터를 아이템 사전 조사(item_dict.json)와 완료 기록(collect_done.json)으로 정한다 (그림 안에 들어가 고르지 않음). false면 예전 방식(collect_db.json)
   detect_piece_in_chat: false   # 채팅에서 '화첩 조각 획득'을 읽어 바로 교대 (채팅 글씨를 거의 못 읽어서 꺼 둠, 실험용)
 
 # ===== 공짜 보상 자동 받기 =====

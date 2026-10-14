@@ -233,6 +233,45 @@ class ItemDictScanner:
             return p
         return None                                  # 못 읽음 → finalize()가 다른 아이템에서 읽은 같은 몬스터 값으로 채운다
 
+    # ---------- 사전에서 찾아 걸어가기 ----------
+    def open_item(self, title_match, max_pages=30):
+        """목록 맨 위부터 내려가며 title_match(이름)가 참인 아이템을 찾아 누른다. 눌렀으면 True."""
+        d = self.drv
+        self.scroll_top()
+        seen = []
+        for _ in range(max_pages):
+            rows = self.list_rows(d.shot())
+            for nm, y in rows:
+                if title_match(nm):
+                    d.click(LIST_CLICK_X, y)
+                    d.sleep(1.0)
+                    return True
+            new = self.merge_pages(seen, [n for n, _ in rows])
+            if new == 0:
+                return False
+            d.drag(*SCROLL)
+            d.sleep(1.2)
+        return False
+
+    def locate_monster(self, name, max_pages=5):
+        """열려 있는 요귀 패널에서 name(비슷한 철자 허용)인 행의 중심 y. 없으면 None. (스크롤하며 찾는다)"""
+        d = self.drv
+        walk = _tpl("collect_walk.png")
+        for page in range(max_pages):
+            img = d.shot()
+            lines = _lines(img, YOGWI_PANEL, 3)
+            rows = _matches(img, walk, YOGWI_PANEL)
+            for _x, y in rows:
+                cy = y + 20
+                nm, _region = self._name_region(img, lines, cy)
+                if nm and (_close(nm, name) or _similar(nm, name)):
+                    return cy
+            if not rows:
+                return None
+            d.drag(*PANEL_SCROLL)
+            d.sleep(1.2)
+        return None
+
     # ---------- 한 아이템 ----------
     def scan_item(self, name, y):
         d = self.drv
@@ -253,28 +292,42 @@ class ItemDictScanner:
             self.db.setdefault("monsters", {})[f"{m['name']}|{m['region']}"] = {"power": m["power"], "region": m["region"]}
         return rec
 
+    def pieces_list_open(self):
+        """지금 아이템 목록이 '화첩 조각' 목록인가 (이름이 대부분 'OO 화첩 조각')."""
+        names = [n for n, _y in self.list_rows(self.drv.shot())]
+        return len(names) >= 3 and sum(1 for n in names if "조각" in n) * 2 >= len(names)
+
     def select_category(self, cat, max_scrolls=8):
         """왼쪽 탭 목록(스크롤 위치에 따라 y가 달라지고, 화면 밖에 있을 수도 있음)에서 글자로 찾아 누른다. 못 찾으면 목록을 스크롤해 다시 찾는다."""
         d = self.drv
         want = re.sub(r"\s", "", cat)
+        if cat == "화첩 조각" and self.pieces_list_open():
+            return True
         for _ in range(max_scrolls + 1):
             hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)           # '화첩'을 '화접'으로 읽는 식의 흔들림 허용
                     if len(l["text"]) <= len(cat) + 3 and _similar(want, re.sub(r"\s", "", l["text"]))]
             if hits:
                 top = min(hits, key=lambda l: l["cy"])
-                before = [n for n, _y in self.list_rows(d.shot())]
+                first = lambda: (self.list_rows(d.shot()) or [("", 0)])[0][0]     # noqa: E731
+                before = first()
                 d.click(top["x"] + 60, top["cy"])
                 d.sleep(1.5)
+
+                def switched():
+                    if cat == "화첩 조각":
+                        return self.pieces_list_open()
+                    return not _similar(first(), before)
+
                 # 탭을 누르면 그 아래에 하위 항목(예: '화첩 조각' 아래 '화첩 조각', '수집 재료' 아래 '유물')이 펼쳐지고,
                 # 하위 항목을 눌러야 아이템 목록이 바뀐다 → 목록이 그대로면 바로 아래 항목을 누른다
-                after = [n for n, _y in self.list_rows(d.shot())]
-                if len(after) == len(before) and all(_similar(a, b) for a, b in zip(after, before)):
-                    subs = sorted([l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)
-                                   if top["cy"] + 30 < l["cy"] < top["cy"] + 130], key=lambda l: l["cy"])
-                    d.click(subs[0]["x"] + 40 if subs else 532, subs[0]["cy"] if subs else top["cy"] + 63)     # 하위 항목 글자는 흐려 못 읽을 때가 있어 못 읽으면 탭 바로 아래(+63px)를 누른다
+                if not switched():
+                    # 다른 탭이 접히며 목록이 다시 정렬되므로 탭 위치를 새로 읽은 뒤 그 아래를 누른다 (하위 항목 글자는 흐려 OCR이 못 읽는다)
+                    again_hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)
+                                  if len(l["text"]) <= len(cat) + 3 and _similar(want, re.sub(r"\s", "", l["text"]))]
+                    tab_cy = min(again_hits, key=lambda l: l["cy"])["cy"] if again_hits else top["cy"]
+                    d.click(532, tab_cy + 63)
                     d.sleep(1.8)
-                    again = [n for n, _y in self.list_rows(d.shot())]
-                    if len(again) == len(before) and all(_similar(a, b) for a, b in zip(again, before)):
+                    if not switched():
                         raise RuntimeError(f"'{cat}' 하위 항목을 눌러도 아이템 목록이 바뀌지 않음")
                 return True
             d.drag(532, 850, 532, 350)                 # 탭 목록을 아래로 스크롤

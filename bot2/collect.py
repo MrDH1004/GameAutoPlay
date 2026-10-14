@@ -28,6 +28,7 @@ TPL_DIR = os.path.join(ROOT, "templates")
 MENU = (1870, 44)
 MENU_ALBUM = (1380, 558)
 MENU_RELIC = (1473, 558)
+MENU_ITEM_DICT = (1772, 478)                       # ☰ 메뉴의 '아이템 사전' (생활 및 교류 줄)
 MENU_DOT = {"album": (1405, 518, 1435, 545), "relic": (1498, 518, 1528, 545)}   # 메뉴 아이콘 우상단 빨간 점
 EXIT = (1872, 45)
 
@@ -636,6 +637,66 @@ class Collector:
             self._scroll_relics()
         return False
 
+    def walk_to_dict(self, monster, painting):
+        """아이템 사전(메뉴 → 아이템 사전 → 화첩 조각)에서 painting의 조각 아이템을 찾아 [획득처 → 요귀]에서
+        monster 행의 발자국(무료 자동 이동)을 누른다. 그림 화면에 들어가 몬스터를 고르지 않는다 (무엇을 잡을지는 이미 정해짐)."""
+        from .collect_plan import _ratio, title_of
+        from .itemdict import ItemDictScanner, _close
+        d = self.drv
+        self.reset_ui()
+        sc = ItemDictScanner(d, db={"items": [], "monsters": {}}, save_fn=lambda: None)
+        try:
+            shot = d.shot()
+            if not self.menu_open(shot):
+                d.click(*MENU)
+                d.sleep(1.3)
+                if not self.menu_open(d.shot()):
+                    raise RuntimeError("메뉴가 열리지 않음")
+            d.click(*MENU_ITEM_DICT)
+            d.sleep(2.0)
+            if not sc.dict_open(d.shot()):
+                raise RuntimeError("아이템 사전이 열리지 않음")
+            if not sc.select_category("화첩 조각"):
+                raise RuntimeError("화첩 조각 탭을 찾지 못함")
+            want = painting["title"]
+            if not sc.open_item(lambda nm: title_of(nm) == want or _ratio(title_of(nm), want) >= 0.75 or _close(nm, painting["item"])):
+                log.warning("수집: 아이템 사전에서 '%s' 조각을 찾지 못함", painting["item"])
+                self._close_dict(sc)
+                return False
+            srcs = sc.read_sources()
+            row = next((y for t, y in srcs if "요귀" in t.replace(" ", "")), None)
+            if row is None:
+                log.warning("수집: '%s'의 요귀 획득처가 없음 (%s)", painting["item"], ", ".join(t for t, _ in srcs) or "-")
+                self._close_dict(sc)
+                return False
+            d.click(1296, row)
+            d.sleep(1.8)
+            cy = sc.locate_monster(monster["name"])
+            if cy is None:
+                log.warning("수집: 요귀 목록에서 '%s'를 찾지 못함", monster["name"])
+                self._close_dict(sc)
+                return False
+            d.click(1636, cy)                           # 발자국 → 화면이 닫히고 자동 이동 시작
+            d.sleep(1.5)
+            moving = self.is_walking()
+            log.info("수집: '%s' 발자국 클릭 (y=%d) → 자동 이동 표시 %s", monster["name"], cy, moving)
+            return True
+        except StopRequested:
+            raise
+        except Exception as e:  # noqa: BLE001
+            log.warning("수집: 아이템 사전 이동 실패: %s", e)
+            self._close_dict(sc)
+            return False
+
+    def _close_dict(self, sc):
+        """요귀 패널·아이템 사전을 닫는다 (ESC를 눌러 열린 창이 없어질 때까지)."""
+        d = self.drv
+        for _ in range(4):
+            if not sc.dict_open(d.shot()) and not sc.panel_open(d.shot()):
+                return
+            d.key("esc")
+            d.sleep(1.0)
+
     # ---------- 이동 ----------
     def is_walking(self):
         """하단 '자동 이동 중 N m' 바가 보이면 True (웨이포인트 이동 중). 이 동안에는 자동 사냥(T)을 켜면 안 된다."""
@@ -644,6 +705,8 @@ class Collector:
     def walk_to(self, monster, via):
         """via(화첩 그림/유물)의 요귀 목록에서 monster 행의 발자국(무료 자동 이동)을 누른다. 성공하면 True."""
         kind, e = via
+        if kind == "dict":
+            return self.walk_to_dict(monster, e)
         self.reset_ui()
         try:
             if kind == "album":
@@ -814,6 +877,32 @@ class CollectTask:
         self.min_hunt = float(self.cfg.get("min_hunt_minutes", 3)) * 60     # 이동 직후 오탐을 피하려고 최소 이 시간은 사냥
         self.current = None         # 지금 사냥 중인 수집 몬스터
         self.status = "대기"
+        from . import collect_plan as cp
+        self.cp = cp
+        self.use_dict = bool(self.cfg.get("use_item_dict", True))      # 아이템 사전 조사(item_dict.json)로 다음 몬스터를 정한다
+        self.done = cp.load_done()          # 완료한 그림 {제목: 시각} — collect_done.json (지우지 않음)
+        self._paintings_cache = (0.0, [])
+
+    def paintings(self):
+        """아이템 사전 조사에서 만든 그림 목록 (파일이 바뀌면 다시 읽음). 없으면 []."""
+        try:
+            mt = os.path.getmtime(self.cp.DICT_FILE)
+        except OSError:
+            return []
+        if mt != self._paintings_cache[0]:
+            self._paintings_cache = (mt, self.cp.paintings_from_dict(self.cp.load_json(self.cp.DICT_FILE, {})))
+        return self._paintings_cache[1]
+
+    def sync_done(self):
+        """화첩 스캔·등록 결과에서 완료된 그림을 완료 기록(collect_done.json)에 더한다."""
+        ps = self.paintings()
+        if not ps:
+            return 0
+        n = self.cp.sync_done(self.done, ps, self.db.get("album", []))
+        if n:
+            self.cp.save_done(self.done)
+            log.info("수집: 완료한 그림 %d개 새로 기록 (누적 %d개)", n, len(self.done))
+        return n
 
     def describe(self):
         cur = self.current
@@ -866,6 +955,7 @@ class CollectTask:
         db["scanned_at"] = time.time()
         save_db(db, self.path)
         self.db = db
+        self.sync_done()
         log.info("수집 스캔 끝: 화첩 %d그림(미완성 %d), 유물 %d종",
                  len(db["album"]), sum(1 for e in db["album"] if not e.get("done")), len(db["relics"]))
 
@@ -877,14 +967,22 @@ class CollectTask:
         try:
             if self.need_scan():
                 self.scan()
-            cands = candidates(self.db, power, self.max_ratio, self._bans(now) | self.done_round, self.cfg.get("relics", True))
+            ps = self.paintings() if self.use_dict else []
+            if ps:                                           # 아이템 사전 조사 기준: 완료 기록 + 그림 순서 + 가장 약한 몬스터
+                self.sync_done()
+                pick = lambda skip: self.cp.build_candidates(ps, self.done, power, self.max_ratio, skip, ())   # noqa: E731
+            else:
+                pick = lambda skip: candidates(self.db, power, self.max_ratio, skip, self.cfg.get("relics", True))   # noqa: E731
+            cands = pick(self._bans(now) | self.done_round)
             if not cands and self.done_round:                 # 한 바퀴 다 돌았으면 처음부터 다시
                 log.info("수집 사냥: 후보를 한 바퀴 다 돌아 처음부터 다시 시작")
                 self.done_round.clear()
-                cands = candidates(self.db, power, self.max_ratio, self._bans(now), self.cfg.get("relics", True))
+                cands = pick(self._bans(now))
             for p, negc, m, via in cands[:3]:
                 e = via[1]
-                if via[0] == "album":                       # 화첩: 책 · 그림 번호 · 모은 조각 수까지 보여 순서대로 가는지 알 수 있게
+                if via[0] == "dict":                        # 사전 조사 그림: 제목 · 순번 · 완료 기록에 없는 그림만 순서대로
+                    where = f"화첩 그림 {e['order'] + 1}번 '{e['title']}' (미완료)"
+                elif via[0] == "album":                       # 화첩: 책 · 그림 번호 · 모은 조각 수까지 보여 순서대로 가는지 알 수 있게
                     where = f"화첩 {BOOKS[e['book']]} {e['idx'] + 1}번째 '{e.get('name')}' {e.get('have', 0)}/9"
                 else:
                     where = f"유물 '{e.get('name')}'"
@@ -960,6 +1058,7 @@ class CollectTask:
             if self.cfg.get("album", True):
                 n1 = self.col.register_album(self.db)
                 save_db(self.db, self.path)
+                self.sync_done()
             if self.cfg.get("relics", True):
                 n2 = self.col.register_relics()
         except StopRequested:
