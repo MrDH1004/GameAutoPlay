@@ -72,6 +72,22 @@ class CleanupTest(unittest.TestCase):
                 self.assertEqual(m["power"], 94500, m)
         self.assertGreaterEqual(f, 2)
 
+class RegionAndDigitTest(unittest.TestCase):
+    def test_region_noise_and_spelling_fixed(self):
+        db = {"items": [{"monsters": [mon("가", "안개 기습", 37000), mon("나", "9)) 안개 기슭", 37000), mon("다", "우물동굴", 170000),
+                                      mon("라", "구 안개 기슭", 38500)]}]}
+        idict.canonicalize_regions(db)
+        self.assertEqual([m["region"] for m in db["items"][0]["monsters"]], ["안개 기슭", "안개 기슭", "우물 동굴", "안개 기슭"])
+
+    def test_dropped_or_extra_digit_fixed_from_region_values(self):
+        ms = [mon("a", "황무지 마을", 135000)] * 3 + [mon("b", "황무지 마을", 35000), mon("c", "안개 기슭", 38500),
+                                                       mon("d", "안개 기슭", 385000), mon("e", "안개 기슭", 37000)]
+        db = {"items": [{"monsters": ms}]}
+        n = idict.fix_power_digits(db)
+        self.assertEqual(n, 2)
+        self.assertEqual(db["items"][0]["monsters"][3]["power"], 135000)       # 135K에서 첫 자리 빠짐
+        self.assertEqual(db["items"][0]["monsters"][5]["power"], 38500)        # 38.5K가 385K로
+
 
 if __name__ == "__main__":
     unittest.main()

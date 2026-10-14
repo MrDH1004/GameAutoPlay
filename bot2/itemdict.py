@@ -257,7 +257,8 @@ class ItemDictScanner:
         """왼쪽 탭 목록(스크롤 위치에 따라 y가 달라짐)에서 글자로 찾아 누른다."""
         d = self.drv
         want = re.sub(r"\s", "", cat)
-        hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2) if want in re.sub(r"\s", "", l["text"])]
+        hits = [l for l in _lines(d.shot(), (440, 140, 640, 1000), 2)           # '화첩'을 '화접'으로 읽는 식의 흔들림 허용
+                if len(l["text"]) <= len(cat) + 3 and _similar(want, re.sub(r"\s", "", l["text"]))]
         if not hits:
             return False
         top = min(hits, key=lambda l: l["cy"])
@@ -287,9 +288,16 @@ class ItemDictScanner:
             raise RuntimeError(f"'{cat}' 탭을 찾지 못함")
         self.scroll_top()
         done = {(r["category"], r["key"]) for r in self.db["items"]}
-        seen, stale, total = [], 0, 0
+        seen, stale, total, empty = [], 0, 0, 0
         while stale < 2 and total < max_items and time.monotonic() < end:
             rows = self.list_rows(d.shot())
+            if not rows:                             # OCR가 순간적으로 실패했거나 화면이 바뀌는 중 → 끝으로 오인하지 않고 다시 읽는다
+                empty += 1
+                if empty > 4:
+                    raise RuntimeError("아이템 목록을 읽지 못함")
+                d.sleep(1.5)
+                continue
+            empty = 0
             new = self.merge_pages(seen, [n for n, _ in rows])
             fresh = rows[len(rows) - new:] if new else []
             base = len(seen) - new
@@ -374,7 +382,12 @@ def finalize(db):
     """스캔 뒤 정리: 이름 철자 통일 → 전투력 채우기. (바꾼 이름 수, 채운 전투력 수)"""
     pick_item_names(db)
     c = canonicalize(db)
-    return c, fill_powers(db)
+    canonicalize_regions(db)
+    fix_power_digits(db)
+    f = fill_powers(db)
+    f += fill_by_region(db)
+    fill_powers(db)                                  # 몬스터 표(db["monsters"]) 갱신
+    return c, f
 
 
 def pick_item_names(db):
@@ -399,3 +412,101 @@ def pick_item_names(db):
     for it in db.get("items", []):
         if "name" in it:
             it["name"] = canon.get(it["name"], it["name"])
+
+
+def canonicalize_regions(db):
+    """지역 이름 철자 통일 ('안개 기습'→'안개 기슭'처럼 OCR 흔들림). 같은 방식으로 가장 많이 나온 철자를 쓴다."""
+    from collections import Counter
+    known = known_regions()
+    n0 = 0
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            r = re.sub(r"[^가-힣\s]+", " ", m.get("region") or "")                 # 숫자·기호 잡글자 제거
+            r = re.sub(r"\s+", " ", r).strip()
+            r = re.sub(r"^[가-힣]\s(?=[가-힣]{2})", "", r)                          # 앞에 붙은 한 글자 잡음('구 안개 기슭')
+            best = next((k for k in known if re.sub(r"\s", "", k) == re.sub(r"\s", "", r)), None) or                 next((k for k in known if _similar(k, r) and abs(len(k) - len(r)) <= 1), None)
+            r = best or r
+            if r != m.get("region"):
+                m["region"] = r
+                n0 += 1
+    cnt = Counter(m["region"] for it in db.get("items", []) for m in it.get("monsters", []) if m.get("region"))
+    canon = {}
+    for name, _n in cnt.most_common():
+        if name in canon:
+            continue
+        canon[name] = name
+        for other in cnt:
+            if other not in canon and _similar(name, other) and abs(len(name) - len(other)) <= 1:
+                canon[other] = name
+    n = n0
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            if m.get("region") and canon.get(m["region"], m["region"]) != m["region"]:
+                m["region"] = canon[m["region"]]
+                n += 1
+    return n
+
+
+def known_regions():
+    """길라잡이 사냥터 이름에서 뽑은 지역 이름들 ('안개 기슭 1' → '안개 기슭'). 철자 기준으로 쓴다."""
+    try:
+        from .farm import GUIDE_NODES
+        names = [re.sub(r"\s*\d+$", "", n) for n, _p, _xy in GUIDE_NODES]
+    except Exception:                                # noqa: BLE001
+        return []
+    return list(dict.fromkeys(names))
+
+
+LATE_POWERS = {360000, 370000, 490000, 695000, 960000}        # 웹 공략 기준 후반 사냥터 권장 전투력
+
+
+def fix_power_digits(db):
+    """자릿수가 빠지거나 늘어난 전투력(135K→35K, 38.5K→385K)을 같은 지역 값과 길라잡이 목록에 맞춰 고친다. 고친 수."""
+    from collections import Counter, defaultdict
+    try:
+        from .farm import GUIDE_NODES
+        ladder = {p for _n, p, _xy in GUIDE_NODES}
+    except Exception:                                # noqa: BLE001
+        ladder = set()
+    target = ladder | LATE_POWERS                     # 고칠 때 맞출 값 (실제 사냥터 값)
+    by_region = defaultdict(list)
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            if m.get("power") and m["power"] in target:
+                by_region[m["region"]].append(m["power"])
+    fixed = 0
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            v = m.get("power")
+            if not v or v in target:
+                continue
+            peers = sorted(by_region.get(m["region"], []))
+            if not peers:
+                continue
+            med = peers[len(peers) // 2]
+            cands = [v * 10, v // 10] + [int(f"{d}{v}") for d in range(1, 10)]
+            cands = [c for c in cands if c in target and med / 2 <= c <= med * 2]
+            if cands:
+                m["power"] = min(cands, key=lambda c: abs(c - med))
+                m["power_fixed"] = True
+                fixed += 1
+    return fixed
+
+
+def fill_by_region(db):
+    """아직 전투력이 없는 몬스터를 같은 지역 값이 거의 한 가지(70% 이상)일 때만 그 값으로 추정해 채운다 (power_est 표시)."""
+    from collections import Counter, defaultdict
+    reg = defaultdict(Counter)
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            if m.get("power"):
+                reg[m["region"]][m["power"]] += 1
+    n = 0
+    for it in db.get("items", []):
+        for m in it.get("monsters", []):
+            if not m.get("power") and reg.get(m["region"]):
+                val, c = reg[m["region"]].most_common(1)[0]
+                if c >= 0.7 * sum(reg[m["region"]].values()):
+                    m["power"], m["power_est"] = val, True
+                    n += 1
+    return n
