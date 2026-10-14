@@ -22,7 +22,7 @@ from .farm import StopRequested, _binarize, _crop, _ocr, clean_power, parse_k
 
 log = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app_paths import ROOT
 TPL_DIR = os.path.join(ROOT, "templates")
 
 MENU = (1870, 44)

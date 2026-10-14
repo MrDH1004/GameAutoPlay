@@ -12,7 +12,10 @@ import os
 import sys
 import time
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+from app_paths import ROOT, initialize_data
+from storage import load_json, save_json
+if getattr(sys, "frozen", False):
+    initialize_data()
 os.chdir(ROOT)
 
 
@@ -28,19 +31,19 @@ def _ensure_admin():
     sys.exit(0)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and not any(flag in sys.argv for flag in ("--self-check", "--smoke-test")):
     _ensure_admin()
 
 import yaml
 from datetime import datetime
-from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal
+from PySide6.QtCore import QObject, QRect, QThread, QTime, QTimer, Qt, Signal, QLockFile
 from toggle_switch import Toggle
 import icons
 from PySide6.QtGui import QColor, QIcon, QFont, QKeySequence, QShortcut, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
                                QTabWidget, QTextBrowser, QVBoxLayout, QWidget, QLineEdit, QScrollArea,
-                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox, QButtonGroup, QProgressBar)
+                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox, QButtonGroup, QProgressBar, QFileDialog)
 
 CONFIG_PATH = os.path.join(ROOT, "config.yaml")
 SETTINGS_PATH = os.path.join(ROOT, "gui_settings.json")
@@ -69,6 +72,8 @@ SETTING_FIELDS = [
     ("toggle", ("hp", "enabled"), "HP 회복 관리", "평소 물약은 게임에 맡기고, 휴식·자리 회피 중에만 Ctrl+1로 회복"),
     ("toggle", ("collect", "enabled"), "화첩 자동 수집", "사용자가 직접 수집하므로 자동 사냥·등록·스캔은 꺼 둡니다"),
     ("toggle", ("hp", "rest_enabled"), "HP 낮으면 쉬고 회복", "보스가 아닐 때 HP 50% 이하면 잡던 몹까지만 잡고 자동 사냥 끔 → 100% 차면 다시 켬"),
+    ("toggle", ("hp", "evade_guide_first"), "무료 순간이동 우선 회피", "HP 위험 시 길라잡이로 먼저 벗어남 · 불가능하면 기존 무료 걸어가기"),
+    ("toggle", ("hp", "startup_risk_check"), "시작·재개 시 위험도 확인", "같은 몬스터가 내 전투력의 허용 비율을 넘는지 두 프레임으로 확인 · 무료 순간이동 실패 시 일시정지"),
     ("toggle", ("preset", "enabled"), "보스면 도술 프리셋 전환", "보스 체력바가 보이면 2 보스, 끝나면 1 일반 프리셋"),
     ("toggle", ("potion_shop", "enabled"), "물약 자동 구매", "HP 물약 50개 미만이면 하루 1회 자동 구매 (위 버튼으로 수동 구매는 언제든)"),
     ("int", ("potion_shop", "buy_below"), "물약 구매 기준", (1, 249, "개 미만")),
@@ -146,7 +151,10 @@ class BotThread(QThread):
         self.stop_requested = False
 
     def run(self):
+        execution_lock = None
         try:
+            from execution_lock import acquire_bot_lock
+            execution_lock = acquire_bot_lock(self.config)
             from bot.window import enable_dpi_awareness
             from bot2.brain import Bot
             try:
@@ -165,7 +173,13 @@ class BotThread(QThread):
                 logging.exception("매크로 오류")
                 self.failed.emit(f"{type(e).__name__}: {e}")
         finally:
+            if self.bot:
+                self.bot.stop_event.set()
+                self.bot.notifier.stop()
+                self.bot.live.stop()
             self.bot = None
+            if execution_lock is not None:
+                execution_lock.unlock()
 
 
 # ---------------------------------------------------------------- 위젯
@@ -219,6 +233,8 @@ class Window(QMainWindow):
         self.setMinimumSize(900, 640)
         self.setWindowIcon(icons.make("brand", C["accent"]))
         self.thread = None
+        self._last_error = ""
+        self._closing = False
         self.started_at = 0.0
         self.paused_total = 0.0
         self.session_total = 0.0
@@ -239,6 +255,12 @@ class Window(QMainWindow):
         outer.setContentsMargins(16, 14, 16, 12)
         outer.setSpacing(12)
         outer.addLayout(self._build_header())
+        self.notice = QLabel()
+        self.notice.setWordWrap(True)
+        self.notice.setTextFormat(Qt.PlainText)
+        self.notice.setStyleSheet(f"background:{C['panel2']}; color:{C['warn']}; padding:10px; border-radius:8px;")
+        self.notice.hide()
+        outer.addWidget(self.notice)
 
         tabs = QTabWidget()
         tabs.addTab(self._build_dashboard(), "대시보드")
@@ -251,6 +273,7 @@ class Window(QMainWindow):
         tabs.addTab(SpotEditor(C), "사냥터")
         tabs.addTab(self._build_recommend(), "추천")
         tabs.addTab(self._build_log(), "로그")
+        tabs.addTab(self._build_support(), "도움말")
         self.tabs = tabs
         tabs.tabBar().hide()
         body = QHBoxLayout()
@@ -278,6 +301,7 @@ class Window(QMainWindow):
             fh = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=5_000_000, backupCount=5, encoding="utf-8")
             fh.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", "%H:%M:%S"))
             root_log.addHandler(fh)
+            self.file_handler = fh
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._refresh)
@@ -293,6 +317,8 @@ class Window(QMainWindow):
         self.spin_stop_h.valueChanged.connect(self._settings_changed)
         self.search_shortcut = QShortcut(QKeySequence("Ctrl+K"), self)
         self.search_shortcut.activated.connect(self._focus_settings_search)
+        if self._settings_load_warning:
+            self._notify(self._settings_load_warning)
 
     def _build_navigation(self):
         rail = QFrame()
@@ -304,7 +330,7 @@ class Window(QMainWindow):
         label.setObjectName("sub")
         col.addWidget(label)
         self.nav_group = QButtonGroup(self)
-        for i, name in enumerate(("dashboard", "settings", "stats", "preview", "map", "book", "log")):
+        for i, name in enumerate(("dashboard", "settings", "stats", "preview", "map", "book", "log", "support")):
             button = QPushButton(self.tabs.tabText(i))
             button.setObjectName("nav")
             button.setIcon(icons.make(name, C["accent"]))
@@ -346,16 +372,148 @@ class Window(QMainWindow):
         if self._save():
             self.settings_status.setText("설정을 저장했습니다 · 다음 시작부터 적용")
 
+    def _persist_saved(self, data):
+        if os.environ.get("DOKKAEBI_TEST") and os.path.abspath(SETTINGS_PATH) == os.path.join(ROOT, "gui_settings.json"):
+            return
+        save_json(SETTINGS_PATH, data)
+
+    def _notify(self, text, error=False):
+        self.notice.setText(text)
+        self.notice.setStyleSheet(f"background:{C['panel2']}; color:{C['bad'] if error else C['warn']}; padding:10px; border-radius:8px;")
+        self.notice.show()
+
+    def _backup_settings(self):
+        path, _ = QFileDialog.getSaveFileName(self, "설정 백업", "도깨비헬퍼-설정.json", "설정 파일 (*.json)")
+        if not path:
+            return
+        try:
+            save_json(path, {"_schema": 1, **self._collect_values()})
+            self._notify("설정을 백업했습니다. 알림 토큰과 계정 정보는 포함하지 않습니다.")
+        except (OSError, ValueError) as error:
+            self._notify("설정 백업 실패: " + str(error), True)
+
+    def _restore_settings(self):
+        path, _ = QFileDialog.getOpenFileName(self, "설정 복원", "", "설정 파일 (*.json)")
+        if not path:
+            return
+        try:
+            data, warning = load_json(path)
+            if warning or not data:
+                raise ValueError("정상적인 설정 백업 파일을 선택하세요")
+            restored = {}
+            for kind, setting_path, label, extra in SETTING_FIELDS:
+                key = "/".join(setting_path)
+                if key not in data:
+                    continue
+                value = data[key]
+                valid = isinstance(value, bool) if kind == "toggle" else (
+                    type(value) in (int, float) and extra[0] <= value <= extra[1]
+                    and (kind != "int" or type(value) is int))
+                if not valid:
+                    raise ValueError(label + ": 값의 형식 또는 범위가 올바르지 않습니다")
+                restored[key] = value
+            if not restored:
+                raise ValueError("복원할 수 있는 설정이 없습니다")
+            self._apply_values(restored)
+            self._notify("백업 설정을 불러왔습니다. 내용을 확인한 뒤 설정 저장을 누르세요.")
+        except (OSError, ValueError) as error:
+            self._notify("설정 복원 실패: " + str(error), True)
+
+    def _build_support(self):
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 8, 0, 0)
+        title = QLabel("도움말과 환경 점검")
+        title.setObjectName("pageTitle")
+        layout.addWidget(title)
+        instructions = QLabel("1. 게임을 전체화면으로 실행하세요.\n"
+                              "2. 진행 모드와 설정을 확인하고 시작을 누르세요.\n"
+                              "3. 직접 플레이할 때는 F11로 일시정지하세요. F12는 자동 진행을 종료합니다.\n"
+                              "무료 이동만 사용하며, 수집은 직접 진행합니다. 평소 물약은 게임에 맡깁니다.")
+        instructions.setWordWrap(True)
+        layout.addWidget(instructions)
+        actions = QHBoxLayout()
+        check = QPushButton("환경 점검")
+        check.setIcon(icons.make("settings", C["accent"]))
+        check.setToolTip("권한·설정·필수 파일·게임 창을 읽기 전용으로 확인합니다")
+        check.clicked.connect(self._check_environment)
+        export = QPushButton("진단 파일 저장")
+        export.setIcon(icons.make("save", C["accent"]))
+        export.setToolTip("비밀값을 제외한 환경 정보와 최근 로그를 ZIP으로 저장합니다. 외부 전송은 하지 않습니다.")
+        export.clicked.connect(self._export_diagnostics)
+        actions.addWidget(check)
+        actions.addWidget(export)
+        actions.addStretch()
+        layout.addLayout(actions)
+        self.diagnostic_view = QTextBrowser()
+        self.diagnostic_view.setPlainText("환경 점검을 누르면 결과와 해결 방법을 표시합니다. 게임 입력은 보내지 않습니다.")
+        layout.addWidget(self.diagnostic_view, 1)
+        self.diagnostic_report = None
+        return page
+
+    def _check_environment(self):
+        from app_support import environment_report
+        from html import escape
+        try:
+            self.diagnostic_report = environment_report(self._build_config(), ROOT)
+            colors = {"ok": C["ok"], "warning": C["warn"], "error": C["bad"]}
+            labels = {"ok": "정상", "warning": "확인", "error": "조치 필요"}
+            rows = "".join(f"<tr><td>{escape(check['name'])}</td><td style='color:{colors[check['status']]}'>{labels[check['status']]}</td><td>{escape(check['detail']).replace(chr(10), '<br>')}</td></tr>" for check in self.diagnostic_report["checks"])
+            self.diagnostic_view.setHtml(f"<p>마지막 점검 {escape(self.diagnostic_report['at'])}</p><table cellpadding='8'>{rows}</table>")
+        except Exception as error:
+            self._notify("환경 점검 실패: " + str(error), True)
+
+    def _export_diagnostics(self):
+        from app_support import environment_report, export_support
+        path, _ = QFileDialog.getSaveFileName(self, "진단 파일 저장", "도깨비헬퍼-진단.zip", "ZIP 파일 (*.zip)")
+        if not path:
+            return
+        try:
+            cfg = self._build_config()
+            report = environment_report(cfg, ROOT)
+            export_support(path, report, {"/".join(p): self._value(w) for p, w in self.controls.items()},
+                           [text for _, text in self.log_lines], cfg)
+            self._notify("진단 파일을 저장했습니다. 토큰·웹훅·화면은 포함하지 않으며 외부로 전송하지 않습니다.")
+        except (OSError, ValueError) as error:
+            self._notify("진단 파일 저장 실패: " + str(error), True)
+
     # ---------- 저장된 설정
     def _load_saved(self):
-        try:
-            with open(SETTINGS_PATH, encoding="utf-8") as f:
-                return json.load(f)
-        except (OSError, ValueError):
-            return {}
+        data, self._settings_load_warning = load_json(SETTINGS_PATH)
+        invalid = []
+        for kind, path, _label, extra in SETTING_FIELDS:
+            key = "/".join(path)
+            if key not in data:
+                continue
+            value = data[key]
+            valid = isinstance(value, bool) if kind == "toggle" else (
+                isinstance(value, (int, float)) and not isinstance(value, bool)
+                and extra[0] <= value <= extra[1] and (kind != "int" or isinstance(value, int)))
+            if not valid:
+                invalid.append(key)
+        for key in ("_dry", "_debug", "_sched_start_on", "_sched_stop_on", "_user_detect"):
+            if key in data and not isinstance(data[key], bool):
+                invalid.append(key)
+        value = data.get("_sched_stop_h", 6)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0.5 <= value <= 48:
+            invalid.append("_sched_stop_h")
+        if not isinstance(data.get("_sched_start", "02:00"), str) or not QTime.fromString(data.get("_sched_start", "02:00"), "HH:mm").isValid():
+            invalid.append("_sched_start")
+        import re
+        if not isinstance(data.get("_last_version", ""), str) or not re.fullmatch(r"\d+\.\d+\.\d+|", data.get("_last_version", "")):
+            invalid.append("_last_version")
+        geometry = data.get("_geometry")
+        if geometry is not None and not (isinstance(geometry, list) and len(geometry) == 5
+                and all(type(v) is int for v in geometry[:4]) and isinstance(geometry[4], bool)):
+            invalid.append("_geometry")
+        if invalid:
+            for key in invalid:
+                data.pop(key, None)
+            self._settings_load_warning += " 잘못된 설정값을 기본값으로 바꿨습니다: " + ", ".join(invalid)
+        return data
 
     def _save(self):
-        data = {}
+        data = dict(self.saved)
         for path, w in self.controls.items():
             data["/".join(path)] = self._value(w)
         data["_debug"] = self.chk_debug.isChecked()
@@ -366,11 +524,11 @@ class Window(QMainWindow):
         data["_sched_stop_h"] = self.spin_stop_h.value()
         data["_last_version"] = self.saved.get("_last_version", "")
         data["_user_detect"] = bool(getattr(self, "user_detect", True))
+        data["_schema"] = 1
         g = self.geometry() if not self.isMaximized() else self.normalGeometry()
         data["_geometry"] = [g.x(), g.y(), g.width(), g.height(), self.isMaximized()]      # 창 위치/크기 (다음 실행 때 복원)
         try:
-            with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=1)
+            self._persist_saved(data)
             self.saved = data
             if hasattr(self, "_settings_snapshot"):
                 self._settings_snapshot = self._settings_values()
@@ -392,6 +550,18 @@ class Window(QMainWindow):
 
     def _apply_values(self, data):
         """프로필 적용: 키 경로 문자열 → 값."""
+        if not isinstance(data, dict):
+            raise ValueError("설정 묶음은 JSON 객체여야 합니다")
+        for kind, path, label, extra in SETTING_FIELDS:
+            key = "/".join(path)
+            if key not in data or path in LOCKED_SETTINGS:
+                continue
+            value = data[key]
+            valid = isinstance(value, bool) if kind == "toggle" else (
+                type(value) in (int, float) and extra[0] <= value <= extra[1]
+                and (kind != "int" or type(value) is int))
+            if not valid:
+                raise ValueError(label + ": 올바른 형식과 범위의 값을 사용하세요")
         for path, w in self.controls.items():
             k = "/".join(path)
             if k not in data:
@@ -413,6 +583,8 @@ class Window(QMainWindow):
     def _build_config(self):
         with open(CONFIG_PATH, encoding="utf-8") as f:
             cfg = yaml.safe_load(f)
+        if not isinstance(cfg, dict):
+            raise ValueError("config.yaml이 설정 객체가 아닙니다")
         for path, w in self.controls.items():
             set_path(cfg, path, False if path in LOCKED_SETTINGS else self._value(w))
         set_path(cfg, ("hp", "potion_normal"), False)
@@ -459,7 +631,7 @@ class Window(QMainWindow):
         self._pending_potion = False
         self.btn_evade = QPushButton(" 자리 회피")
         self.btn_evade.setIcon(ic("evade"))
-        self.btn_evade.setToolTip("지금 자리에서 세계지도 '지역 정보' 목록의 가까운 지역으로 걸어가(무료) 빠졌다가, HP가 차면 원래 지역으로 돌아와 자동 사냥을 다시 켭니다. HP 30% 이하면 자동으로도 합니다.")
+        self.btn_evade.setToolTip("전투력에 맞는 길라잡이 무료 순간이동을 먼저 시도합니다. 불가능하면 가까운 지역으로 걸어가 회복합니다. 순간이동으로 회피하면 위험한 원래 자리로 돌아가지 않습니다.")
         self.btn_evade.clicked.connect(self.request_evade)
         self._pending_farm = False
         # 켜고 끄는 기능은 설정 탭과 같은 토글 스위치로 (켜짐/꺼짐이 글자가 아니라 스위치 모양으로 보인다)
@@ -628,7 +800,8 @@ class Window(QMainWindow):
                 box, gl1 = groups[group_name]
                 row = gl1.rowCount()
                 cb = Toggle(label, on_color=C["accent"], off_color=C["idle"])
-                cb.setChecked(bool(saved if saved is not None else get_path(self.base_config, path, False)))
+                default = path in (("hp", "evade_guide_first"), ("hp", "startup_risk_check"))
+                cb.setChecked(bool(saved if saved is not None else get_path(self.base_config, path, default)))
                 hint = QLabel(extra)
                 hint.setObjectName("sub")
                 hint.setWordWrap(True)
@@ -706,6 +879,9 @@ class Window(QMainWindow):
         gls.addWidget(QLabel("시간"), 1, 2)
         gls.setColumnStretch(3, 1)
         lay.addWidget(gs)
+        schedule_hint = QLabel("예약 변경은 설정 저장 후 반영됩니다. 실행 중에도 예약 정지 시간을 저장할 수 있습니다.")
+        schedule_hint.setObjectName("sub")
+        gls.addWidget(schedule_hint, 2, 0, 1, 4)
 
         g3 = QGroupBox("실행 옵션")
         gl3 = QVBoxLayout(g3)
@@ -748,6 +924,13 @@ class Window(QMainWindow):
         self.btn_save_settings.clicked.connect(self._save_settings)
         self.btn_save_settings.setEnabled(False)
         search_row.addWidget(self.btn_save_settings)
+        self.btn_backup_settings = QPushButton("백업")
+        self.btn_backup_settings.clicked.connect(self._backup_settings)
+        self.btn_backup_settings.setToolTip("현재 설정을 파일로 저장합니다. 알림 비밀값은 제외합니다.")
+        self.btn_restore_settings = QPushButton("복원")
+        self.btn_restore_settings.clicked.connect(self._restore_settings)
+        search_row.addWidget(self.btn_backup_settings)
+        search_row.addWidget(self.btn_restore_settings)
         page_layout.addLayout(search_row)
         self.settings_status = QLabel("저장된 설정 · 다음 시작부터 적용")
         self.settings_status.setObjectName("sub")
@@ -1041,16 +1224,37 @@ class Window(QMainWindow):
     def start(self):
         if self.thread:
             return
-        self._save()
-        cfg = self._build_config()
+        try:
+            from bot2.selfcheck import validate_config, missing_templates
+            cfg = self._build_config()
+            if not isinstance(cfg, dict):
+                raise ValueError("config.yaml이 설정 객체가 아닙니다")
+            issues = validate_config(cfg)
+            missing = missing_templates(cfg)
+            if issues or missing:
+                raise ValueError("; ".join(issues + (["필수 인식 파일 없음: " + ", ".join(missing)] if missing else [])))
+            if not self._save():
+                raise OSError("설정을 저장하지 못했습니다. 저장 위치와 권한을 확인하세요.")
+        except (OSError, ValueError, TypeError, yaml.YAMLError) as error:
+            self._pending_potion = self._pending_farm = False
+            self._on_failed(str(error))
+            return
+        self._last_error = ""
+        self.notice.hide()
         logging.getLogger().setLevel(logging.DEBUG if self.chk_debug.isChecked() else logging.INFO)
         self.thread = BotThread(cfg, self.chk_dry.isChecked(), self.chk_debug.isChecked())
-        self.thread.failed.connect(lambda m: self.pill.set("오류: " + m[:40], C["bad"]))
+        self.thread.failed.connect(self._on_failed)
         self.thread.finished.connect(self._on_finished)
         self.thread.start()
         self.started_at = time.monotonic()
         self.session_total = 0.0
         self._set_running(True)
+
+    def _on_failed(self, message):
+        self._last_error = message
+        self._pending_potion = self._pending_farm = False
+        self.pill.set("오류 · 도움말에서 점검", C["bad"])
+        self._notify("자동 진행을 시작하거나 계속할 수 없습니다. " + message + " · 도움말의 환경 점검과 로그를 확인하세요.", True)
 
     def buy_potion(self):
         """물약 구매 요청. 실행 중이면 다음 틱에, 정지 상태면 시작한 뒤 바로 구매."""
@@ -1073,7 +1277,11 @@ class Window(QMainWindow):
             bot.set_user_detect(self.user_detect)
         else:
             logging.info("사용자 조작 감지 %s (다음 시작부터 적용)", "켬" if self.user_detect else "끔")
-        self._save()
+        self.saved["_user_detect"] = self.user_detect
+        try:
+            self._persist_saved(self.saved)
+        except OSError as error:
+            self._notify("조작 감지 설정 저장 실패: " + str(error), True)
         self._refresh_detect_button()
 
     def _refresh_detect_button(self):
@@ -1106,8 +1314,8 @@ class Window(QMainWindow):
         bot = self.thread.bot if self.thread else None
         if bot:
             pending = bot._manual_farm_request          # 아직 봇이 처리 못 한 요청이 있으면 그것을 기준으로 토글
-            on = not (pending if pending is not None else bot.manual_farm)
-            bot.request_manual_farm(on)
+            on = not (pending if pending is not None else bot.farm_mode)
+            bot.request_manual_farm(on, force=True)
             if on and bot.paused:
                 self.toggle_pause()
             logging.info("앵벌 모드 %s 요청 (버튼)", "켜기" if on else "끄기")
@@ -1137,16 +1345,26 @@ class Window(QMainWindow):
             bot._idle_since = bot._verify = None
             bot.alert_reason = ""
             bot.paused = False
+            bot.risk_guard.arm()
             logging.info("재개 (버튼)")
         else:
             bot.paused = True
             logging.info("일시정지 (버튼)")
 
     def _on_finished(self):
-        if self.thread:
+        finished = self.thread
+        if finished:
+            finished.wait()
             self.session_total = time.monotonic() - self.started_at
         self.thread = None
+        self._pending_potion = self._pending_farm = False
+        if finished:
+            finished.deleteLater()
         self._set_running(False)
+        if self._last_error:
+            self.pill.set("오류 · 도움말에서 점검", C["bad"])
+        if self._closing:
+            QTimer.singleShot(0, self.close)
 
     def _set_running(self, running):
         self.btn_start.setEnabled(not running)
@@ -1159,6 +1377,7 @@ class Window(QMainWindow):
         self.chk_dry.setEnabled(not running)
         self.chk_debug.setEnabled(not running)
         self.profile_bar.setEnabled(not running)
+        self.btn_restore_settings.setEnabled(not running)
         self.btn_evade.setEnabled(running)
         if not running:
             self.pill.set("정지됨", C["idle"])
@@ -1176,12 +1395,12 @@ class Window(QMainWindow):
             bot.request_manual_farm(True)
             self._pending_farm = False
         pending = bot._manual_farm_request if bot else None
-        on = bool((bot and (pending if pending is not None else bot.manual_farm)) or self._pending_farm)
+        on = bool((bot and (pending if pending is not None else bot.farm_mode)) or self._pending_farm)
         self._set_checked_quiet(self.btn_farm, on)
         if not th:
-            self.lbl_state.setText("정지됨")
+            self.lbl_state.setText("오류로 정지됨" if self._last_error else "정지됨")
             self.lbl_state.setStyleSheet(f"color:{C['idle']};")
-            self.lbl_state_sub.setText("▶ 시작을 누르면 게임 화면을 보고 자동으로 진행합니다")
+            self.lbl_state_sub.setText(self._last_error or "시작을 누르면 게임 화면을 보고 자동으로 진행합니다")
             self.hp_bar.hide()
             for value, detail in self.live_lbl.values():
                 value.setText("—")
@@ -1190,7 +1409,7 @@ class Window(QMainWindow):
                 c.on(False)
             self.stat_lbl["time"].setText(fmt_time(self.session_total))
         elif bot is None:
-            self.pill.set("준비 중…", C["warn"])
+            self.pill.set("정지 중…" if th.stop_requested else "준비 중…", C["warn"])
         else:
             self._refresh_running(bot)
         self.lbl_recent.setText("\n".join(t for _, t in self.recent[-9:]) or "아직 이벤트가 없습니다")
@@ -1312,17 +1531,17 @@ class Window(QMainWindow):
             self.stats_tab.refresh()
         self.preview_tab.tick(self.tabs.currentWidget() is self.preview_tab and self.isVisible())
         # 예약 시작
-        if self.chk_sched_start.isChecked() and not self.thread:
-            t = self.time_start.time()
+        if self.saved.get("_sched_start_on", False) and not self.thread:
+            t = QTime.fromString(self.saved.get("_sched_start", "02:00"), "HH:mm")
             nowt = datetime.now()
             if (nowt.hour, nowt.minute) == (t.hour(), t.minute()) and self._sched_day != nowt.date():
                 self._sched_day = nowt.date()
                 logging.info("예약 시작")
                 self.start()
         # 예약 정지
-        if (self.chk_sched_stop.isChecked() and self.thread and self.started_at
-                and now - self.started_at > self.spin_stop_h.value() * 3600):
-            logging.info("예약 정지 (%.1f시간 경과)", self.spin_stop_h.value())
+        if (self.saved.get("_sched_stop_on", False) and self.thread and self.started_at
+                and now - self.started_at > self.saved.get("_sched_stop_h", 6) * 3600):
+            logging.info("예약 정지 (%.1f시간 경과)", self.saved.get("_sched_stop_h", 6))
             self.stop()
 
     # ---------- 트레이
@@ -1392,8 +1611,7 @@ class Window(QMainWindow):
             try:
                 g = self.geometry() if not self.isMaximized() else self.normalGeometry()
                 self.saved["_geometry"] = [g.x(), g.y(), g.width(), g.height(), self.isMaximized()]
-                with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
-                    json.dump(self.saved, f, ensure_ascii=False, indent=1)
+                self._persist_saved(self.saved)
             except Exception:  # noqa: BLE001
                 pass
 
@@ -1407,13 +1625,34 @@ class Window(QMainWindow):
                                   QSystemTrayIcon.Information, 3000)
             return
         if self.thread:
+            self._closing = True
             self.stop()
-            self.thread.wait(4000)
+            self._notify("자동 진행을 정리하고 있습니다. 작업이 멈추면 창이 자동으로 종료됩니다.")
+            e.ignore()
+            return
         self._save()
+        self.timer.stop()
+        if self.tray:
+            self.tray.hide()
+        logging.getLogger().removeHandler(self.log_handler)
+        file_handler = getattr(self, "file_handler", None)
+        if file_handler:
+            logging.getLogger().removeHandler(file_handler)
+            file_handler.close()
         e.accept()
 
 
 def main():
+    if "--self-check" in sys.argv:
+        from app_support import environment_report
+        with open(CONFIG_PATH, encoding="utf-8") as stream:
+            cfg = yaml.safe_load(stream)
+        report = environment_report(cfg, ROOT, include_game=False)
+        if "--report" in sys.argv:
+            save_json(sys.argv[sys.argv.index("--report") + 1], report)
+        else:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 2 if any(check["status"] == "error" for check in report["checks"]) else 0
     try:        # 작업표시줄에서 python 아이콘 대신 앱 아이콘이 보이도록 별도 앱 ID 지정
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("GameAutoPlay.Dokkaebi.Panel")
     except Exception:  # noqa: BLE001
@@ -1422,9 +1661,41 @@ def main():
     app.setWindowIcon(icons.make("brand", C["accent"]))
     app.setStyle("Fusion")
     app.setStyleSheet(QSS)
-    win = Window()
+    os.makedirs(ROOT, exist_ok=True)
+    instance_lock = QLockFile(os.path.join(ROOT, ".gui.lock"))
+    instance_lock.setStaleLockTime(0)
+    if not instance_lock.tryLock(0):
+        if "--smoke-test" in sys.argv:
+            return 3
+        QMessageBox.information(None, "이미 실행 중", "도깨비헬퍼가 이미 실행 중입니다. 보조 모니터 또는 트레이의 도깨비 아이콘을 확인하세요.")
+        return
+    try:
+        win = Window()
+    except Exception as error:
+        QMessageBox.critical(None, "도깨비헬퍼 실행 실패", "설정과 필수 파일을 확인하세요.\n" + str(error))
+        instance_lock.unlock()
+        return
     win.restore_geometry()
     win.show()
+    if "--smoke-test" in sys.argv:
+        if not os.environ.get("DOKKAEBI_DATA_DIR"):
+            raise RuntimeError("배포 검증은 DOKKAEBI_DATA_DIR로 별도 데이터 디렉터리를 지정해야 합니다")
+        from app_support import environment_report, export_support
+        win.timer.stop()
+        win._geo_timer.stop()
+        report = environment_report(win._build_config(), ROOT, include_game=False)
+        report["pages"] = [win.tabs.tabText(i) for i in range(win.tabs.count())]
+        report["settings_saved"] = win._save()
+        report["settings_roundtrip"] = load_json(SETTINGS_PATH)[0] == win.saved
+        os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
+        save_json(os.path.join(ROOT, "logs", "smoke-report.json"), report)
+        export_support(os.path.join(ROOT, "logs", "smoke-support.zip"), report, win.saved, [])
+        win._quitting = True
+        hold = max(500, min(10000, int(os.environ.get("DOKKAEBI_SMOKE_HOLD_MS", "500"))))
+        QTimer.singleShot(hold, win.close)
+        result = app.exec()
+        instance_lock.unlock()
+        return result
     if "--autostart" in sys.argv:
         logging.info("업데이트 내용은 설정 탭의 '버전 정보'에서 볼 수 있습니다")
     else:
@@ -1435,8 +1706,10 @@ def main():
         if "--farm" in sys.argv:                  # 시작하면서 바로 앵벌 모드 (제어판 버튼을 누르지 않고도 켜기)
             win._pending_farm = True
         QTimer.singleShot(1500, win.start)
-    sys.exit(app.exec())
+    result = app.exec()
+    instance_lock.unlock()
+    sys.exit(result)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

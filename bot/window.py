@@ -86,7 +86,7 @@ class GameWindow:
         self.hwnd = None
         self.title = ""
         self.left = self.top = self.width = self.height = 0
-        self._sct = mss.mss()
+        self._sct = mss.MSS()
 
     def locate(self):
         """창을 찾고 클라이언트 영역 위치를 갱신. 성공하면 True."""

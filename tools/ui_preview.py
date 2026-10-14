@@ -35,7 +35,7 @@ def main():
         win.show()
         app.processEvents()
         win._geo_timer.stop()
-        for index, name in enumerate(('dashboard', 'settings', 'stats', 'preview', 'map', 'recommend', 'log')):
+        for index, name in enumerate(('dashboard', 'settings', 'stats', 'preview', 'map', 'recommend', 'log', 'support')):
             win.tabs.setCurrentIndex(index)
             app.processEvents()
             win.grab().save(str(destination / f'{name}.png'))

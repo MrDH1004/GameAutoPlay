@@ -60,6 +60,7 @@ class LiveStatus:
         self._last_ok = 0.0
         self._stop = threading.Event()
         self._thread = None
+        self._reader_window = None
 
     # ---- 봇 루프에서 매 틱 호출 (가벼움) ----
     def note_frame(self, known):
@@ -108,9 +109,16 @@ class LiveStatus:
 
     def refresh(self):
         b = self.bot
-        if not b.window.locate() or b.window.is_minimized():
+        from bot.window import GameWindow
+        if isinstance(b.window, GameWindow):
+            if self._reader_window is None:
+                self._reader_window = GameWindow(b.window.title_part, b.window.process_name)
+            window = self._reader_window
+        else:
+            window = b.window
+        if not window.locate() or window.is_minimized():
             return
-        frame = b.window.grab()
+        frame = window.grab()
         known = b._in_field(frame)
         d = {"at": time.monotonic(), "field": known}
         if known:

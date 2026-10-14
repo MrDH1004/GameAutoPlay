@@ -33,7 +33,7 @@ from .tracker import TrackerScanner
 
 log = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app_paths import ROOT
 TEMPLATE_DIR = os.path.join(ROOT, "templates")
 SCREENSHOT_DIR = os.path.join(ROOT, "screenshots")
 
@@ -103,6 +103,9 @@ class Bot:
         self._last_progress = time.monotonic()
         self._stalls = 0
         self.power = None               # 마지막으로 읽은 전투력
+        from .risk import RiskGuard
+        self.risk_guard = RiskGuard(float((config.get("farm") or {}).get("margin", 1.5)),
+                                    enabled=not dry_run and (config.get("hp") or {}).get("startup_risk_check", True))
         self._power_at = 0.0
         self.started_wall = time.time()
         self.selfcheck = ""
@@ -198,6 +201,20 @@ class Bot:
         log.warning("사용자 조작 감지 %s (버튼)", "켬" if on else "끔 → 마우스·키보드를 써도 봇이 멈추지 않음")
 
     def _check_user(self):
+        watcher = getattr(self, "hotkeys", None)
+        if watcher and watcher.pressed(self.stop_key):
+            self.stop_event.set()
+            raise StopRequested()
+        if watcher and watcher.pressed(self.pause_key):
+            self.paused = True
+            raise actions.UserInterrupt()
+        if getattr(self, "stop_event", None) and self.stop_event.is_set():
+            raise StopRequested()
+        if getattr(self, "paused", False):
+            raise actions.UserInterrupt()
+        window = getattr(self, "window", None)
+        if window is not None and (not window.locate() or window.is_minimized() or not window.is_foreground()):
+            raise actions.UserInterrupt()
         if not self.user_detect:
             return
         idle = self.activity.idle_seconds()
@@ -205,20 +222,22 @@ class Bot:
             raise actions.UserInterrupt()
 
     def _click_frame(self, label, px, py):
+        if not self.dry_run:
+            self._check_user()
         sx, sy = self.window.frame_to_screen(px, py)
         if self.dry_run:
             log.info("[dry-run] %s 클릭 예정 (%d, %d)", label, sx, sy)
             return
-        self._check_user()
         actions.click(sx, sy)
 
     def _drag(self, label, x1, y1, x2, y2):
+        if not self.dry_run:
+            self._check_user()
         sx1, sy1 = self.window.frame_to_screen(x1, y1)
         sx2, sy2 = self.window.frame_to_screen(x2, y2)
         if self.dry_run:
             log.info("[dry-run] %s 드래그 예정 (%d,%d → %d,%d)", label, sx1, sy1, sx2, sy2)
             return
-        self._check_user()
         actions.drag(sx1, sy1, sx2, sy2)
 
     def _hotkey(self, label, combo):
@@ -331,7 +350,12 @@ class Bot:
             if self._evade_pending:
                 self._evade_pending = False
                 try:
-                    self._evade = self.evader.flee(self.window.grab())
+                    if Bot._escape_via_guide(self, now):
+                        self._evade = {"teleported": True}
+                    else:
+                        self._evade = self.evader.flee(self.window.grab())
+                except StopRequested:
+                    raise
                 except actions.UserInterrupt:
                     raise
                 except Exception as e:                       # noqa: BLE001
@@ -352,7 +376,9 @@ class Bot:
                 return True
             if self._evade:
                 off, self._evade = self._evade, None
-                if "공격받아" in why:
+                if isinstance(off, dict) and off.get("teleported"):
+                    log.info("무료 순간이동으로 회피했으므로 위험한 원래 자리로 복귀하지 않음")
+                elif "공격받아" in why:
                     log.info("회복 중 공격받음 → 원래 자리로 돌아가지 않고 이 자리에서 사냥")
                 else:
                     try:
@@ -534,15 +560,46 @@ class Bot:
         """제어판 버튼/원격 명령에서 호출 (다른 스레드): 지금 자리를 회피했다가 회복 후 돌아온다."""
         self._evade_request = True
 
-    def request_manual_farm(self, on):
+    def _escape_via_guide(self, now):
+        farm = getattr(self, "farm", None)
+        if not farm or not self.hp_cfg.get("evade_guide_first", True):
+            return False
+        power = getattr(self, "power", None) or farm.power
+        if not power:
+            return False
+        return farm.escape(power, now)
+
+    def _risk_tick(self, snap, now):
+        guard = self.risk_guard
+        if not guard.due(now) or snap.state not in ("COMBAT", "IDLE") or snap.walking or self._boss_near(snap, now):
+            return False
+        from .livestatus import read_target
+        power = self.power or read_power(snap.frame)
+        target = read_target(snap.frame)
+        if not guard.observe(power, target, now):
+            return False
+        log.warning("시작/재개 위험 확인: 내 전투력 %d, 몬스터 %d → 무료 순간이동 회피", power, target['power'])
+        self.power = power
+        if self._escape_via_guide(now):
+            self._rest, self._rest_at, self._rest_tries, self._rest_press_at = "rest", time.monotonic(), 0, 0.0
+            self._evade = {"teleported": True}
+            self._last_progress = time.monotonic()
+        else:
+            self._alert("현재 몬스터가 허용 전투력보다 높고 무료 순간이동에 실패했습니다. 안전한 장소에서 재개하세요.", snap.frame)
+        return True
+
+    def request_manual_farm(self, on, force=False):
         """제어판 버튼에서 호출 (다른 스레드). 실제 전환은 봇 루프에서 한다."""
         self._manual_farm_request = bool(on)
+        self._manual_farm_force = bool(force)
 
     def _apply_manual_farm(self, now):
         """수동 앵벌 모드 전환: 켜면 퀘스트는 멈추고 사냥터(수집 몬스터 → 일반 사냥터)에서만 자동 사냥,
         끄면 설정값으로 되돌리고 퀘스트를 다시 진행한다."""
         req, self._manual_farm_request = self._manual_farm_request, None
-        if req is None or req == self.manual_farm:
+        force = getattr(self, "_manual_farm_force", False)
+        self._manual_farm_force = False
+        if req is None or (req == self.manual_farm and not force):
             return
         self.manual_farm = req
         self._retry_quest = None
@@ -573,7 +630,7 @@ class Bot:
             self.waiting_user = False
             self.notifier.send("앵벌 모드 켬 (수동)", key="manual_farm")
         else:
-            self.farm_mode = self._cfg_farm_mode
+            self.farm_mode = False if force else self._cfg_farm_mode
             self._farm_until = 0.0
             self._collect_pending = False
             self._walk_started = 0.0
@@ -595,6 +652,8 @@ class Bot:
         try:
             from . import startup
             st = startup.check(self)
+            if st.get("power"):
+                self.power = st["power"]
             self.startup_state = st
             log.info("시작 점검 (%.1f초): %s", st["took"], startup.describe(st))
             for w in startup.warnings(st, int((self.cfg.get("potion_shop") or {}).get("buy_below", 50))):
@@ -1110,6 +1169,7 @@ class Bot:
             return "일시정지했습니다.", None
         if cmd in ("재개", "resume"):
             self.paused = False
+            self.risk_guard.arm()
             self.alert_reason = ""
             self.activity.ignore_until_now()
             self._idle_since = self._verify = None
@@ -1160,6 +1220,8 @@ class Bot:
             return
 
         self._watch_hp(snap, now)
+        if self._risk_tick(snap, now):
+            return
         if self.preset and not self.dry_run and self.preset.tick(snap, now):
             return
         if state not in ("DEAD", "OVERLAY"):
@@ -1197,6 +1259,7 @@ class Bot:
                 log.debug("게임 창 포커스 실패: %s", e)
         self.activity.ignore_until_now()   # 실행 직전의 입력(브리지 포커스 등)은 사용자 조작이 아님
         self._startup_check()
+        self.risk_guard.arm()
         self.live.start()                      # 대시보드용 실시간 상황판 읽기(별도 스레드)
         waiting_logged = False
         while True:
@@ -1212,6 +1275,7 @@ class Bot:
                 self.paused = not self.paused
                 log.info("일시정지" if self.paused else "재개")
                 if not self.paused:
+                    self.risk_guard.arm()
                     self.alert_reason = ""
                     self.activity.ignore_until_now()
                     self.waiting_user = False

@@ -110,6 +110,14 @@ def _draw(name, p, color):
             p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
             for y in (6, 10, 14):
                 p.drawLine(QPointF(6, y), QPointF(14, y))
+        elif name == "support":
+            p.drawEllipse(QPointF(10, 10), 7, 7)
+            path = QPainterPath(QPointF(7.5, 7))
+            path.cubicTo(7.5, 4, 13.5, 4, 12.5, 8)
+            path.quadTo(10, 9, 10, 11)
+            p.drawPath(path)
+            p.setBrush(color)
+            p.drawEllipse(QPointF(10, 14), .65, .65)
         elif name == "save":
             p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
             p.drawRect(QRectF(7, 3, 6, 5))

@@ -15,7 +15,7 @@ import yaml
 from bot2.brain import Bot
 from bot.window import enable_dpi_awareness
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+from app_paths import ROOT, initialize_data
 
 
 def setup_logging(debug):
@@ -33,6 +33,7 @@ def setup_logging(debug):
 
 
 def main():
+    initialize_data()
     parser = argparse.ArgumentParser(description="퀘스트 자동 진행 매크로")
     parser.add_argument("--config", default=os.path.join(ROOT, "config.yaml"))
     parser.add_argument("--dry-run", action="store_true", help="클릭/키 입력 없이 로그만")
@@ -47,10 +48,20 @@ def main():
 
     if args.farm:
         config.setdefault("farm", {})["enabled"] = True
+    from execution_lock import acquire_bot_lock
+    execution_lock = acquire_bot_lock(config)
+    bot = None
     try:
-        Bot(config, dry_run=args.dry_run).run()
+        bot = Bot(config, dry_run=args.dry_run)
+        bot.run()
     except KeyboardInterrupt:
         logging.info("Ctrl+C로 종료")
+    finally:
+        if bot:
+            bot.stop_event.set()
+            bot.notifier.stop()
+            bot.live.stop()
+        execution_lock.unlock()
 
 
 if __name__ == "__main__":

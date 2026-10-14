@@ -20,7 +20,7 @@ import numpy as np
 
 log = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app_paths import ROOT
 SPOTS_FILE = os.path.join(ROOT, "farm_spots.json")
 CARD_DIR = os.path.join(ROOT, "templates", "farm")
 
@@ -245,8 +245,8 @@ def load_spots(path=SPOTS_FILE):
 
 
 def save_spots(db, path=SPOTS_FILE):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(db, f, ensure_ascii=False, indent=1)
+    from storage import save_json
+    save_json(path, db)
 
 
 def best_spot(db, power, margin=0.9, banned=(), min_power=0):
@@ -435,6 +435,8 @@ class BotDriver(Driver):
         while time.monotonic() < end:
             if self.bot.stop_event.is_set():
                 raise StopRequested()
+            if not self.bot.dry_run:
+                self.bot._check_user()
             time.sleep(min(0.2, max(0.0, end - time.monotonic())))
 
 
@@ -502,6 +504,22 @@ class FarmTask:
                         self.current.get("name") or self.current["id"], hard // 1000, self.ban_secs // 60)
         self.need_travel = True
         self.next_try = 0.0
+
+    def escape(self, power, now):
+        """회피는 무료 길라잡이만 사용하고 권장 전투력 미달·사망 제외 후보를 누르지 않는다."""
+        usable = {"spots": guide_spots()}
+        spot = best_spot(usable, power, min(self.margin, 1.0), self._active_bans(now))
+        if not spot:
+            log.warning("무료 순간이동 회피: 전투력에 맞는 후보가 없음")
+            return False
+        self.power = power
+        log.info("무료 순간이동 우선 회피: %s (권장 %d)", spot['name'], spot['power'])
+        if not self._travel(spot, now):
+            log.warning("무료 순간이동 회피 실패 → 기존 회피 또는 일시정지")
+            return False
+        self.next_eval = time.monotonic() + self.reselect
+        self.next_try = 0.0
+        return True
 
     def _travel(self, spot, now):
         """한 사냥터로 이동. 빨간 몬스터(나보다 강함)면 제외하고 다음 후보로 최대 3번 시도."""

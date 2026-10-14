@@ -6,7 +6,7 @@ import time
 
 log = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app_paths import ROOT
 TEMPLATE_DIR = os.path.join(ROOT, "templates")
 
 # (경로, 타입, 최소, 최대)
@@ -35,6 +35,8 @@ def _get(cfg, path):
 def validate_config(cfg):
     """문제 목록(문자열)을 돌려준다. 빈 리스트면 정상."""
     problems = []
+    if not isinstance(cfg, dict):
+        return ["설정 최상위 값은 객체여야 함"]
     for path, typ, lo, hi in RULES:
         v = _get(cfg, path)
         if v is None:
@@ -47,6 +49,11 @@ def validate_config(cfg):
     for key in ("window_title", "quest_tracker", "idle"):
         if key not in cfg:
             problems.append(f"{key}: 필수 항목 없음")
+    if "window_title" in cfg and (not isinstance(cfg["window_title"], str) or not cfg["window_title"].strip()):
+        problems.append("window_title: 게임 창 제목은 비어 있지 않은 문자열이어야 함")
+    for key in ("quest_tracker", "idle", "death"):
+        if key in cfg and not isinstance(cfg[key], dict):
+            problems.append(key + ": 설정 객체여야 함")
     return problems
 
 

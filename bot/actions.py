@@ -63,23 +63,31 @@ def drag(x1, y1, x2, y2, steps=10):
     mark_self_input()
     _safe(pydirectinput.moveTo, x1, y1)
     _safe(pydirectinput.mouseDown)
-    for i in range(1, steps + 1):
-        _safe(pydirectinput.moveTo, int(x1 + (x2 - x1) * i / steps), int(y1 + (y2 - y1) * i / steps))
-        time.sleep(0.03)
-    _safe(pydirectinput.mouseUp)
-    mark_self_input()
+    try:
+        for i in range(1, steps + 1):
+            _safe(pydirectinput.moveTo, int(x1 + (x2 - x1) * i / steps), int(y1 + (y2 - y1) * i / steps))
+            time.sleep(0.03)
+    finally:
+        _safe(pydirectinput.mouseUp)
+        mark_self_input()
 
 
 def hotkey(combo):
     """'ctrl+2' 같은 조합 키. 단일 키면 press와 같다."""
     keys = [k.strip() for k in combo.lower().split("+") if k.strip()]
+    if not keys:
+        raise ValueError("단축키가 비어 있습니다")
     mark_self_input()
-    for k in keys[:-1]:
-        _safe(pydirectinput.keyDown, k)
-    _safe(pydirectinput.press, keys[-1])
-    for k in reversed(keys[:-1]):
-        _safe(pydirectinput.keyUp, k)
-    mark_self_input()
+    pressed = []
+    try:
+        for k in keys[:-1]:
+            _safe(pydirectinput.keyDown, k)
+            pressed.append(k)
+        _safe(pydirectinput.press, keys[-1])
+    finally:
+        for k in reversed(pressed):
+            _safe(pydirectinput.keyUp, k)
+        mark_self_input()
 
 
 def press(key):

@@ -85,9 +85,60 @@ class RenewalTest(unittest.TestCase):
 
     def test_save_failure_keeps_unsaved_changes(self):
         self.win.controls[('farm', 'margin')].setValue(1.5)
-        with patch('builtins.open', side_effect=PermissionError('denied')):
+        with patch('gui.save_json', side_effect=PermissionError('denied')):
             self.win._save_settings()
         self.assertIn('저장 실패', self.win.settings_status.text())
+        self.assertTrue(self.win.btn_save_settings.isEnabled())
+
+    def test_invalid_profile_cannot_partially_apply(self):
+        before = self.win.controls[('farm', 'margin')].value()
+        with self.assertRaises(ValueError):
+            self.win._apply_values({'farm/margin': 1.5, 'yeonggi/interval': 'broken'})
+        self.assertEqual(self.win.controls[('farm', 'margin')].value(), before)
+
+    def test_error_and_pending_requests_are_not_lost_on_thread_finish(self):
+        self.win._on_failed('capture unavailable')
+        self.win.thread = types.SimpleNamespace(wait=lambda: None, deleteLater=lambda: None)
+        self.win._pending_potion = self.win._pending_farm = True
+        self.win._on_finished()
+        self.win._refresh()
+        self.assertIn('오류', self.win.lbl_state.text())
+        self.assertIn('capture unavailable', self.win.notice.text())
+        self.assertFalse(self.win._pending_potion or self.win._pending_farm)
+
+    def test_close_waits_asynchronously_for_running_bot(self):
+        from PySide6.QtGui import QCloseEvent
+        self.win._quitting = True
+        self.win.thread = types.SimpleNamespace(bot=None, stop_requested=False)
+        event = QCloseEvent()
+        self.win.closeEvent(event)
+        self.assertFalse(event.isAccepted())
+        self.assertTrue(self.win._closing)
+        self.assertTrue(self.win.thread.stop_requested)
+
+    def test_invalid_saved_types_are_replaced_without_crashing(self):
+        self.path.write_text(json.dumps({'farm/margin': 'bad', '_geometry': ['bad'] * 5,
+                                        '_sched_start': 123, '_last_version': 'broken'}), encoding='utf-8')
+        data = self.win._load_saved()
+        self.assertNotIn('farm/margin', data)
+        self.assertNotIn('_geometry', data)
+        self.assertIn('잘못된 설정값', self.win._settings_load_warning)
+
+    def test_invalid_config_is_reported_before_a_thread_starts(self):
+        with patch.object(self.win, '_build_config', return_value={}), patch('gui.BotThread') as thread:
+            self.win.start()
+        thread.assert_not_called()
+        self.assertIsNone(self.win.thread)
+        self.assertTrue(self.win._last_error)
+
+    def test_backup_restores_values_but_keeps_secret_fields(self):
+        backup = Path(self.temp.name) / 'backup.json'
+        backup.write_text(json.dumps({'farm/margin': 1.4, 'notify/telegram/token': 'injected'}), encoding='utf-8')
+        self.win.controls[('notify', 'telegram', 'token')].setText('original')
+        with patch('gui.QFileDialog.getOpenFileName', return_value=(str(backup), '')):
+            self.win._restore_settings()
+        self.assertEqual(self.win.controls[('farm', 'margin')].value(), 1.4)
+        self.assertEqual(self.win.controls[('notify', 'telegram', 'token')].text(), 'original')
         self.assertTrue(self.win.btn_save_settings.isEnabled())
 
 

@@ -10,6 +10,10 @@ screenshots/
 bridge/
 samples/
 gui_settings.json
+gui_settings.json.bak
+.gui.lock
+.resources.json*
+profiles/*.json.bak
 *.log
 build/
 dist/

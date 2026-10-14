@@ -15,7 +15,7 @@ import numpy as np
 
 log = logging.getLogger(__name__)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from app_paths import ROOT
 DEATH_LOG = os.path.join(ROOT, "logs", "deaths.jsonl")
 
 

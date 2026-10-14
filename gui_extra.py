@@ -12,7 +12,8 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QHe
 from toggle_switch import Toggle
 import icons
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+from app_paths import ROOT
+from storage import load_json, save_json
 POWER_LOG = os.path.join(ROOT, "logs", "power.jsonl")
 PROFILE_DIR = os.path.join(ROOT, "profiles")
 
@@ -288,14 +289,19 @@ def list_profiles():
 
 
 def save_profile(name, data):
+    if not name.strip() or any(char in name for char in '\\/:*?"<>|') or name in ('.', '..'):
+        raise ValueError("프로필 이름에 경로 또는 파일 이름 금지 문자를 사용할 수 없습니다")
     os.makedirs(PROFILE_DIR, exist_ok=True)
-    with open(os.path.join(PROFILE_DIR, name + ".json"), "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=1)
+    save_json(os.path.join(PROFILE_DIR, name + ".json"), data)
 
 
 def load_profile(name):
-    with open(os.path.join(PROFILE_DIR, name + ".json"), encoding="utf-8") as f:
-        return json.load(f)
+    if any(char in name for char in '\\/:*?"<>|') or name in ('.', '..'):
+        raise ValueError("올바른 프로필을 선택하세요")
+    data, warning = load_json(os.path.join(PROFILE_DIR, name + ".json"))
+    if warning or not data:
+        raise ValueError("프로필을 읽지 못했습니다. 설정 백업에서 복원하세요")
+    return data
 
 
 class ProfileBar(QGroupBox):
@@ -332,12 +338,19 @@ class ProfileBar(QGroupBox):
     def _load(self):
         name = self.combo.currentText()
         if name:
-            self.on_apply(load_profile(name))
+            try:
+                self.on_apply(load_profile(name))
+            except (OSError, ValueError, TypeError) as error:
+                QMessageBox.warning(self, "프로필 불러오기 실패", str(error))
 
     def _save(self):
         name, ok = QInputDialog.getText(self, "프로필 저장", "프로필 이름:", text=self.combo.currentText())
         if ok and name.strip():
-            save_profile(name.strip(), self.on_collect())
+            try:
+                save_profile(name.strip(), self.on_collect())
+            except (OSError, ValueError) as error:
+                QMessageBox.warning(self, "프로필 저장 실패", str(error))
+                return
             self.reload()
             self.combo.setCurrentText(name.strip())
 

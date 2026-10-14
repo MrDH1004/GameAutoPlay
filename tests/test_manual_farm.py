@@ -65,6 +65,15 @@ class ManualFarmTest(unittest.TestCase):
         b.apply(2)
         self.assertTrue(b.farm_mode)                                  # 설정이 앵벌 전용이면 계속 앵벌
 
+    def test_explicit_gui_toggle_can_leave_configured_farm_mode(self):
+        b = make(cfg_farm=True)
+        b.request_manual_farm(False, force=True)
+        b.apply(1)
+        self.assertFalse(b.farm_mode)
+        b.request_manual_farm(True, force=True)
+        b.apply(2)
+        self.assertTrue(b.farm_mode)
+
 
 if __name__ == "__main__":
     unittest.main()

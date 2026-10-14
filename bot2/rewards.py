@@ -63,17 +63,16 @@ def read_skill_count(frame):
 
 
 def _load_state():
-    try:
-        with open(STATE_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
+    from storage import load_json
+    data, warning = load_json(STATE_FILE)
+    if warning:
+        log.warning("상태 복구: %s", warning)
+    return data
 
 
 def _save_state(st):
-    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(st, f, ensure_ascii=False, indent=1)
+    from storage import save_json
+    save_json(STATE_FILE, st)
 
 
 class RewardTask:
