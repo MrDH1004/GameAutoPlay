@@ -72,6 +72,21 @@ class YeonggiTask:
             time.sleep(0.3)
         return frame, None, None
 
+    def _settled(self, timeout=4.0):
+        """화면이 멈출 때까지(연속 두 장이 거의 같을 때까지) 기다렸다가 그 frame을 돌려준다."""
+        import numpy as np
+        end = time.monotonic() + timeout
+        prev = self.bot.window.grab()
+        while time.monotonic() < end:
+            time.sleep(0.5)
+            cur = self.bot.window.grab()
+            if prev is not None and cur is not None and prev.shape == cur.shape:
+                diff = float(np.mean(np.abs(prev[::4, ::4].astype(int) - cur[::4, ::4].astype(int))))
+                if diff < 1.5:
+                    return cur
+            prev = cur
+        return prev
+
     def _close_popup(self, frame):
         """팝업(수련 정보/불가 안내)을 닫는다. 닫혔는지 확인하고 남아 있으면 한 번 더."""
         for _ in range(3):
@@ -164,15 +179,24 @@ class YeonggiTask:
             return
 
         # 노드 우상단에 빨간 점이 있는 노드만 수련할 수 있다 (점이 없으면 조건 미달/개방 대기)
-        badges = self.bot.matcher.find_all(frame, self.t["node_ready"], self.regions.get("node_ready"),
-                                           self.cfg.get("ready_threshold", 0.8))
-        nodes = [type("N", (), {"x": b.x - 140, "y": b.y + 38})() for b in badges]   # 점 → 노드 몸통 좌표
-        if not nodes:
-            log.info("수련 가능한(빨간 점) 노드가 화면에 없음")
-            return
-        log.info("수련 가능한 노드 %d개 발견", len(nodes))
-
-        for node in nodes[: self.cfg.get("max_tries", 6)]:
+        tried = set()
+        for _ in range(self.cfg.get("max_tries", 6)):
+            frame = self._settled()                  # 화면 열린 뒤 다음 노드 쪽으로 스크롤되는 동안엔 위치가 계속 바뀐다 → 멈춘 뒤에 찾는다
+            if not self._find(frame, "title"):
+                log.info("영기 수련 화면이 아님 → 중단")
+                return
+            badges = self.bot.matcher.find_all(frame, self.t["node_ready"], self.regions.get("node_ready"),
+                                               self.cfg.get("ready_threshold", 0.8))
+            nodes = [type("N", (), {"x": b.x - 140, "y": b.y + 38})() for b in badges]   # 점 → 노드 몸통 좌표
+            nodes = [n for n in nodes if (round(n.x / 40), round(n.y / 40)) not in tried]
+            if not nodes:
+                if not tried:
+                    log.info("수련 가능한(빨간 점) 노드가 화면에 없음")
+                break
+            node = nodes[0]
+            tried.add((round(node.x / 40), round(node.y / 40)))
+            if len(tried) == 1:
+                log.info("수련 가능한 노드 %d개 발견", len(nodes))
             self._click(f"노드 ({node.x},{node.y})", node, 0.6)
             frame, train, impossible = self._wait_popup(4.0)
 
@@ -182,9 +206,10 @@ class YeonggiTask:
                 continue
 
             if not train:
-                log.info("  수련 버튼 없음(팝업이 4초 안에 안 뜸) → 닫고 다음 노드")
+                log.info("  수련 버튼 없음(팝업이 4초 안에 안 뜸) → 다음 노드")
                 self.bot._save_screen(frame, "yeonggi_nobtn")
-                self._close_popup(frame)
+                if self._find(frame, "close"):                   # 팝업이 떠 있을 때만 닫는다 (ESC는 영기 수련 화면 전체를 닫아 버린다)
+                    self._close_popup(frame)
                 continue
 
             self._click("수련", train, 1.5)
