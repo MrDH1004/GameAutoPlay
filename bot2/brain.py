@@ -758,6 +758,15 @@ class Bot:
         self._fails = 0
         return True
 
+    @staticmethod
+    def _main_menu_open(frame):
+        """우측 ☰ 메뉴 패널이 열려 있는가 (수집 쪽 템플릿 재사용)."""
+        try:
+            from .collect import _matches, _tpl
+            return bool(_matches(frame, _tpl("collect_menu.png"), (1300, 340, 1520, 440), 0.8))
+        except Exception:                            # noqa: BLE001
+            return False
+
     def _on_overlay(self, snap, now):
         """필드가 아닌 화면. 컷신/메뉴가 스스로 끝날 시간을 주고, 길어지면 ESC로 닫아본다."""
         if self.farm and (self.farm_mode or now < self._farm_until) and now - self._last_map_close > 4.0 and self.farm.nav.map_open(snap.frame):
@@ -771,6 +780,13 @@ class Bot:
             log.info("열려 있는 길라잡이 화면을 닫음")
             self._last_map_close = now
             self._click_frame("길라잡이 닫기", *GUIDE_CLOSE)
+            self._overlay_since = None
+            return
+        if now - self._last_map_close > 4.0 and self._main_menu_open(snap.frame):
+            # ☰ 메뉴가 열려 있으면 ESC로는 안 닫힌다 → 같은 자리의 닫기 X(☰)를 누른다
+            log.info("열려 있는 메뉴를 닫음")
+            self._last_map_close = now
+            self._click_frame("메뉴 닫기", 1870, 44)
             self._overlay_since = None
             return
         if self._try_map_accept(snap, now):
