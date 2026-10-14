@@ -398,13 +398,16 @@ class Window(QMainWindow):
         self.btn_farm = QPushButton("⚔  앵벌 모드 켜기")
         self.btn_farm.setToolTip("퀘스트를 멈추고 전투력에 맞는 사냥터에서 자동 사냥만 합니다 (화첩/유물 수집 몬스터를 먼저 사냥). 다시 누르면 꺼지고 퀘스트를 재개합니다.")
         self.btn_farm.clicked.connect(self.toggle_farm)
+        self.btn_evade = QPushButton("🏃  자리 회피")
+        self.btn_evade.setToolTip("지금 자리에서 세계지도 걸어가기(무료)로 몹이 적은 쪽으로 빠졌다가, HP가 차면 같은 거리만큼 돌아와 자동 사냥을 다시 켭니다. HP 30% 이하면 자동으로도 합니다.")
+        self.btn_evade.clicked.connect(self.request_evade)
         self._pending_farm = False
         self.btn_detect = QPushButton("🖱  조작 감지 켜짐")
         self.btn_detect.setToolTip("켜짐: 마우스·키보드를 쓰면 봇이 2분간 양보합니다.\n꺼짐: 마우스·키보드를 써도 봇이 멈추지 않습니다 (봇의 클릭과 겹칠 수 있으니 이동·등록 중에는 주의).")
         self.btn_detect.clicked.connect(self.toggle_detect)
         self.user_detect = bool(self.saved.get("_user_detect", True))
         self._refresh_detect_button()
-        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm, self.btn_detect):
+        for b in (self.btn_start, self.btn_pause, self.btn_stop, self.btn_potion, self.btn_farm, self.btn_evade, self.btn_detect):
             b.setMinimumHeight(42)
             row.addWidget(b)
         return row
@@ -918,6 +921,15 @@ class Window(QMainWindow):
         self.btn_detect.setProperty("on", not on)                 # 꺼진 상태를 노란색으로 눈에 띄게
         self.btn_detect.style().unpolish(self.btn_detect)
         self.btn_detect.style().polish(self.btn_detect)
+
+    def request_evade(self):
+        """자리 회피 수동 실행 (봇이 필드에서 자동 사냥 중일 때)."""
+        bot = self.thread.bot if self.thread else None
+        if not bot:
+            logging.info("자리 회피: 매크로가 실행 중이 아님")
+            return
+        bot.request_evade()
+        logging.info("자리 회피 요청 (버튼)")
 
     def toggle_farm(self):
         """앵벌 모드 수동 켜기/끄기. 정지 상태면 매크로를 시작하면서 앵벌 모드로."""

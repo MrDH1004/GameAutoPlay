@@ -120,6 +120,12 @@ class Bot:
         self.live = LiveStatus(self, float(config.get("live_interval", 3.0)))     # 대시보드 실시간 상황판
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
         self._rest_at = 0.0
+        from .evade import Evader
+        self.evader = Evader(BotDriver(self), int(self.hp_cfg.get('evade_dist_px', 380)))   # HP 아주 낮을 때 자리 회피
+        self._evade = None              # 회피로 이동한 지도 오프셋 (돌아올 때 반대로 이동). None = 회피 중 아님
+        self._evade_pending = False     # T를 끈 뒤 회피 이동을 시작해야 함
+        self._evade_request = False     # 제어판/명령의 수동 회피 요청
+        self._evade_last = -1e9
         self._rest_empty_since = None   # 타겟 체력바가 완전히 비어 보이기 시작한 시각 (잠깐 깜빡임 무시용)
         self._rest_had_target = False   # 휴식 시작 때 타겟 체력바가 있었는지 (바가 사라지면 그 몹을 잡은 것)
         self._rest_press_at = 0.0
@@ -265,6 +271,17 @@ class Bot:
             self._rest = None
             return False
         hp = self.hp or 0.0
+        # 자리 회피: HP가 evade_below(30%) 이하면 잡던 몹도 두고 바로 T를 끄고 몹이 적은 쪽으로 빠진다 (수동 요청도 같음)
+        manual, self._evade_request = self._evade_request, False
+        if self._rest in (None, "finish") and self._evade is None and not self._evade_pending:
+            auto = (c.get("evade_enabled", True) and snap.auto_on and not snap.walking
+                    and 0.0 < hp <= c.get("evade_below", 0.30) and now - self._evade_last > c.get("evade_cooldown", 60)
+                    and not self._boss_near(snap, now))
+            if manual or auto:
+                log.warning("%s → 자동 사냥 끄고 자리 회피 (HP %.0f%%)", "수동 요청" if manual else "HP가 매우 낮음", hp * 100)
+                self._rest, self._rest_at, self._rest_tries, self._rest_press_at = "off", now, 0, 0.0
+                self._evade_pending, self._evade_last = True, now
+                return True
         if self._rest is None:
             if snap.auto_on and 0.0 < hp <= c.get("rest_below", 0.5) and not self._boss_near(snap, now):
                 self._rest, self._rest_at, self._rest_empty_since = "finish", now, None
@@ -306,6 +323,15 @@ class Bot:
         if self._rest == "off":
             if self._rest_toggle(snap, now, want_on=False):
                 return True
+            if self._evade_pending:
+                self._evade_pending = False
+                try:
+                    self._evade = self.evader.flee(self.window.grab())
+                except actions.UserInterrupt:
+                    raise
+                except Exception as e:                       # noqa: BLE001
+                    log.warning("자리 회피 중 오류: %s", e)
+                    self._evade = None
             self._rest, self._rest_at = "rest", now
             log.info("자동 사냥 끔 → HP %.0f%%까지 회복 대기 (물약, 최대 %d초)", min(c.get("rest_resume", 0.98), 1.0) * 100, c.get("rest_max", 600))
             return True
@@ -319,6 +345,17 @@ class Bot:
                 why = f"쉬는 중 공격받아 HP {hp * 100:.0f}%"
             if why is None:
                 return True
+            if self._evade:
+                off, self._evade = self._evade, None
+                if "공격받아" in why:
+                    log.info("회복 중 공격받음 → 원래 자리로 돌아가지 않고 이 자리에서 사냥")
+                else:
+                    try:
+                        self.evader.back(off)
+                    except actions.UserInterrupt:
+                        raise
+                    except Exception as e:                   # noqa: BLE001
+                        log.warning("자리 복귀 중 오류: %s", e)
             log.info("%s → 자동 사냥 다시 켬", why)
             self._rest, self._rest_tries, self._rest_press_at = "on", 0, 0.0
         if self._rest == "on":
@@ -483,6 +520,10 @@ class Bot:
             if ok and self.mission.last_tab:
                 self._source = self.mission.last_tab
             self._click_at = time.monotonic()
+
+    def request_evade(self):
+        """제어판 버튼/원격 명령에서 호출 (다른 스레드): 지금 자리를 회피했다가 회복 후 돌아온다."""
+        self._evade_request = True
 
     def request_manual_farm(self, on):
         """제어판 버튼에서 호출 (다른 스레드). 실제 전환은 봇 루프에서 한다."""
@@ -1013,10 +1054,13 @@ class Bot:
             self.activity.ignore_until_now()
             self._idle_since = self._verify = None
             return "재개했습니다.", None
+        if cmd in ("회피", "evade"):
+            self.request_evade()
+            return "자리 회피를 요청했습니다 (지금 자리에서 빠졌다가 HP가 차면 돌아와 자동 사냥).", None
         if cmd in ("정지", "stop"):
             self.stop_event.set()
             return "매크로를 종료합니다.", None
-        return "명령: /상태 /화면 /일시정지 /재개 /정지", None
+        return "명령: /상태 /화면 /일시정지 /재개 /회피 /정지", None
 
     def _daily_report(self):
         rc = self.cfg.get("notify") or {}

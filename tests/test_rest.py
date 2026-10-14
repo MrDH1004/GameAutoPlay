@@ -18,6 +18,8 @@ def make_bot(boss=False):
     b._rest_tries = 0
     b._rest_had_target = False
     b._rest_empty_since = None
+    b._evade, b._evade_pending, b._evade_request, b._evade_last = None, False, False, -1e9
+    b.hp_cfg["evade_enabled"] = False        # 이 파일은 일반 휴식만 시험한다 (자리 회피는 test_evade.py)
     b._last_progress = 0.0
     b.presses = []
     b._press = lambda label, key: b.presses.append(key)
@@ -28,7 +30,7 @@ def make_bot(boss=False):
 
 
 def snap(state, auto_on, fill=None):
-    return types.SimpleNamespace(state=state, auto_on=auto_on, frame=fill)
+    return types.SimpleNamespace(state=state, auto_on=auto_on, frame=fill, walking=False)
 
 
 class RestTest(unittest.TestCase):
