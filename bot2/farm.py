@@ -627,7 +627,8 @@ def guide_spots():
 
 def read_number(frame, box):
     for scale in (3, 2, 4):
-        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{4,})", _ocr(_crop(frame, box), scale))
+        txt = re.sub(r"(?<=\d)[.](?=\d{3}(?!\d))", ",", _ocr(_crop(frame, box), scale))     # OCR이 천 단위 쉼표를 마침표로 읽는 경우('94.500')
+        m = re.search(r"(\d{1,3}(?:,\d{3})+|\d{4,})", txt)
         if m:
             return int(m.group(1).replace(",", ""))
     return None

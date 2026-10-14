@@ -32,5 +32,18 @@ class PickTest(unittest.TestCase):
         self.assertEqual(f.pick(100930, 0)["power"], 84500)      # 90.8K 이하 중 가장 센 곳
 
 
+class ReadNumberTest(unittest.TestCase):
+    def test_period_thousands_separator(self):
+        import bot2.farm as farm
+        orig = farm._ocr
+        try:
+            for txt, want in (("94.500", 94500), ("94,500", 94500), ("⚔ 84.500", 84500), ("150.000", 150000), ("1,150", 1150)):
+                farm._ocr = lambda crop, scale=3, t=txt: t
+                import numpy as np
+                self.assertEqual(farm.read_number(np.zeros((1080, 1920, 3), np.uint8), (0, 0, 50, 20)), want, txt)
+        finally:
+            farm._ocr = orig
+
+
 if __name__ == "__main__":
     unittest.main()
