@@ -43,7 +43,7 @@ from PySide6.QtGui import QColor, QIcon, QFont, QKeySequence, QShortcut, QTextCh
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox,
                                QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton, QSpinBox,
                                QTabWidget, QTextBrowser, QVBoxLayout, QWidget, QLineEdit, QScrollArea,
-                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox, QButtonGroup, QProgressBar, QFileDialog)
+                               QSystemTrayIcon, QMenu, QTimeEdit, QMessageBox, QButtonGroup, QProgressBar, QFileDialog, QSizePolicy)
 
 CONFIG_PATH = os.path.join(ROOT, "config.yaml")
 SETTINGS_PATH = os.path.join(ROOT, "gui_settings.json")
@@ -712,9 +712,13 @@ class Window(QMainWindow):
         live = QGridLayout()
         live.setSpacing(12)
         self.live_lbl = {}
-        for index, (key, title) in enumerate((("map", "현재 위치"), ("mob", "전투 대상"),
-                                             ("quest", "진행 중인 퀘스트"), ("sync", "화면 인식"))):
+        for column in range(3):
+            live.setColumnStretch(column, 1)
+        for index, (key, title) in enumerate((("map", "현재 위치"), ("power", "내 전투력"), ("potions", "HP 물약"),
+                                             ("quest", "진행 중인 퀘스트"), ("mob", "전투 대상"), ("sync", "화면 인식"))):
             c, l = card(title)
+            c.setMinimumWidth(0)
+            c.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)
             v = QLabel("-")
             v.setObjectName("big")
             v.setWordWrap(True)
@@ -734,7 +738,7 @@ class Window(QMainWindow):
                 self.hp_bar.setValue(0)
                 self.hp_bar.hide()
                 l.addWidget(self.hp_bar)
-            live.addWidget(c, index // 2, index % 2)
+            live.addWidget(c, index // 3, index % 3)
         lay.addLayout(live)
 
         chips = QHBoxLayout()
@@ -1424,9 +1428,15 @@ class Window(QMainWindow):
         def put(key, big, small="", color=None):
             v, sm = self.live_lbl[key]
             v.setText(big)
+            v.setToolTip(big)
             size = "font-size:11px;" if key in ("map", "mob", "quest") else ""
             v.setStyleSheet(size + (f"color:{color};" if color else ""))
             sm.setText(small)
+
+        power = getattr(bot, "power", None) or getattr(getattr(bot, "farm", None), "power", None)
+        margin = get_path(getattr(bot, "cfg", {}), ("farm", "margin"), 1.5)
+        mode = "앵벌" if getattr(bot, "farm_mode", False) else "퀘스트"
+        put("power", f"{power:,}" if power else "읽는 중", f"최근 확인값 · {mode} · 허용 {margin:g}배")
 
         rate, age, why = sy["rate"], sy["age"], sy["why"]
         if why:
@@ -1439,10 +1449,15 @@ class Window(QMainWindow):
 
         if not d or d.get("at") is None or time.monotonic() - d["at"] > 20:
             self.hp_bar.hide()
-            for k in ("map", "mob", "quest"):
+            for k in ("map", "mob", "quest", "potions"):
                 put(k, "-", "읽는 중…" if k == "map" else "")
             return
         hp = d.get("hp") if d.get("field") else None
+        count = d.get("potions") if d.get("field") else None
+        threshold = get_path(getattr(bot, "cfg", {}), ("potion_shop", "buy_below"), 50)
+        put("potions", f"{count}개" if count is not None else "읽는 중",
+            f"최근 인식값 · {threshold}개 미만 자동 구매" if count is not None else "필드에서 확인합니다",
+            C["warn"] if count is not None and count < threshold else None)
         self.hp_bar.setVisible(hp is not None)
         if hp is not None:
             self.hp_bar.setValue(max(0, min(100, round(hp * 100))))
@@ -1456,7 +1471,8 @@ class Window(QMainWindow):
         t = d.get("target")
         if t:
             pw = f"{t['power'] // 1000}K" if t.get("power") else ""
-            put("mob", t["name"], f"{pw} · 체력 {t['fill'] * 100:.0f}%".strip(" ·"))
+            ratio = f" · 내 전투력의 {t['power'] / power:.2f}배" if t.get("power") and power else ""
+            put("mob", t["name"], f"{pw} · 체력 {t['fill'] * 100:.0f}%{ratio}".strip(" ·"))
         else:
             put("mob", "없음", "타겟 몹이 없음")
         put("quest", d.get("quest") or "-", getattr(bot, "_source", "") and f"출처: {bot._source}" or "")
