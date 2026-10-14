@@ -31,8 +31,11 @@ def send(cmd, timeout=30):
     end = time.time() + timeout
     while time.time() < end:
         if os.path.exists(out):
-            with open(out, encoding="utf-8") as f:
-                return json.load(f)
+            try:
+                with open(out, encoding="utf-8") as f:
+                    return json.load(f)
+            except (PermissionError, ValueError):          # 브리지가 아직 쓰는 중이거나 백신이 잠깐 잡고 있음 → 다시 시도
+                pass
         time.sleep(0.1)
     raise SystemExit("응답 없음 (브리지가 멈췄거나 종료됨)")
 
