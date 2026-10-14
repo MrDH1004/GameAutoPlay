@@ -437,6 +437,10 @@ class Bot:
         if now - self._last_death_click < d.get("retry", 3.0):
             return
         self._last_death_click = now
+        if self._evade or self._evade_pending:
+            # 회피 중 죽었으면 원래 지역으로 돌아갈 일은 없다 (거점에서 부활한다) → 복귀 기록을 지운다
+            log.info("자리 회피 중 사망 → 복귀 기록 삭제")
+            self._evade, self._evade_pending = None, False
         # 지역마다 버튼 구성이 다르다: 무료 버튼(나가기 / 거점 이동 후 부활)만 템플릿으로 찾아 누른다
         for tpl in d.get("free_buttons", []):
             m = self.matcher.find(snap.frame, tpl, d.get("button_region"), d.get("button_threshold", 0.8))

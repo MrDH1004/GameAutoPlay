@@ -136,5 +136,18 @@ class AreaPickTest(unittest.TestCase):
         self.assertEqual(calls[1], ("pin", [(-380, 0)]))
 
 
+class DeathClearsEvadeTest(unittest.TestCase):
+    def test_death_during_evade_drops_the_return_token(self):
+        b = types.SimpleNamespace(cfg={"death": {"retry": 3.0, "free_buttons": []}}, _last_death_click=-1e9,
+                                  _evade={"area": "아래광장", "dist": 61}, _evade_pending=False)
+        b.matcher = types.SimpleNamespace(find=lambda *a, **k: None)
+        b._death_open = False
+        try:
+            Bot._on_dead(b, types.SimpleNamespace(frame=None), 100.0)
+        except Exception:                                    # 이 시험은 앞부분(복귀 기록 삭제)만 본다
+            pass
+        self.assertIsNone(b._evade)
+
+
 if __name__ == "__main__":
     unittest.main()
