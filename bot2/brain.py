@@ -811,6 +811,12 @@ class Bot:
 
     def _on_field(self, snap, now):
         """필드 화면: COMBAT/MOVING은 아무것도 하지 않고, IDLE이 이어질 때만 퀘스트를 누른다."""
+        if self.farm and now - self._last_map_close > 4.0 and self.farm.guide.is_open(snap.frame):
+            # 길라잡이 창은 필드 표시(오른쪽 아래 HUD)를 가리지 않아 '필드'로 보이지만 키 입력(T 등)을 막는다 → 닫는다
+            log.info("열려 있는 길라잡이 화면을 닫음 (필드 화면에서)")
+            self._last_map_close = now
+            self._click_frame("길라잡이 닫기", *GUIDE_CLOSE)
+            return
         if self._rest_tick(snap, now):
             return
         self._watch_move_end(snap, now)
