@@ -184,7 +184,7 @@ farm:
   travel: guide            # guide = 길라잡이(F5) 추천 사냥터 무료 순간이동, map = 세계지도 걸어가기(farm_spots.json)
   claim_minutes: 30        # 길라잡이 사냥터 미션 보상(권장 전투력 달성) 확인 주기
   spots_file: farm_spots.json
-  margin: 0.9               # 몬스터 전투력이 (내 전투력 x margin) 이하인 사냥터 중 가장 센 곳을 고른다
+  margin: 1.5               # 몬스터 전투력이 (내 전투력 x margin) 이하인 사냥터 중 가장 센 곳을 고른다 (2026-10-14 사용자 지시: 1.5배까지 충분히 잡을 수 있음. 사망하면 그 단계 이상은 자동 제외)
   reselect_minutes: 15      # 이 주기로 전투력을 다시 읽어 사냥터를 올리거나 내린다
   upgrade_gain: 1.15        # 더 센 사냥터가 지금보다 이 배수 이상일 때만 올라간다 (잦은 이동 방지)
   death_ban_minutes: 60     # 사망한 사냥터를 제외하는 시간
