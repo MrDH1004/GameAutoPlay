@@ -940,8 +940,10 @@ class CollectTask:
         return set(self.banned)
 
     def need_scan(self):
+        # 아이템 사전 조사로 목표를 정할 때는 그림마다 들어가 몬스터를 읽는 긴 스캔이 거의 필요 없다 (완료 여부 갱신용으로만) → 3일에 한 번
+        secs = max(self.scan_secs, 72 * 3600) if (self.use_dict and self.paintings()) else self.scan_secs
         return not (self.db.get("album") or self.db.get("relics")) or \
-            time.time() - self.db.get("scanned_at", 0) > self.scan_secs
+            time.time() - self.db.get("scanned_at", 0) > secs
 
     def scan(self):
         log.info("수집 스캔 시작 (화첩 → 유물, 십여 분 걸림)")
