@@ -6,6 +6,7 @@
   * 누른 뒤 8초 안에 이동/전투가 시작돼야 성공. 실패한 탭은 한동안 건너뛴다.
 """
 import logging
+import re
 import time
 
 log = logging.getLogger(__name__)
@@ -89,6 +90,101 @@ class MissionTask:
                 return True
         return False
 
+    def _daily_rows(self, frame):
+        """일일 목록을 OCR로 읽어 명상 외 실제 수행 임무를 위에서부터 반환한다."""
+        from tools.ocr import read_text
+
+        h, w = frame.shape[:2]
+        x0, y0 = int(w * 0.115), int(h * 0.19)
+        crop = frame[y0:int(h * 0.91), x0:int(w * 0.725)]
+        rows = []
+        try:
+            lines = read_text(crop, scale=1.5)
+        except Exception as e:  # noqa: BLE001
+            log.warning("일일 임무명 OCR 실패: %s", e)
+            return rows
+        for line in lines:
+            text = re.sub(r"\s+", " ", line["text"]).strip()
+            compact = re.sub(r"\s+", "", text)
+            if "일일" not in compact or "명상" in compact:
+                continue
+            cy = y0 + float(line["y"]) + float(line["h"]) / 2
+            rows.append((text, cy))
+        return rows
+
+    def _reopen_daily(self):
+        """후보 하나가 진행되지 않았을 때 일일 목록으로 돌아간다."""
+        self._close()
+        self.bot._press("임무 다시 열기", "j")
+        if not self._wait_title(5.0):
+            return False
+        self._click_xy("일일 탭", dict(TABS)["일일"], 0.110 * self.bot.window.frame_h, 1.2)
+        return True
+
+    def _enter_daily_secret_realm(self):
+        """비경 참여 일일은 가장 안전한 1단계에 입장한다."""
+        from .startup import is_secret_realm_name, read_map_name
+
+        w, h = self.bot.window.frame_w, self.bot.window.frame_h
+        time.sleep(2.0)
+        frame = self._grab()
+        # 자동 진행이 비경 선택 화면을 열었는지 제목 OCR로 확인한다.
+        from .farm import _crop, _ocr
+        title = _ocr(_crop(frame, (20, 10, 330, 75)), 2)
+        if "비경" not in re.sub(r"\s+", "", title):
+            return False
+        log.info("  [일일] 비경 탐험 → 안전한 1단계 입장")
+        self._click_xy("비경 1단계 선택", 0.31 * w, 0.245 * h, 0.8)
+        self._click_xy("비경 입장", 0.92 * w, 0.945 * h, 1.2)
+        self._click_xy("비경 입장 확인", 0.557 * w, 0.617 * h, 7.0)
+        name = read_map_name(self._grab())
+        if is_secret_realm_name(name):
+            log.info("  [일일] 비경 입장 확인: %s", name)
+            return True
+        log.warning("  [일일] 비경 입장 후 지도 확인 실패: %s", name or "읽기 실패")
+        return False
+
+    def _try_daily(self):
+        """명상은 자연 누적시키고, 수락한 실제 일일을 순서대로 시도한다."""
+        rows = self._daily_rows(self._grab())
+        if not rows:
+            log.info("  [일일] 명상 외 수행 임무를 읽지 못함")
+            return False
+        log.info("  [일일] 수행 후보: %s", " → ".join(text for text, _y in rows[:5]))
+        w = self.bot.window.frame_w
+        for index, (title, y) in enumerate(rows):
+            self._click_xy(f"일일 후보 선택: {title}", 0.36 * w, y, 0.8)
+            frame = self._grab()
+            auto = self._find(frame, "auto")
+            if auto:
+                log.info("  [일일] '%s' 자동 진행", title)
+                self._click_xy("자동 진행", auto.x, auto.y, 1.0)
+                if "비경" in title and self._enter_daily_secret_realm():
+                    return True
+                if self._on_screen():
+                    self._close()
+                if self._progressing():
+                    return True
+                log.info("  [일일] '%s' 진행 없음 → 다음 후보", title)
+            else:
+                accept = self._find(frame, "accept")
+                badges = self.bot.matcher.find_all(frame, self.t["ok_badge"], self.regions.get("list"),
+                                                    self.cfg.get("badge_threshold", 0.85))
+                safe = any(abs(float(b.y) - y) <= 32 for b in badges)
+                if accept and safe:
+                    log.info("  [일일] 안전 적합 임무 수락: %s", title)
+                    self._click_xy("수락", accept.x, accept.y, 1.2)
+                    auto = self._find(self._grab(), "auto")
+                    if auto:
+                        self._click_xy("자동 진행", auto.x, auto.y, 1.0)
+                        if self._progressing():
+                            return True
+                else:
+                    log.info("  [일일] 미수락 또는 안전 확인 불가: %s", title)
+            if index + 1 < len(rows) and not self._reopen_daily():
+                break
+        return False
+
     def _stop_autohunt(self):
         """일일 자동 진행이 기존 자리 전투에 붙잡히지 않도록 자동 사냥을 끈다."""
         snap = self.bot.eyes.look(self._grab(), time.monotonic())
@@ -106,6 +202,9 @@ class MissionTask:
     def _try_tab(self, name, tab_x):
         w, h = self.bot.window.frame_w, self.bot.window.frame_h
         self._click_xy(f"{name} 탭", tab_x, 0.110 * h, 1.2)
+
+        if name == "일일":
+            return self._try_daily()
 
         tried_rows = 0
         selected_ok = False
