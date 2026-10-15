@@ -102,14 +102,6 @@ class MissionTask:
             if not self.bot.eyes.look(self._grab(), time.monotonic()).auto_on:
                 return
 
-    def _start_autohunt(self):
-        """이동이 필요 없는 접속 시간형 일일은 현재 안전 지역에서 사냥하며 채운다."""
-        snap = self.bot.eyes.look(self._grab(), time.monotonic())
-        if snap.auto_on:
-            return
-        log.info("이동 없는 일일 임무 → 현재 지역 자동 사냥 켜기")
-        self.bot._press("자동 사냥 켜기", "t")
-
     # ---------- 탭 하나 처리 ----------
     def _try_tab(self, name, tab_x):
         w, h = self.bot.window.frame_w, self.bot.window.frame_h
@@ -121,8 +113,21 @@ class MissionTask:
         for _ in range(5):
             frame = self._grab()
 
-            # 일일 탭의 기본 선택은 요구 전투력이 없는 이벤트 임무일 수 있다.
-            # 먼저 녹색 '적합' 행을 골라야 실제 사냥터 자동 이동이 시작된다.
+            # 일일 탭을 열면 이미 수락한 첫 임무가 선택되어 있다. 이 임무의
+            # 자동 진행을 먼저 사용해야 낙화의 전장/비경 같은 진행 중 일일을
+            # 끝낼 수 있다. 적합 배지 탐색은 수락 임무가 없을 때의 보충 동작이다.
+            auto = self._find(frame, "auto")
+            if auto:
+                log.info("  [%s] 이미 수락한 임무 자동 진행 클릭", name)
+                self._click_xy("자동 진행", auto.x, auto.y, 1.5)
+                if self._on_screen():
+                    self._close()
+                if self._progressing():
+                    return True
+                log.info("  [%s] 자동 진행했지만 이동·대화가 시작되지 않음", name)
+                return False
+
+            # 수락된 임무가 없으면 녹색 '적합' 전투 임무를 고른다.
             if name == "일일" and not picked_safe_daily:
                 rows = self.bot.matcher.find_all(frame, self.t["ok_badge"], self.regions.get("list"),
                                                  self.cfg.get("badge_threshold", 0.85))
@@ -135,24 +140,6 @@ class MissionTask:
                     selected_ok = True
                     continue
                 picked_safe_daily = True
-
-            auto = self._find(frame, "auto")
-            if auto:
-                log.info("  [%s] 자동 진행 클릭", name)
-                self._click_xy("자동 진행", auto.x, auto.y, 1.5)
-                if self._on_screen():                 # 화면이 안 닫힘 → 팝업/불가
-                    self._close()
-                if self._progressing():
-                    return True
-                if name == "일일" and selected_ok:
-                    # '게임 내 N분 머물기'처럼 자동 진행을 눌러도 이동하지 않는
-                    # 이미 수락된 일일은 현재 안전 지역에서 사냥하며 시간을 채운다.
-                    self._close()
-                    self._start_autohunt()
-                    log.info("  [%s] 이동 없는 수락 임무를 현재 지역에서 계속 진행", name)
-                    return True
-                log.info("  [%s] 자동 진행했지만 진행 없음", name)
-                return False
 
             accept = self._find(frame, "accept")
             if accept and name == "일일" and selected_ok:
