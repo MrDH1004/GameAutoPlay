@@ -39,7 +39,9 @@ def is_secret_realm_name(name):
     빈 값은 일반 맵으로 추측하지 않고 False만 반환한다.
     """
     compact = re.sub(r"[\s\[\](){}]", "", str(name or ""))
-    return "비경" in compact
+    # 좌상단의 작은 '[비경]' 글자가 아이콘과 겹쳐 영문/기호로 깨져도
+    # 고유 지도명 '영험한 청산' 부분은 안정적으로 남는다.
+    return "비경" in compact or "영험한청산" in compact or "험한청산" in compact
 
 
 def read_map_name(frame):

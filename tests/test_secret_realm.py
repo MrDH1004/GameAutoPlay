@@ -25,6 +25,7 @@ class SecretRealmNameTest(unittest.TestCase):
     def test_brackets_and_spaces_are_optional(self):
         self.assertTrue(is_secret_realm_name("[비경] 영험한 청산 지하동굴"))
         self.assertTrue(is_secret_realm_name("비 경] 영험한청산지하동굴"))
+        self.assertTrue(is_secret_realm_name("[B.트!JP험한 청산 지하동"))
         self.assertFalse(is_secret_realm_name("산신의 영역 지하 동굴"))
         self.assertFalse(is_secret_realm_name(""))
 
