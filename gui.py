@@ -1136,10 +1136,16 @@ class Window(QMainWindow):
             icons = {}
 
         def icon_html(name, size=40):
-            for k, fn in icons.items():
-                if name.startswith(k):
-                    url = "file:///" + os.path.join(sdir, fn).replace("\\", "/")
-                    return f"<img src='{url}' width={size} height={size}>"
+            # 표의 '(궁)' 같은 설명 접미사는 허용하되 비슷한 이름끼리
+            # 잘못 연결되지 않도록 정확한 이름을 먼저 찾는다.
+            fn = icons.get(name)
+            if fn is None:
+                matches = [(k, v) for k, v in icons.items() if name.startswith(k + "(")]
+                if matches:
+                    fn = max(matches, key=lambda item: len(item[0]))[1]
+            if fn:
+                url = "file:///" + os.path.join(sdir, fn).replace("\\", "/")
+                return f"<img src='{url}' width={size} height={size}>"
             return (f"<table cellspacing=0><tr><td width={size} height={size} align=center "
                     f"style='background:{C['panel2']};color:{C['idle']}'>?</td></tr></table>")
 

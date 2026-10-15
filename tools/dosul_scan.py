@@ -91,8 +91,7 @@ def main():
     for _ in range(10):                          # 맨 위로
         ctl("drag", round(1150 * sx), round(250 * sy), round(1150 * sx), round(700 * sy))
     time.sleep(0.5)
-    sigs, crops, done, stop = [], [], set(), False
-    locked_n = 0
+    sigs, crops, done = [], [], set()
     G = 0.0                                      # 지금까지 스크롤한 양
     img = shot()
     for page in range(16):
@@ -104,11 +103,7 @@ def main():
             x0, x1 = round(1100 * sx), round(1200 * sx)
             locked = img[round(y - 22 * sy):round(y - 4 * sy), x0:x1].max() < 170
             if locked:
-                locked_n += 1
-                if locked_n >= 2:
-                    stop = True
                 continue
-            locked_n = 0
             ctl("click", round(1150 * sx), round(y))
             time.sleep(0.7)
             fresh = shot()
@@ -123,8 +118,6 @@ def main():
             crops.append(crop)
             cv2.imencode(".png", crop)[1].tofile(os.path.join(out_dir, f"{len(crops):02d}.png"))
             print(len(crops), "k=", k, flush=True)
-        if stop:
-            break
         ctl("drag", round(1150 * sx), round(650 * sy), round(1150 * sx), round(330 * sy))
         time.sleep(0.8)
         new = shot()

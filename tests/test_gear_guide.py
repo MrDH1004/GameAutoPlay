@@ -1,5 +1,7 @@
 """추천 탭 데이터: 모든 항목에 출처([웹]/[실측])가 붙어 있고, 아이템 이름을 지어내지 않는지."""
 import os
+import json
+import struct
 
 os.environ.setdefault("DOKKAEBI_TEST", "1")      # 테스트가 실제 로그 파일에 쓰지 않게
 import sys
@@ -7,6 +9,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import gear_guide as g  # noqa: E402
+import skill_guide as skills  # noqa: E402
 
 
 def tagged(text):
@@ -45,6 +48,28 @@ class GearGuideTest(unittest.TestCase):
 
 
 class RecommendTabTest(unittest.TestCase):
+    def test_every_measured_skill_has_a_transparent_icon(self):
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        icon_dir = os.path.join(root, "assets", "skills")
+        with open(os.path.join(icon_dir, "index.json"), encoding="utf-8") as f:
+            index = json.load(f)
+        for row in skills.UNLOCKED_SKILLS:
+            name = row[0]
+            self.assertIn(name, index, f"도술 아이콘 색인 누락: {name}")
+            path = os.path.join(icon_dir, index[name])
+            self.assertTrue(os.path.isfile(path), f"도술 아이콘 파일 누락: {name}")
+            with open(path, "rb") as image:
+                header = image.read(26)
+            self.assertEqual(header[:8], b"\x89PNG\r\n\x1a\n")
+            width, height, _depth, color_type = struct.unpack(">IIBB", header[16:26])
+            self.assertEqual((width, height, color_type), (64, 64, 6), name)
+
+    def test_safe_farm_set_fits_the_five_game_slots(self):
+        safe = next(row for row in skills.SETS if row["title"].startswith("안전한 광역 사냥"))
+        self.assertEqual(len(safe["skills"]), 5)
+        unlocked = {row[0] for row in skills.UNLOCKED_SKILLS}
+        self.assertTrue(set(safe["skills"]) <= unlocked)
+
     def test_tab_renamed_and_has_five_subtabs(self):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
         from PySide6.QtWidgets import QApplication
