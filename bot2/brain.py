@@ -779,6 +779,11 @@ class Bot:
             self._hunt_press_at = 0.0
             log.info("비경: 자동 사냥이 꺼져 있음 → T로 켜기")
         if self._want_hunt:
+            # 비경에서는 자동사냥 버튼이 장면 전환/탑승 중 입력을 잠시 무시할 수 있다.
+            # 일반 맵처럼 3회 실패로 멈추지 말고 간격을 두고 다음 묶음을 재시도한다.
+            if self._hunt_tries >= 3 and now - self._hunt_press_at >= 3.0:
+                log.warning("비경: 자동 사냥 3회 입력 무응답 → 다시 시도")
+                self._hunt_tries = 0
             self._ensure_hunt(snap, now)
 
     def _focus_game_window(self):

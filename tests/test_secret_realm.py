@@ -71,6 +71,16 @@ class SecretRealmStateTest(unittest.TestCase):
         self.assertTrue(bot._want_hunt)
         self.assertIsNone(bot._verify)
 
+    def test_secret_realm_retries_hunt_instead_of_pausing(self):
+        bot = make_bot()
+        bot._hunt_tries = 3
+        bot._hunt_press_at = 1.0
+        seen = []
+        bot._ensure_hunt = lambda _snap, _now: seen.append(bot._hunt_tries)
+        snap = types.SimpleNamespace(auto_on=False, walking=False)
+        Bot._on_secret_realm(bot, snap, 5.0)
+        self.assertEqual(seen, [0])
+
 
 if __name__ == "__main__":
     unittest.main()
