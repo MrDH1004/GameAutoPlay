@@ -77,14 +77,30 @@ class MissionTask:
             time.sleep(1.2)
 
     def _progressing(self, timeout=8.0):
-        """'자동 진행' 클릭 후 이동/전투/대화가 시작되는지."""
+        """'자동 진행' 클릭 후 실제 이동/대화가 시작되는지.
+
+        임무 화면을 열기 전부터 싸우던 전투는 새 임무 진행으로 세지 않는다.
+        """
         end = time.monotonic() + timeout
         while time.monotonic() < end:
             time.sleep(0.5)
             snap = self.bot.eyes.look(self._grab(), time.monotonic())
-            if snap.state in ("MOVING", "COMBAT", "DIALOG"):
+            if snap.state in ("MOVING", "DIALOG"):
                 return True
         return False
+
+    def _stop_autohunt(self):
+        """일일 자동 진행이 기존 자리 전투에 붙잡히지 않도록 자동 사냥을 끈다."""
+        snap = self.bot.eyes.look(self._grab(), time.monotonic())
+        if not snap.auto_on:
+            return
+        log.info("일일 임무 이동 전 자동 사냥 끄기")
+        self.bot._press("자동 사냥 끄기", "t")
+        end = time.monotonic() + 4.0
+        while time.monotonic() < end:
+            time.sleep(0.5)
+            if not self.bot.eyes.look(self._grab(), time.monotonic()).auto_on:
+                return
 
     # ---------- 탭 하나 처리 ----------
     def _try_tab(self, name, tab_x):
@@ -93,8 +109,25 @@ class MissionTask:
 
         tried_rows = 0
         selected_ok = False
+        picked_safe_daily = False
         for _ in range(5):
             frame = self._grab()
+
+            # 일일 탭의 기본 선택은 요구 전투력이 없는 이벤트 임무일 수 있다.
+            # 먼저 녹색 '적합' 행을 골라야 실제 사냥터 자동 이동이 시작된다.
+            if name == "일일" and not picked_safe_daily:
+                rows = self.bot.matcher.find_all(frame, self.t["ok_badge"], self.regions.get("list"),
+                                                 self.cfg.get("badge_threshold", 0.85))
+                if rows:
+                    preferred = min(int(self.cfg.get("daily_ok_index", 1)), len(rows) - 1)
+                    row = rows[preferred]
+                    tried_rows = preferred + 1
+                    picked_safe_daily = True
+                    self._click_xy(f"{name} 적합 퀘스트 선택", 0.36 * w, row.y, 1.0)
+                    selected_ok = True
+                    continue
+                picked_safe_daily = True
+
             auto = self._find(frame, "auto")
             if auto:
                 log.info("  [%s] 자동 진행 클릭", name)
@@ -140,6 +173,9 @@ class MissionTask:
         if self.bot.dry_run:
             log.info("[dry-run] 임무 화면 확인 시점 (J 키가 필요해 dry-run에서는 건너뜀)")
             return False
+        tabs = self.ordered_tabs(prefer, only)
+        if tabs and tabs[0][0] == "일일":
+            self._stop_autohunt()
         log.info("임무 화면에서 진행할 퀘스트 확인 시작")
         self.bot._press("임무 열기", "j")
         if not self._wait_title(5.0):
@@ -149,7 +185,6 @@ class MissionTask:
 
         ok = False
         try:
-            tabs = self.ordered_tabs(prefer, only)
             for name, x in tabs:
                 if self.is_blocked(name):
                     log.info("[%s] 탭은 차단 중이라 건너뜀", name)
