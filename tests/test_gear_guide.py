@@ -69,6 +69,11 @@ class RecommendTabTest(unittest.TestCase):
         self.assertEqual(len(safe["skills"]), 5)
         unlocked = {row[0] for row in skills.UNLOCKED_SKILLS}
         self.assertTrue(set(safe["skills"]) <= unlocked)
+        with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                               "assets", "skills", "index.json"), encoding="utf-8") as f:
+            icons = json.load(f)
+        self.assertIn("대폭발", icons)
+        self.assertNotIn("서리의 잔향", icons)
 
     def test_tab_renamed_and_has_five_subtabs(self):
         os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
