@@ -64,9 +64,9 @@ class RecommendTabTest(unittest.TestCase):
             width, height, _depth, color_type = struct.unpack(">IIBB", header[16:26])
             self.assertEqual((width, height, color_type), (64, 64, 6), name)
 
-    def test_safe_farm_set_fits_the_five_game_slots(self):
+    def test_safe_farm_set_fits_the_six_game_slots(self):
         safe = next(row for row in skills.SETS if row["title"].startswith("안전한 광역 사냥"))
-        self.assertEqual(len(safe["skills"]), 5)
+        self.assertEqual(len(safe["skills"]), 6)
         unlocked = {row[0] for row in skills.UNLOCKED_SKILLS}
         self.assertTrue(set(safe["skills"]) <= unlocked)
         with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
