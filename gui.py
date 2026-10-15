@@ -1160,6 +1160,12 @@ class Window(QMainWindow):
         h += "<h2>12계열 요약</h2><table cellpadding=5 border=0><tr><th align=left>계열</th><th align=left>분류</th><th align=left>궁극기</th><th align=left>용도</th><th align=left>특징</th></tr>"
         for f in g.FAMILIES:
             h += "<tr>" + "".join(f"<td>{escape(x)}</td>" for x in f) + "</tr>"
+        h += (f"</table><h2>현재 잠금 해제 도술 전체 ({len(g.UNLOCKED_SKILLS)}개)</h2>"
+              "<table cellpadding=5><tr><th align=left>도술</th><th align=left>계열</th><th align=left>대상</th>"
+              "<th align=left>피해%</th><th align=left>쿨</th><th align=left>거리</th><th align=left>핵심 효과</th></tr>")
+        for n, family, target, damage, cooldown, distance, effect in g.UNLOCKED_SKILLS:
+            h += (f"<tr><td>{icon_html(n, 24)} {escape(n)}</td><td>{escape(family)}</td><td>{escape(target)}</td>"
+                  f"<td>{escape(damage)}</td><td>{cooldown}초</td><td>{distance}</td><td>{escape(effect)}</td></tr>")
         h += "</table><h2>실측 스킬 효율 (피해% ÷ 쿨타임)</h2><table cellpadding=5><tr><th align=left>도술</th><th align=left>피해%</th><th align=left>쿨(초)</th><th align=left>초당</th></tr>"
         for n, d, cd, dps in sorted(g.DPS_TABLE, key=lambda r: -r[3]):
             h += f"<tr><td>{icon_html(n, 24)} {escape(n)}</td><td>{escape(d)}</td><td>{cd}</td><td>{dps:.1f}</td></tr>"

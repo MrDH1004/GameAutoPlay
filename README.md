@@ -92,7 +92,7 @@ v1.28에서는 **도움말 → 환경 점검**으로 권한·설정·인식 파�
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v    # 저장된 실제 화면으로 인식/판단 로직 검사
 ```
 - `start_bridge.bat`: 관리자 권한 브리지. `python -m tools.ctl shot|click x y|key k|drag ...`로 일반 권한에서 게임 조작/캡처
-- `tools/dosul_scan.py`: 도술 목록 설명창 수집, `tools/farm_scan.py`: 사냥터 DB 생성, `tools/make_icon.py`: 앱 아이콘
+- `tools/dosul_scan.py`: 현재 해상도에 맞춰 잠금 해제 도술 목록을 끝까지 수집하고 설명 OCR을 JSON으로 저장, `tools/farm_scan.py`: 사냥터 DB 생성, `tools/make_icon.py`: 앱 아이콘
 - 기능을 고치면 `version.py`의 `VERSION`/`CHANGELOG`를 올린다 (제어판이 업데이트 내용을 한 번 보여 줌)
 
 ## 배포판 검증과 출시 준비
