@@ -79,7 +79,7 @@ SETTING_FIELDS = [
     ("int", ("potion_shop", "buy_below"), "물약 구매 기준", (1, 249, "개 미만")),
     ("toggle", ("enhance", "enabled"), "도술 계열 강화 (실험)", "재료가 충분하면 파멸·저격 계열 강화 (골드 소모, 강화 후 화면 미검증)"),
     ("toggle", ("yeonggi", "enabled"), "영기 수련 자동 진행", "주기적으로 메뉴를 열어 빨간 점 노드를 수련"),
-    ("toggle", ("mission", "enabled"), "임무 화면(J) 폴백", "퀘스트가 막히면 본편→서사→일일→주간 순으로 진행"),
+    ("toggle", ("mission", "enabled"), "임무 화면(J) 자동 진행", "일일 퀘스트를 먼저 확인하고 완료하면 다음 일일 임무를 진행"),
     ("toggle", ("quest_tracker", "scan", "enabled"), "트래커 OCR 스캔", "우측 퀘스트 목록을 스크롤해 진행 가능한 퀘스트 탐색"),
     ("toggle", ("autohunt", "after_move"), "이동 종료 후 자동 사냥(T)", "자동 이동이 끝나면 자동 사냥을 켬"),
     ("int", ("yeonggi", "interval"), "영기 수련 확인 주기", (30, 3600, "초")),

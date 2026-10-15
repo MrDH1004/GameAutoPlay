@@ -62,6 +62,9 @@ class Bot:
         ms = config.get("mission") or {}
         self.mission = MissionTask(self, ms) if ms.get("enabled") else None
         self.mission_after_fails = ms.get("after_fails", 2)
+        self._mission_priority = (self.mission.priority[0] if self.mission else "본편")
+        self._mission_priority_pending = bool(self.mission and ms.get("start_priority", False)
+                                              and self._mission_priority != "본편")
 
         fm = config.get("farm") or {}
         self.farm_mode = bool(fm.get("enabled"))                     # 퀘스트 대신 사냥터만
@@ -850,6 +853,16 @@ class Bot:
         self._click_at = time.monotonic()
         return ok
 
+    def _run_priority_mission(self, now):
+        """본편보다 우선하도록 설정한 임무 탭 하나만 확인하고 진행한다."""
+        if not self.mission or self._mission_priority == "본편":
+            return False
+        ok = self.mission.run(now, prefer=self._mission_priority, only=True)
+        self.stats["missions"] += ok
+        if ok and self.mission.last_tab:
+            self._source = self.mission.last_tab
+        return ok
+
     def _watch_move_end(self, snap, now):
         """자동 이동이 끝나면(충분히 이동한 뒤 이동 표시가 사라짐) 자동 사냥을 켜도록 요청한다."""
         ah = self.cfg.get("autohunt") or {}
@@ -1047,6 +1060,12 @@ class Bot:
         if self._retry_quest:
             self._retry_after_revive(snap, now)
             return
+        if (self._mission_priority_pending and self.mission and now >= self.mission.next_ok
+                and snap.state in ("IDLE", "COMBAT") and not self._secret_realm):
+            self._mission_priority_pending = False
+            if self._run_priority_mission(now):
+                self._fails = 0
+            return
         if self._want_hunt:
             self._ensure_hunt(snap, now)
             return
@@ -1180,6 +1199,13 @@ class Bot:
     def _click_quest(self, snap, now):
         qt = self.quest_cfg
         limit = qt.get("max_retries", 4)
+        # 일일 같은 우선 임무가 남아 있으면 본편 트래커보다 먼저 다음 항목을 찾는다.
+        if (self.mission and self._mission_priority != "본편"
+                and not self.mission.is_blocked(self._mission_priority)
+                and now >= self.mission.next_ok):
+            if self._run_priority_mission(now):
+                self._fails = 0
+                return
         # 사망으로 본편이 차단된 동안에는 트래커(=본편)를 누르지 않고 임무 화면의 다른 퀘스트만 시도한다
         if self.mission and self.mission.is_blocked("본편"):
             if now >= self.mission.next_ok:

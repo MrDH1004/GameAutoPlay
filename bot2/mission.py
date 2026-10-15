@@ -1,4 +1,4 @@
-"""임무 화면(J)에서 본편 → 서사 → 일일 → 주간 순으로 진행 가능한 퀘스트의 '자동 진행'을 누른다.
+"""임무 화면(J)에서 설정된 우선순위로 진행 가능한 퀘스트의 '자동 진행'을 누른다.
 
 메인 퀘스트 트래커 클릭이 통하지 않을 때(막혔을 때)만 부른다. 규칙:
   * 본편/서사/주간은 선택된 퀘스트의 '자동 진행', 일일은 '적합(초록)' 퀘스트를 '수락'한 뒤 '자동 진행'.
@@ -23,6 +23,21 @@ class MissionTask:
         self.tab_blocked_until = {}
         self.next_ok = 0.0
         self.last_tab = None            # 마지막으로 진행을 시작한 탭
+        configured = cfg.get("priority", ["본편", "서사", "일일", "주간"])
+        valid = {name for name, _x in TABS}
+        self.priority = [name for name in configured if name in valid]
+        self.priority += [name for name, _x in TABS if name not in self.priority]
+
+    def ordered_tabs(self, prefer=None, only=False):
+        """설정 우선순위에 따라 탭 좌표를 반환한다. prefer는 즉시 처리할 탭이다."""
+        by_name = dict(TABS)
+        names = list(self.priority)
+        if prefer in by_name:
+            names.remove(prefer)
+            names.insert(0, prefer)
+        if only and prefer in by_name:
+            names = [prefer]
+        return [(name, by_name[name]) for name in names]
 
     def block(self, name, seconds):
         """이 탭의 퀘스트를 seconds초 동안 진행하지 않는다 (예: 진행하다 사망한 퀘스트)."""
@@ -119,7 +134,7 @@ class MissionTask:
         return False
 
     # ---------- 본체 ----------
-    def run(self, now, prefer=None):
+    def run(self, now, prefer=None, only=False):
         """필드에서 호출. 성공(진행 시작)하면 True. 끝나면 임무 화면은 닫혀 있어야 한다."""
         self.next_ok = now + self.cfg.get("cooldown", 90)
         if self.bot.dry_run:
@@ -134,7 +149,7 @@ class MissionTask:
 
         ok = False
         try:
-            tabs = sorted(TABS, key=lambda t: t[0] != prefer) if prefer else TABS   # 재도전할 탭을 먼저
+            tabs = self.ordered_tabs(prefer, only)
             for name, x in tabs:
                 if self.is_blocked(name):
                     log.info("[%s] 탭은 차단 중이라 건너뜀", name)
