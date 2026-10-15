@@ -102,6 +102,14 @@ class MissionTask:
             if not self.bot.eyes.look(self._grab(), time.monotonic()).auto_on:
                 return
 
+    def _start_autohunt(self):
+        """이동이 필요 없는 접속 시간형 일일은 현재 안전 지역에서 사냥하며 채운다."""
+        snap = self.bot.eyes.look(self._grab(), time.monotonic())
+        if snap.auto_on:
+            return
+        log.info("이동 없는 일일 임무 → 현재 지역 자동 사냥 켜기")
+        self.bot._press("자동 사냥 켜기", "t")
+
     # ---------- 탭 하나 처리 ----------
     def _try_tab(self, name, tab_x):
         w, h = self.bot.window.frame_w, self.bot.window.frame_h
@@ -135,6 +143,13 @@ class MissionTask:
                 if self._on_screen():                 # 화면이 안 닫힘 → 팝업/불가
                     self._close()
                 if self._progressing():
+                    return True
+                if name == "일일" and selected_ok:
+                    # '게임 내 N분 머물기'처럼 자동 진행을 눌러도 이동하지 않는
+                    # 이미 수락된 일일은 현재 안전 지역에서 사냥하며 시간을 채운다.
+                    self._close()
+                    self._start_autohunt()
+                    log.info("  [%s] 이동 없는 수락 임무를 현재 지역에서 계속 진행", name)
                     return True
                 log.info("  [%s] 자동 진행했지만 진행 없음", name)
                 return False

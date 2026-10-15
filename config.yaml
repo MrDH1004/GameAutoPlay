@@ -145,7 +145,7 @@ mission:
   enabled: true
   priority: ["일일", "본편", "서사", "주간"]  # 일일 퀘스트를 가장 먼저 진행
   start_priority: true       # 시작/재개 직후 우선 탭을 즉시 확인
-  daily_ok_index: 1          # 녹색 적합 중 두 번째(일반 전투 일일)를 우선; 수련 일일은 진행 중일 수 있음
+  daily_ok_index: 0          # 녹색 적합 중 첫 번째의 이미 수락된 접속 시간 일일을 우선 완료
   after_fails: 2          # 트래커 클릭이 이만큼 연속 실패하면 임무 화면을 연다
   cooldown: 90            # 임무 화면 확인 최소 간격(초)
   skip_seconds: 600       # 진행 못 한 탭을 건너뛰는 시간
