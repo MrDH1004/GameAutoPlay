@@ -67,6 +67,11 @@ class MissionPriorityTest(unittest.TestCase):
         ]))
         self.assertFalse(MissionTask._nakhwa_row_completed([]))
 
+    def test_daily_quota_parser(self):
+        self.assertEqual(MissionTask._parse_daily_quota("임무 완료 가능 개수 : 5 / 5"), (5, 5))
+        self.assertEqual(MissionTask._parse_daily_quota("4/5"), (4, 5))
+        self.assertIsNone(MissionTask._parse_daily_quota("읽기 실패"))
+
 
 if __name__ == "__main__":
     unittest.main()

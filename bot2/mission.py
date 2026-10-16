@@ -218,6 +218,17 @@ class MissionTask:
         """읽힌 일일이 있는데 낙화 행만 사라졌다면 방금 처치 임무가 완료된 것이다."""
         return bool(rows) and not any("낙화" in re.sub(r"\s+", "", title) for title, _y in rows)
 
+    @staticmethod
+    def _parse_daily_quota(text):
+        match = re.search(r"(\d+)\s*/\s*(\d+)", str(text or ""))
+        return (int(match.group(1)), int(match.group(2))) if match else None
+
+    def _daily_quota_full(self, frame):
+        """일일 선택 수가 5/5처럼 가득 차 새 임무의 수락 입력이 무시되는지 확인한다."""
+        from .farm import _crop, _ocr
+        quota = self._parse_daily_quota(_ocr(_crop(frame, (500, 970, 900, 1060)), 2))
+        return bool(quota and quota[1] > 0 and quota[0] >= quota[1])
+
     def leave_nakhwa_battlefield(self):
         """완료된 낙화 일일을 빠져나와 다음 일일을 진행할 수 있게 한다."""
         from .farm import _crop, _ocr
@@ -304,6 +315,9 @@ class MissionTask:
                                                     self.cfg.get("badge_threshold", 0.85))
                 safe = any(abs(float(b.y) - y) <= 32 for b in badges)
                 if accept and safe:
+                    if self._daily_quota_full(frame):
+                        log.info("  [일일] 오늘 선택 한도 소진(5/5) → 미수락 일일은 다음 초기화 뒤 진행")
+                        return False
                     log.info("  [일일] 안전 적합 임무 수락: %s", title)
                     self._click_xy("수락", accept.x, accept.y, 1.2)
                     end = time.monotonic() + 5.0
