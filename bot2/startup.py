@@ -44,6 +44,12 @@ def is_secret_realm_name(name):
     return "비경" in compact or "영험한청산" in compact or "험한청산" in compact
 
 
+def is_hunt_only_content_name(name):
+    """메뉴·지도 이동을 막고 자동 사냥만 유지해야 하는 전투 콘텐츠인지 판정한다."""
+    compact = re.sub(r"[\s\[\](){}]", "", str(name or ""))
+    return is_secret_realm_name(name) or "낙화의전장" in compact
+
+
 def read_map_name(frame):
     """지금 있는 지도 이름 ('안개 기슭 지하 동굴', '우물동굴' …). 못 읽으면 ''."""
     crop = _crop(frame, MAP_NAME_BOX)

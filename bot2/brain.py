@@ -129,6 +129,8 @@ class Bot:
         self._secret_realm_base = ""   # 접두어만 OCR에서 빠진 경우를 일반 맵 복귀로 오인하지 않음
         self._normal_map_candidate = ""
         self._normal_map_confirm = 0    # 비경 종료는 같은 일반 지도명을 두 화면에서 확인
+        self._nakhwa_check_at = 0.0     # 낙화 일일 처치 수를 다음에 확인할 시각
+        self._nakhwa_progress = None
         from .livestatus import LiveStatus
         self.live = LiveStatus(self, float(config.get("live_interval", 3.0)))     # 대시보드 실시간 상황판
         self._rest = None               # HP 낮음 휴식: None / "finish"(잡던 몹 마무리) / "off"(자동 사냥 끄는 중) / "rest"(회복 대기) / "on"(다시 켜는 중)
@@ -681,7 +683,7 @@ class Bot:
         비경 진입은 즉시 적용한다. 비경 종료는 OCR 한 번의 누락 때문에 앵벌 이동을 시작하지
         않도록 같은 일반 지도명을 서로 다른 두 화면에서 확인한 뒤 확정한다.
         """
-        from .startup import clean_map_name, is_secret_realm_name
+        from .startup import clean_map_name, is_hunt_only_content_name
         name = clean_map_name(str(name or ""))
         if not name:
             return self._secret_realm
@@ -690,7 +692,7 @@ class Bot:
             return self._secret_realm
         self._map_observed_at = observed_at
         self._map_name = name
-        if is_secret_realm_name(name):
+        if is_hunt_only_content_name(name):
             self._secret_realm_base = re.sub(r"[^0-9A-Za-z가-힣]", "", name).replace("비경", "")
             self._normal_map_candidate = ""
             self._normal_map_confirm = 0
@@ -704,8 +706,9 @@ class Bot:
                 self._hunt_tries = 0
                 self._hunt_press_at = 0.0
                 if self.farm:
-                    self.farm.need_travel = True       # 비경 종료 뒤 원래 앵벌 선택을 시작
-                log.warning("비경 감지: '%s' → 지도 이동·부가 자동화 중지, 일반 자동사냥만 유지", name)
+                    self.farm.need_travel = True       # 전투 콘텐츠 종료 뒤 원래 앵벌 선택을 시작
+                label = "낙화의 전장" if "낙화" in name else "비경"
+                log.warning("%s 감지: '%s' → 지도 이동·부가 자동화 중지, 일반 자동사냥만 유지", label, name)
             return True
         if not self._secret_realm:
             return False
@@ -716,7 +719,7 @@ class Bot:
                      or self._secret_realm_base in normal_key)):
             self._normal_map_candidate = ""
             self._normal_map_confirm = 0
-            log.debug("비경 지도명에서 접두어만 빠진 OCR로 판단: '%s'", name)
+            log.debug("전투 콘텐츠 지도명과 같은 OCR로 판단: '%s'", name)
             return True
         if name == self._normal_map_candidate:
             self._normal_map_confirm += 1
@@ -724,7 +727,7 @@ class Bot:
             self._normal_map_candidate = name
             self._normal_map_confirm = 1
         if self._normal_map_confirm < 2:
-            log.info("비경 종료 확인 중: 일반 지도 '%s' (%d/2)", name, self._normal_map_confirm)
+            log.info("전투 콘텐츠 종료 확인 중: 일반 지도 '%s' (%d/2)", name, self._normal_map_confirm)
             return True
         self._secret_realm = False
         self._secret_realm_base = ""
@@ -738,11 +741,11 @@ class Bot:
             self.farm.next_try = 0.0
             self.farm.next_eval = 0.0
         self.risk_guard.arm(observed_at)
-        log.warning("비경 종료 확인: '%s' → 일반 맵 앵벌 선택·이동 재개", name)
+        log.warning("전투 콘텐츠 종료 확인: '%s' → 일반 맵 앵벌 선택·이동 재개", name)
         return False
 
     def _refresh_map_mode(self, snap, now):
-        """실시간 지도명과 현재 프레임 보조 OCR로 비경 여부를 안전하게 갱신한다."""
+        """실시간 지도명과 현재 프레임 보조 OCR로 전투 콘텐츠 여부를 안전하게 갱신한다."""
         if not getattr(snap, "in_field", False):
             return self._secret_realm
         live = getattr(self, "live", None)
@@ -761,11 +764,31 @@ class Bot:
         return self._secret_realm
 
     def _on_secret_realm(self, snap, now):
-        """시간제한 비경에서는 T 자동사냥 외의 메뉴·지도·이동 입력을 보내지 않는다."""
+        """비경은 자동 사냥만, 낙화는 자동 사냥과 주기적 일일 진행 확인만 수행한다."""
         self._last_progress = now                    # 의도적인 대기라 멈춤 복구도 실행하지 않음
         self._idle_since = None
         self._verify = None
         self._evade_request = False
+        if ("낙화" in self._map_name and getattr(self, "mission", None) and now >= self._nakhwa_check_at
+                and not snap.walking):
+            self._nakhwa_check_at = now + 90.0
+            progress = self.mission.read_nakhwa_progress()
+            if progress is not None:
+                self._nakhwa_progress = progress
+            if progress is not None and progress >= 100:
+                if self.mission.leave_nakhwa_battlefield():
+                    self._mission_priority_pending = True
+                    self.mission.next_ok = 0.0
+                return
+            # 임무 화면을 여닫으면 켜짐 표시는 남아도 공격이 멈출 수 있어 T를 다시 건다.
+            current = self.eyes.look(self.window.grab(), time.monotonic())
+            if current.auto_on:
+                self._press("낙화 진행도 확인 후 자동 사냥 재시작(끄기)", "t")
+                time.sleep(0.8)
+            self._press("낙화 진행도 확인 후 자동 사냥 켜기", "t")
+            self._want_hunt = False
+            self._hunt_tries = 0
+            return
         if snap.auto_on:
             self._want_hunt = False
             self._hunt_tries = 0
@@ -777,12 +800,12 @@ class Bot:
             self._want_hunt = True
             self._hunt_tries = 0
             self._hunt_press_at = 0.0
-            log.info("비경: 자동 사냥이 꺼져 있음 → T로 켜기")
+            log.info("전투 콘텐츠: 자동 사냥이 꺼져 있음 → T로 켜기")
         if self._want_hunt:
             # 비경에서는 자동사냥 버튼이 장면 전환/탑승 중 입력을 잠시 무시할 수 있다.
             # 일반 맵처럼 3회 실패로 멈추지 말고 간격을 두고 다음 묶음을 재시도한다.
             if self._hunt_tries >= 3 and now - self._hunt_press_at >= 3.0:
-                log.warning("비경: 자동 사냥 3회 입력 무응답 → 다시 시도")
+                log.warning("전투 콘텐츠: 자동 사냥 3회 입력 무응답 → 다시 시도")
                 self._hunt_tries = 0
             self._ensure_hunt(snap, now)
 
@@ -1300,7 +1323,10 @@ class Bot:
                  f"퀘스트 출처: {self._source}",
                  f"사망 {self.stats['deaths']} · 임무 전환 {self.stats['missions']} · 영기 {self.stats['yeonggi']}"]
         if self._secret_realm:
-            lines.append(f"비경: {self._map_name or '?'} · 지도 이동 없이 일반 자동사냥만")
+            label = "낙화의 전장" if "낙화" in self._map_name else "비경"
+            lines.append(f"{label}: {self._map_name or '?'} · 지도 이동 없이 일반 자동사냥만")
+            if "낙화" in self._map_name and self._nakhwa_progress is not None:
+                lines.append(f"낙화 일일: {self._nakhwa_progress}/100")
         if self.farm and (self.farm_mode or time.monotonic() < self._farm_until):
             lines.append("사냥터: " + self.farm.describe())
         return "\n".join(lines)

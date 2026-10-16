@@ -3,7 +3,7 @@ import types
 import unittest
 
 from bot2.brain import Bot
-from bot2.startup import is_secret_realm_name
+from bot2.startup import is_hunt_only_content_name, is_secret_realm_name
 
 
 def make_bot():
@@ -29,8 +29,20 @@ class SecretRealmNameTest(unittest.TestCase):
         self.assertFalse(is_secret_realm_name("산신의 영역 지하 동굴"))
         self.assertFalse(is_secret_realm_name(""))
 
+    def test_nakhwa_battlefield_is_hunt_only_content(self):
+        self.assertTrue(is_hunt_only_content_name("낙화의 전장"))
+        self.assertTrue(is_hunt_only_content_name("낙화의전장"))
+        self.assertFalse(is_hunt_only_content_name("안개 기슭"))
+
 
 class SecretRealmStateTest(unittest.TestCase):
+    def test_nakhwa_battlefield_uses_same_input_lock(self):
+        bot = make_bot()
+        self.assertTrue(bot.observe("낙화의 전장", 1.0))
+        self.assertTrue(bot._secret_realm)
+        self.assertTrue(bot._want_hunt)
+        self.assertTrue(bot.farm.need_travel)
+
     def test_enter_immediately_cancels_movement_actions(self):
         bot = make_bot()
         self.assertTrue(bot.observe("[비경] 영험한청산지하동굴", 1.0))

@@ -146,6 +146,7 @@ mission:
   priority: ["일일", "본편", "서사", "주간"]  # 일일 퀘스트를 가장 먼저 진행
   start_priority: true       # 시작/재개 직후 우선 탭을 즉시 확인
   daily_ok_index: 1          # 수락 임무가 없을 때 명상(첫 적합)을 건너뛰고 다음 적합 전투 일일 선택
+  daily_guide_fallback: true # 자동 진행 이동이 없으면 퀘스트 지역의 가장 안전한 길라잡이 사냥터로 무료 이동
   after_fails: 2          # 트래커 클릭이 이만큼 연속 실패하면 임무 화면을 연다
   cooldown: 90            # 임무 화면 확인 최소 간격(초)
   skip_seconds: 600       # 진행 못 한 탭을 건너뛰는 시간

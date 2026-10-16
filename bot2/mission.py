@@ -144,6 +144,119 @@ class MissionTask:
         log.warning("  [일일] 비경 입장 후 지도 확인 실패: %s", name or "읽기 실패")
         return False
 
+    def _enter_nakhwa_battlefield(self):
+        """메뉴의 낙화의 전장 2채널에 입장하고 내부 사냥 구역으로 이동한다.
+
+        입장에는 일반 금화 12,500이 사용된다. 영석 등 유료 재화는 사용하지 않는다.
+        """
+        from .farm import _crop, _ocr
+        from .startup import read_map_name
+
+        w, h = self.bot.window.frame_w, self.bot.window.frame_h
+        self._close()
+        self._click_xy("메뉴 열기", 0.974 * w, 0.041 * h, 1.0)
+        self._click_xy("낙화의 전장 선택", 0.770 * w, 0.773 * h, 1.5)
+
+        title = re.sub(r"\s+", "", _ocr(_crop(self._grab(), (20, 10, 350, 75)), 2))
+        if "낙화의전장" not in title:
+            log.warning("  [일일] 낙화의 전장 메뉴 진입 확인 실패: %s", title or "읽기 실패")
+            return False
+
+        self._click_xy("입장 구역 선택", 0.917 * w, 0.944 * h, 1.0)
+        self._click_xy("낙화의 전장 2채널", 0.500 * w, 0.452 * h, 0.5)
+        self._click_xy("낙화의 전장 입장(일반 금화)", 0.520 * w, 0.683 * h, 8.0)
+
+        name = read_map_name(self._grab())
+        if "낙화의전장" not in re.sub(r"\s+", "", name):
+            log.warning("  [일일] 낙화의 전장 입장 후 지도 확인 실패: %s", name or "읽기 실패")
+            return False
+
+        # 오른쪽 입구 안전지대에는 몬스터가 없다. 북쪽의 3점 요귀 군집까지 이동한다.
+        for step in range(6):
+            self._click_xy(f"낙화 사냥 구역 이동 {step + 1}/6", 0.52 * w, 0.17 * h, 1.4)
+
+        snap = self.bot.eyes.look(self._grab(), time.monotonic())
+        if snap.auto_on:
+            self.bot._press("낙화 자동 사냥 재시작(끄기)", "t")
+            time.sleep(0.8)
+        self.bot._press("낙화 자동 사냥 켜기", "t")
+        time.sleep(2.0)
+        log.info("  [일일] 낙화의 전장 2채널 입장 및 사냥 구역 이동 완료")
+        return True
+
+    def read_nakhwa_progress(self):
+        """전장 안에서 일일 탭의 처치 수를 읽고 즉시 필드로 돌아간다."""
+        from .farm import _crop, _ocr
+
+        self.bot._press("낙화 일일 진행도 확인", "j")
+        if not self._wait_title(5.0):
+            return None
+        try:
+            self._click_xy("일일 탭", dict(TABS)["일일"], 0.110 * self.bot.window.frame_h, 1.0)
+            text = _ocr(_crop(self._grab(), (1390, 500, 1870, 640)), 2)
+            progress = self._parse_nakhwa_progress(text)
+            if progress is None:
+                log.warning("  [일일] 낙화 처치 수 OCR 실패: %s", re.sub(r"\s+", " ", text).strip())
+                return None
+            log.info("  [일일] 낙화의 전장 요귀 처치: %d/100", progress)
+            return progress
+        finally:
+            self._close()
+
+    @staticmethod
+    def _parse_nakhwa_progress(text):
+        match = re.search(r"(\d{1,3})\s*/\s*100", str(text or ""))
+        return min(100, int(match.group(1))) if match else None
+
+    def leave_nakhwa_battlefield(self):
+        """완료된 낙화 일일을 빠져나와 다음 일일을 진행할 수 있게 한다."""
+        from .farm import _crop, _ocr
+        from .startup import read_map_name
+
+        w, h = self.bot.window.frame_w, self.bot.window.frame_h
+        self._click_xy("낙화의 전장 나가기", 0.025 * w, 0.190 * h, 1.5)
+        frame = self._grab()
+        dialog = re.sub(r"\s+", "", _ocr(_crop(frame, (650, 300, 1270, 780)), 2))
+        if "나가기" in dialog or "확인" in dialog:
+            self._click_xy("낙화의 전장 나가기 확인", 0.560 * w, 0.620 * h, 7.0)
+        else:
+            time.sleep(6.0)
+        name = read_map_name(self._grab())
+        if "낙화의전장" in re.sub(r"\s+", "", name):
+            log.warning("  [일일] 낙화의 전장 나가기 확인 실패: %s", name)
+            return False
+        log.info("  [일일] 낙화의 전장 완료 후 일반 지도 복귀: %s", name or "지도명 읽기 대기")
+        return True
+
+    def _daily_guide_spot(self, title):
+        """퀘스트 제목과 맞는 가장 안전한 길라잡이 사냥터를 반환한다."""
+        if not self.cfg.get("daily_guide_fallback", True):
+            return None
+        from .farm import guide_spots
+        compact = re.sub(r"\s+", "", title)
+        aliases = (("안개기슭", "안개 기슭"), ("황무지마을", "황무지 마을"),
+                   ("우물동굴", "우물 동굴"), ("음산한폐광", "음산한 폐광"),
+                   ("독기지대", "독기 지대"))
+        for key, region in aliases:
+            if key not in compact:
+                continue
+            return next((s for s in guide_spots() if s["name"].startswith(region)), None)
+        return None
+
+    def _route_daily_by_guide(self, title):
+        """자동 진행 경로가 막히면 무료 길라잡이로 해당 일일 지역에 진입한다."""
+        spot = self._daily_guide_spot(title)
+        farm = getattr(self.bot, "farm", None)
+        if not spot or not farm:
+            return False
+        log.info("  [일일] 자동 이동 없음 → 길라잡이 무료 이동: %s", spot["name"])
+        if not farm.guide.travel(spot):
+            return False
+        snap = self.bot.eyes.look(self._grab(), time.monotonic())
+        if not snap.auto_on:
+            self.bot._press("일일 사냥 자동 사냥 켜기", "t")
+        return True
+
     def _try_daily(self):
         """명상은 자연 누적시키고, 수락한 실제 일일을 순서대로 시도한다."""
         rows = self._daily_rows(self._grab())
@@ -157,6 +270,13 @@ class MissionTask:
             frame = self._grab()
             auto = self._find(frame, "auto")
             if auto:
+                if "낙화의전장" in re.sub(r"\s+", "", title):
+                    log.info("  [일일] '%s' → 메뉴의 낙화의 전장으로 입장", title)
+                    if self._enter_nakhwa_battlefield():
+                        return True
+                    if index + 1 < len(rows) and self._reopen_daily():
+                        continue
+                    break
                 log.info("  [일일] '%s' 자동 진행", title)
                 self._click_xy("자동 진행", auto.x, auto.y, 1.0)
                 if "비경" in title and self._enter_daily_secret_realm():
@@ -164,6 +284,8 @@ class MissionTask:
                 if self._on_screen():
                     self._close()
                 if self._progressing():
+                    return True
+                if self._route_daily_by_guide(title):
                     return True
                 log.info("  [일일] '%s' 진행 없음 → 다음 후보", title)
             else:
@@ -174,11 +296,21 @@ class MissionTask:
                 if accept and safe:
                     log.info("  [일일] 안전 적합 임무 수락: %s", title)
                     self._click_xy("수락", accept.x, accept.y, 1.2)
-                    auto = self._find(self._grab(), "auto")
+                    end = time.monotonic() + 5.0
+                    auto = None
+                    while time.monotonic() < end:
+                        auto = self._find(self._grab(), "auto")
+                        if auto:
+                            break
+                        time.sleep(0.5)
                     if auto:
                         self._click_xy("자동 진행", auto.x, auto.y, 1.0)
                         if self._progressing():
                             return True
+                        if self._route_daily_by_guide(title):
+                            return True
+                    else:
+                        log.info("  [일일] '%s' 수락 입력 후 자동 진행 버튼이 나타나지 않음", title)
                 else:
                     log.info("  [일일] 미수락 또는 안전 확인 불가: %s", title)
             if index + 1 < len(rows) and not self._reopen_daily():

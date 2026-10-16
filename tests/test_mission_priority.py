@@ -40,6 +40,23 @@ class MissionPriorityTest(unittest.TestCase):
             "[일일] 비경 탐험 참여",
         ])
 
+    def test_daily_guide_uses_safest_matching_region(self):
+        task = MissionTask.__new__(MissionTask)
+        task.cfg = {"daily_guide_fallback": True}
+        spot = task._daily_guide_spot("[일일] 안개 기슭 요귀 처치")
+        self.assertEqual(spot["name"], "안개 기슭 1")
+        self.assertEqual(spot["power"], 37000)
+
+    def test_daily_guide_does_not_route_unknown_event(self):
+        task = MissionTask.__new__(MissionTask)
+        task.cfg = {"daily_guide_fallback": True}
+        self.assertIsNone(task._daily_guide_spot("[일일] 낙화의 전장 요귀 처치"))
+
+    def test_nakhwa_progress_ocr_parser(self):
+        self.assertEqual(MissionTask._parse_nakhwa_progress("낙화 요귀 1 / 100"), 1)
+        self.assertEqual(MissionTask._parse_nakhwa_progress("100/100"), 100)
+        self.assertIsNone(MissionTask._parse_nakhwa_progress("읽기 실패"))
+
 
 if __name__ == "__main__":
     unittest.main()
