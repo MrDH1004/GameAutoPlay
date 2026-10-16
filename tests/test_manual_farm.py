@@ -96,6 +96,13 @@ class ButtonClickTest(unittest.TestCase):
 
 
 class PowerGuardTest(unittest.TestCase):
+    def test_saved_power_seeds_restart_guard(self):
+        import bot2.farm as farm
+        farm._last_power = None
+        farm.seed_power_reference(115840)
+        self.assertEqual(farm._last_power, 115840)
+        self.assertFalse(farm._plausible(15840))
+
     def test_digit_drop_is_ignored_but_real_change_accepted(self):
         import bot2.farm as farm
         seq = iter([66682, 6682, 66100, 140000, 140000, 140000])

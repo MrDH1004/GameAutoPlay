@@ -663,11 +663,22 @@ class Bot:
             return
         try:
             from . import startup
+            from .farm import seed_power_reference
+            from .rewards import _load_state, _save_state
+            saved_state = _load_state()
+            cached_power = saved_state.get("last_power")
+            seed_power_reference(cached_power)
             st = startup.check(self)
+            if not st.get("power") and cached_power:
+                st["power"] = int(cached_power)
+                log.info("시작 전투력 OCR 오독 → 직전 확정값 복원: %s", f"{int(cached_power):,}")
             if st.get("map"):
                 self._observe_map(st["map"], time.monotonic())
             if st.get("power"):
                 self.power = st["power"]
+                if saved_state.get("last_power") != self.power:
+                    saved_state["last_power"] = self.power
+                    _save_state(saved_state)
             self.startup_state = st
             log.info("시작 점검 (%.1f초): %s", st["took"], startup.describe(st))
             for w in startup.warnings(st, int((self.cfg.get("potion_shop") or {}).get("buy_below", 50))):
@@ -1077,6 +1088,14 @@ class Bot:
                 if self.power and p != self.power:
                     log.info("전투력 %s → %s", f"{self.power:,}", f"{p:,}")
                 self.power = p
+                try:
+                    from .rewards import _load_state, _save_state
+                    state = _load_state()
+                    if state.get("last_power") != p:
+                        state["last_power"] = p
+                        _save_state(state)
+                except Exception as e:  # noqa: BLE001
+                    log.debug("전투력 기준 저장 실패: %s", e)
         if self.mission and now - self._gate_check > 60:
             self._gate_check = now
             for src in list(self.deathbook.gates):

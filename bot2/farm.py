@@ -79,6 +79,17 @@ _last_power = None          # 마지막으로 믿을 만하게 읽은 전투력 
 _odd_power = []             # 기준과 많이 다르게 읽힌 값들 (같은 값이 3번 연속이면 진짜 변화로 받아들임)
 
 
+def seed_power_reference(value):
+    """재시작 전의 확정 전투력을 오독 필터 기준으로 복원한다."""
+    global _last_power
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return
+    if value > 0:
+        _last_power = value
+
+
 def _plausible(v):
     """직전 값에서 절반 미만으로 급락하거나 두 배를 넘는 값은 오독으로 본다 (예: 66,682 → 6,682)."""
     return _last_power is None or _last_power / 2 <= v <= _last_power * 2
