@@ -210,6 +210,18 @@ class SelfCheckTest(unittest.TestCase):
         self.assertEqual(selfcheck.validate_config(cfg), [])
         self.assertEqual(selfcheck.missing_templates(cfg), [])
 
+    def test_clan_help_template_matches_measured_icon(self):
+        m = Matcher(os.path.join(ROOT, "templates"), 0.85)
+        frame = cv2.imdecode(np.fromfile(os.path.join(ROOT, "tests", "fixtures", "clan_help_visible.png"),
+                                        dtype=np.uint8), cv2.IMREAD_COLOR)
+        found = m.find(frame, "clan_help.png", threshold=0.90)
+        self.assertIsNotNone(found)
+        self.assertGreater(found.score, 0.98)
+        without_help = frame.copy()
+        without_help[:75, :] = 0
+        self.assertIsNone(m.find(without_help, "clan_help.png", threshold=0.90),
+                          "아래쪽 보스 아이콘을 문파 도움으로 오인하면 안 됨")
+
     def test_config_bad(self):
         cfg = config()
         cfg["loop_interval"] = "빠르게"

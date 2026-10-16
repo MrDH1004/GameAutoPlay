@@ -27,6 +27,15 @@ field_indicator:
   template: field_hud.png
   region: [0.75, 0.85, 0.15, 0.15]
 
+# ===== 문파 도움 =====
+# 왼쪽 아래 주황색 악수 아이콘이 실제로 보일 때 눌러 문파원의 도움 요청에 응답한다.
+clan_help:
+  enabled: true
+  template: clan_help.png
+  region: [0.0, 0.68, 0.07, 0.20]
+  threshold: 0.90
+  cooldown: 30
+
 # ===== 전투 판별 =====
 # 상단 중앙 대상 몬스터 체력 바의 ⚔ 아이콘. 보이면 전투 중 → 퀘스트 클릭/영기 수련 보류
 combat_indicator:

@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from bot import actions
+from bot.vision import Match
 from bot2.brain import Bot
 from bot2.farm import FarmTask, StopRequested, guide_spots
 from bot2.risk import RiskGuard
@@ -108,6 +109,49 @@ class InputGuardTest(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 actions.drag(1, 1, 10, 10)
         up.assert_called_once()
+
+    def test_clan_help_rechecks_field_and_icon_before_click(self):
+        found = {
+            "clan_help.png": Match("clan_help.png", 52, 822, 0.96),
+            "field_hud.png": Match("field_hud.png", 1630, 1017, 0.97),
+        }
+        matcher = types.SimpleNamespace(find=lambda _frame, name, *_args: found.get(name))
+        clicks = []
+        bot = types.SimpleNamespace(
+            cfg={"clan_help": {"enabled": True, "template": "clan_help.png", "cooldown": 30},
+                 "field_indicator": {"template": "field_hud.png"}},
+            matcher=matcher, dry_run=False, _clan_help_at=-1e9,
+            window=types.SimpleNamespace(grab=lambda: "fresh"),
+            _check_user=lambda: None,
+            _click_frame=lambda label, x, y: clicks.append((label, x, y)),
+        )
+        snap = types.SimpleNamespace(in_field=True, frame="old")
+        self.assertTrue(Bot._clan_help_tick(bot, snap, 100))
+        self.assertEqual(clicks, [("문파 도움", 52, 822)])
+        self.assertFalse(Bot._clan_help_tick(bot, snap, 101))
+        snap.state = "DIALOG"
+        bot._clan_help_at = -1e9
+        self.assertFalse(Bot._clan_help_tick(bot, snap, 200))
+
+    def test_clan_help_cancels_if_icon_disappears_before_input(self):
+        calls = {"clan": 0}
+
+        def find(_frame, name, *_args):
+            if name == "field_hud.png":
+                return Match(name, 1630, 1017, 0.97)
+            calls["clan"] += 1
+            return Match(name, 52, 822, 0.96) if calls["clan"] == 1 else None
+
+        clicks = []
+        bot = types.SimpleNamespace(
+            cfg={"clan_help": {"enabled": True, "template": "clan_help.png"},
+                 "field_indicator": {"template": "field_hud.png"}},
+            matcher=types.SimpleNamespace(find=find), dry_run=False, _clan_help_at=-1e9,
+            window=types.SimpleNamespace(grab=lambda: "fresh"), _check_user=lambda: None,
+            _click_frame=lambda *args: clicks.append(args),
+        )
+        self.assertFalse(Bot._clan_help_tick(bot, types.SimpleNamespace(in_field=True, frame="old"), 100))
+        self.assertEqual(clicks, [])
 
 
 if __name__ == '__main__':

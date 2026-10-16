@@ -152,6 +152,7 @@ class Bot:
         self._run_t0 = time.monotonic()
         self._hunt_check = 0.0
         self._last_map_close = 0.0
+        self._clan_help_at = -1e9       # 문파 도움 아이콘 마지막 클릭 시각
 
         idle = config["idle"]
         self.idle_seconds = idle.get("seconds", 6)
@@ -241,6 +242,44 @@ class Bot:
             log.info("[dry-run] %s 클릭 예정 (%d, %d)", label, sx, sy)
             return
         actions.click(sx, sy)
+
+    def _clan_help_tick(self, snap, now):
+        """왼쪽 아래 문파 도움 아이콘이 보이면 한 번 누른다.
+
+        오래된 프레임으로 잘못 누르지 않도록 입력 직전에 새 화면에서 필드 HUD와
+        도움 아이콘을 모두 다시 확인한다. 클릭했으면 같은 틱의 다른 입력을 막는다.
+        """
+        cfg = self.cfg.get("clan_help") or {}
+        if (not cfg.get("enabled", True) or not snap.in_field
+                or getattr(snap, "state", "IDLE") not in ("IDLE", "COMBAT", "MOVING")):
+            return False
+        if now - self._clan_help_at < float(cfg.get("cooldown", 30)):
+            return False
+        template = cfg.get("template", "clan_help.png")
+        region = cfg.get("region", [0.0, 0.68, 0.07, 0.20])
+        threshold = float(cfg.get("threshold", 0.90))
+        match = self.matcher.find(snap.frame, template, region, threshold)
+        if not match:
+            return False
+        if self.dry_run:
+            log.info("[dry-run] 문파 도움 클릭 예정 (일치도 %.2f)", match.score)
+            self._clan_help_at = now
+            return True
+
+        self._check_user()
+        fresh = self.window.grab()
+        field = self.cfg.get("field_indicator") or {}
+        if not self.matcher.find(fresh, field.get("template"), field.get("region")):
+            log.debug("문파 도움 입력 직전 필드 HUD가 사라져 클릭 취소")
+            return False
+        match = self.matcher.find(fresh, template, region, threshold)
+        if not match:
+            log.debug("문파 도움 입력 직전 아이콘이 사라져 클릭 취소")
+            return False
+        log.info("문파 도움 요청 감지 → 클릭 (일치도 %.2f)", match.score)
+        self._click_frame("문파 도움", match.x, match.y)
+        self._clan_help_at = now
+        return True
 
     def _drag(self, label, x1, y1, x2, y2):
         if not self.dry_run:
@@ -1406,6 +1445,8 @@ class Bot:
             log.warning("시작 후 3분 동안 아는 화면(필드 HUD 등)을 한 번도 인식하지 못함 → 게임 업데이트로 UI가 바뀌었거나 해상도 문제일 수 있음")
             self._save_screen(snap.frame, "unknown_ui")
             self.notifier.send("아는 화면을 인식하지 못함 (게임 UI 변경 가능성)", snap.frame, key="ui")
+        if snap.in_field and self._clan_help_tick(snap, now):
+            return
         if in_secret_realm and state != "DEAD":
             if snap.in_field:
                 self._on_secret_realm(snap, now)
