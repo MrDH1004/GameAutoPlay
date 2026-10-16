@@ -55,6 +55,7 @@ class RecommendTabTest(unittest.TestCase):
         self.assertEqual(actual, expected)
         self.assertEqual([row["rank"] for row in skill_boxes.PRIORITY], list(range(1, 6)))
         self.assertEqual(len(actual), len(set(actual)))
+        self.assertEqual(skill_boxes.PRIORITY[2]["family"], "기만")
         self.assertTrue(all(url.startswith("https://") for _title, url, _note in skill_boxes.SOURCES))
 
     def test_every_measured_skill_has_a_transparent_icon(self):
