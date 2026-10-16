@@ -11,6 +11,8 @@ bridge/
 samples/
 gui_settings.json
 gui_settings.json.bak
+treasure_progress.json
+treasure_progress.json.bak
 .gui.lock
 .resources.json*
 profiles/*.json.bak

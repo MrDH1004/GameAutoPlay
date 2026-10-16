@@ -965,7 +965,7 @@ class Window(QMainWindow):
         self.settings_empty.setVisible(not found)
 
     def _build_recommend(self):
-        """추천 탭: 서브탭 — 스킬(기존) / 무기 / 방어구 / 투력 공략집."""
+        """추천 탭: 전투·성장 추천과 사용자가 직접 진행하는 보물찾기 안내."""
         sub_tabs = QTabWidget()
         sub_tabs.setDocumentMode(True)
         sub_tabs.addTab(self._build_skills(), "스킬")
@@ -973,6 +973,12 @@ class Window(QMainWindow):
         sub_tabs.addTab(self._build_gear_page("armor"), "방어구")
         sub_tabs.addTab(self._build_power_guide(), "투력 공략집")
         sub_tabs.addTab(self._build_hunt_page(), "사냥터")
+        from gui_extra import load_power
+        from treasure_widget import TreasureGuideWidget
+        history = load_power(1)
+        initial_power = int(history[-1][1]) if history else 0
+        self.treasure_guide = TreasureGuideWidget(C, initial_power)
+        sub_tabs.addTab(self.treasure_guide, "보물찾기")
         return sub_tabs
 
     def _guide_browser(self):
@@ -1557,6 +1563,8 @@ class Window(QMainWindow):
             from gui_extra import record_power
             record_power(bot.power)
             self._last_power, self._power_rec_at = bot.power, now
+            if hasattr(self, "treasure_guide"):
+                self.treasure_guide.set_power(bot.power)
         if now - self._stats_at > 60 and self.tabs.currentWidget() is self.stats_tab:
             self._stats_at = now
             self.stats_tab.refresh()
