@@ -33,6 +33,7 @@ class SecretRealmNameTest(unittest.TestCase):
         self.assertTrue(is_hunt_only_content_name("낙화의 전장"))
         self.assertTrue(is_hunt_only_content_name("낙화의전장"))
         self.assertTrue(is_hunt_only_content_name("낙화의』전장,囹-"))
+        self.assertTrue(is_hunt_only_content_name("낙화의쩐장"))
         self.assertFalse(is_hunt_only_content_name("안개 기슭"))
 
 
