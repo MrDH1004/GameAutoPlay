@@ -57,6 +57,16 @@ class MissionPriorityTest(unittest.TestCase):
         self.assertEqual(MissionTask._parse_nakhwa_progress("100/100"), 100)
         self.assertIsNone(MissionTask._parse_nakhwa_progress("읽기 실패"))
 
+    def test_missing_nakhwa_row_means_completed(self):
+        self.assertTrue(MissionTask._nakhwa_row_completed([
+            ("[일일] 안개 기슭 요귀 처치", 330),
+            ("[일일] 황무지 마을 요귀 처치", 420),
+        ]))
+        self.assertFalse(MissionTask._nakhwa_row_completed([
+            ("[일일] 낙화의 전장 요귀 처치", 250),
+        ]))
+        self.assertFalse(MissionTask._nakhwa_row_completed([]))
+
 
 if __name__ == "__main__":
     unittest.main()

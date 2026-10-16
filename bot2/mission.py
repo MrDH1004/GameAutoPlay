@@ -193,7 +193,12 @@ class MissionTask:
             return None
         try:
             self._click_xy("일일 탭", dict(TABS)["일일"], 0.110 * self.bot.window.frame_h, 1.0)
-            text = _ocr(_crop(self._grab(), (1390, 500, 1870, 640)), 2)
+            frame = self._grab()
+            rows = self._daily_rows(frame)
+            if self._nakhwa_row_completed(rows):
+                log.info("  [일일] 낙화 임무가 일일 목록에서 사라짐 → 100/100 완료")
+                return 100
+            text = _ocr(_crop(frame, (1390, 500, 1870, 640)), 2)
             progress = self._parse_nakhwa_progress(text)
             if progress is None:
                 log.warning("  [일일] 낙화 처치 수 OCR 실패: %s", re.sub(r"\s+", " ", text).strip())
@@ -207,6 +212,11 @@ class MissionTask:
     def _parse_nakhwa_progress(text):
         match = re.search(r"(\d{1,3})\s*/\s*100", str(text or ""))
         return min(100, int(match.group(1))) if match else None
+
+    @staticmethod
+    def _nakhwa_row_completed(rows):
+        """읽힌 일일이 있는데 낙화 행만 사라졌다면 방금 처치 임무가 완료된 것이다."""
+        return bool(rows) and not any("낙화" in re.sub(r"\s+", "", title) for title, _y in rows)
 
     def leave_nakhwa_battlefield(self):
         """완료된 낙화 일일을 빠져나와 다음 일일을 진행할 수 있게 한다."""
