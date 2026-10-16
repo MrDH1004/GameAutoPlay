@@ -10,6 +10,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import gear_guide as g  # noqa: E402
 import skill_guide as skills  # noqa: E402
+import skill_box_guide as skill_boxes  # noqa: E402
 
 
 def tagged(text):
@@ -48,6 +49,14 @@ class GearGuideTest(unittest.TestCase):
 
 
 class RecommendTabTest(unittest.TestCase):
+    def test_skill_box_priority_is_five_distinct_unlocks(self):
+        expected = ["생명의 축복", "영혼 소용돌이", "공간 결계", "방패 치기", "찌르기"]
+        actual = [row["skill"] for row in skill_boxes.PRIORITY]
+        self.assertEqual(actual, expected)
+        self.assertEqual([row["rank"] for row in skill_boxes.PRIORITY], list(range(1, 6)))
+        self.assertEqual(len(actual), len(set(actual)))
+        self.assertTrue(all(url.startswith("https://") for _title, url, _note in skill_boxes.SOURCES))
+
     def test_every_measured_skill_has_a_transparent_icon(self):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         icon_dir = os.path.join(root, "assets", "skills")
@@ -87,7 +96,7 @@ class RecommendTabTest(unittest.TestCase):
         self.assertNotIn("스킬 추천", names)
         rec = w.tabs.widget(names.index("추천"))
         self.assertEqual([rec.tabText(i) for i in range(rec.count())],
-                         ["스킬", "무기", "방어구", "투력 공략집", "사냥터", "보물찾기"])
+                         ["스킬", "선택 상자", "무기", "방어구", "투력 공략집", "사냥터", "보물찾기"])
         w.close()
         w.deleteLater()
 

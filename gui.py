@@ -969,6 +969,7 @@ class Window(QMainWindow):
         sub_tabs = QTabWidget()
         sub_tabs.setDocumentMode(True)
         sub_tabs.addTab(self._build_skills(), "스킬")
+        sub_tabs.addTab(self._build_skill_box_guide(), "선택 상자")
         sub_tabs.addTab(self._build_gear_page("weapon"), "무기")
         sub_tabs.addTab(self._build_gear_page("armor"), "방어구")
         sub_tabs.addTab(self._build_power_guide(), "투력 공략집")
@@ -984,6 +985,38 @@ class Window(QMainWindow):
     def _guide_browser(self):
         tb = QTextBrowser()
         tb.setOpenExternalLinks(True)
+        return tb
+
+    def _build_skill_box_guide(self):
+        """도술 조각 선택 상자 5개를 쓰는 계정 맞춤 우선순위."""
+        import skill_box_guide as g
+        from html import escape
+
+        h = f"<body style='color:{C['text']}'>"
+        h += "<h2>도술 조각 선택 상자 · 5개 우선순위</h2>"
+        h += f"<p style='color:{C['sub']}'>{escape(g.INTRO)}</p>"
+        h += (f"<table width='100%' cellpadding=7><tr><th align=left>순위</th><th align=left>도술</th>"
+              "<th align=left>역할</th><th align=left>추천 근거</th></tr>")
+        for row in g.PRIORITY:
+            h += (f"<tr><td valign=top style='color:{C['accent']};font-size:18px'><b>{row['rank']}</b></td>"
+                  f"<td valign=top><b>{escape(row['skill'])}</b><br><span style='color:{C['sub']}'>{escape(row['family'])}</span></td>"
+                  f"<td valign=top>{escape(row['role'])}</td><td>"
+                  f"<span style='color:{C['warn']}'>[웹]</span> {escape(row['web_reason'])}<br>"
+                  f"<span style='color:{C['ok']}'>[계정 맞춤]</span> {escape(row['account_reason'])}</td></tr>")
+        h += "</table><h2>선택 규칙</h2><ul>"
+        for rule in g.RULES:
+            if rule.startswith("[판단]"):
+                h += f"<li><span style='color:{C['ok']};font-weight:600'>[판단]</span> {escape(rule[4:].strip())}</li>"
+            else:
+                h += f"<li>{self._tag(rule)}</li>"
+        h += "</ul>"
+        h += f"<p style='color:{C['sub']}'>{escape(g.CAVEAT)}</p>"
+        h += "<h2>출처</h2><ul>" + "".join(
+            f"<li><a style='color:{C['accent']}' href='{url}'>{escape(title)}</a> "
+            f"<span style='color:{C['sub']}'>— {escape(note)}</span></li>"
+            for title, url, note in g.SOURCES) + "</ul></body>"
+        tb = self._guide_browser()
+        tb.setHtml(h)
         return tb
 
     @staticmethod
