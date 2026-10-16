@@ -228,7 +228,7 @@ class MissionTask:
         frame = self._grab()
         dialog = re.sub(r"\s+", "", _ocr(_crop(frame, (650, 300, 1270, 780)), 2))
         if "나가기" in dialog or "확인" in dialog:
-            self._click_xy("낙화의 전장 나가기 확인", 0.560 * w, 0.620 * h, 7.0)
+            self._click_xy("낙화의 전장 나가기 확인", 0.550 * w, 0.579 * h, 7.0)
         else:
             time.sleep(6.0)
         name = read_map_name(self._grab())
