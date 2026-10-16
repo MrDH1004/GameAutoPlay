@@ -46,7 +46,7 @@ def is_secret_realm_name(name):
 
 def is_hunt_only_content_name(name):
     """메뉴·지도 이동을 막고 자동 사냥만 유지해야 하는 전투 콘텐츠인지 판정한다."""
-    compact = re.sub(r"[\s\[\](){}]", "", str(name or ""))
+    compact = re.sub(r"[^0-9A-Za-z가-힣]", "", str(name or ""))
     return is_secret_realm_name(name) or "낙화의전장" in compact
 
 
