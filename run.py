@@ -39,6 +39,9 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="클릭/키 입력 없이 로그만")
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--farm", action="store_true", help="사냥터 고정 모드 (퀘스트 대신 전투력에 맞는 사냥터에서 자동 사냥)")
+    parser.add_argument("--normal", action="store_true", help="일반 모드 (현재 위치에서 자동 사냥, 저체력 피신 후 복귀)")
+    parser.add_argument("--daily", action="store_true", help="일일 임무 전용 모드 (본편·서사·주간 제외)")
+    parser.add_argument("--story", action="store_true", help="서사 임무 전용 모드 (현재 전투력 적합 임무만)")
     args = parser.parse_args()
 
     setup_logging(args.debug)
@@ -48,6 +51,24 @@ def main():
 
     if args.farm:
         config.setdefault("farm", {})["enabled"] = True
+        config.setdefault("normal_mode", {})["enabled"] = False
+        config.setdefault("daily_mode", {})["enabled"] = False
+        config.setdefault("story_mode", {})["enabled"] = False
+    if args.normal:
+        config.setdefault("normal_mode", {})["enabled"] = True
+        config.setdefault("farm", {})["enabled"] = False
+        config.setdefault("daily_mode", {})["enabled"] = False
+        config.setdefault("story_mode", {})["enabled"] = False
+    if args.daily:
+        config.setdefault("daily_mode", {})["enabled"] = True
+        config.setdefault("normal_mode", {})["enabled"] = False
+        config.setdefault("farm", {})["enabled"] = False
+        config.setdefault("story_mode", {})["enabled"] = False
+    if args.story:
+        config.setdefault("story_mode", {})["enabled"] = True
+        config.setdefault("daily_mode", {})["enabled"] = False
+        config.setdefault("normal_mode", {})["enabled"] = False
+        config.setdefault("farm", {})["enabled"] = False
     from execution_lock import acquire_bot_lock
     execution_lock = acquire_bot_lock(config)
     bot = None

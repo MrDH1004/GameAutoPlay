@@ -1,74 +1,76 @@
 """마우스/키보드 입력과 단축키 감지."""
 import ctypes
-import random
 import time
 
-import pydirectinput
-
-pydirectinput.PAUSE = 0.05
-# 마우스를 화면 왼쪽 위 모서리로 옮기면 pydirectinput이 FailSafeException을 낸다.
-# 사용자가 마우스를 모서리로 치워 두는 일이 흔해서, 예외로 매크로가 죽지 않도록 아래 _safe()가 받아 처리한다
-# (입력을 건너뛰지 않고 마우스를 화면 안쪽으로 옮긴 뒤 한 번 다시 보낸다). 즉 '모서리 비상 정지'는 없다 —
-# 비상 정지는 F11(일시정지)/F12(종료)뿐이다 (사용자 결정).
-pydirectinput.FAILSAFE = True
-
-try:
-    from pydirectinput import FailSafeException
-except ImportError:                           # 라이브러리 버전에 따라 이름이 없으면 빈 예외로 대체
-    class FailSafeException(Exception):
-        pass
-
-
-def _safe(fn, *args, **kwargs):
-    """입력 함수를 실행하되 FAILSAFE로 막히면 마우스를 안쪽으로 옮기고 한 번만 다시 시도한다."""
-    try:
-        return fn(*args, **kwargs)
-    except FailSafeException:
-        try:
-            old = pydirectinput.FAILSAFE
-            pydirectinput.FAILSAFE = False
-            try:
-                w, h = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-                pydirectinput.moveTo(max(40, w // 2), max(40, h // 2))        # 모서리에서 화면 가운데로
-            finally:
-                pydirectinput.FAILSAFE = old
-        except Exception:                      # noqa: BLE001
-            pass
-        return fn(*args, **kwargs)
+_input_backend = None
 
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
 
 # 매크로가 마지막으로 입력을 보낸 시각 (GetTickCount ms). 사용자 입력과 구분하는 데 쓴다.
 _self_input_tick = 0
+_self_input_monotonic = 0.0
 
 
 def mark_self_input():
-    global _self_input_tick
+    global _self_input_tick, _self_input_monotonic
     _self_input_tick = kernel32.GetTickCount()
+    _self_input_monotonic = time.monotonic()
+
+
+def seconds_since_self_input():
+    """마지막 자동 입력 이후 경과 시간. 입력 전이면 무한대로 취급한다."""
+    return time.monotonic() - _self_input_monotonic if _self_input_monotonic else float("inf")
+
+
+def configure_cua(window, config=None):
+    """Enable Cua Driver input without a physical-input fallback."""
+    global _input_backend
+    from .cua_input import CuaInput
+    backend = CuaInput(window, config)
+    backend.check()
+    _input_backend = backend
+    return backend
+
+
+def clear_input_backend():
+    global _input_backend
+    backend = _input_backend
+    _input_backend = None
+    if backend is not None:
+        close = getattr(backend, "close", None)
+        if close:
+            close()
+
+
+def input_backend_ready():
+    return _input_backend is not None
+
+
+def _cua():
+    """물리 입력으로 우회하지 않고 Cua Driver만 반환한다."""
+    if _input_backend is None:
+        from .cua_input import CuaInputError
+        raise CuaInputError("Cua Driver 입력 백엔드가 준비되지 않아 물리 입력 없이 동작을 보류합니다")
+    return _input_backend
 
 
 def click(x, y, jitter=3):
-    x += random.randint(-jitter, jitter)
-    y += random.randint(-jitter, jitter)
+    backend = _cua()
     mark_self_input()
-    _safe(pydirectinput.moveTo, x, y)
-    time.sleep(random.uniform(0.05, 0.12))
-    _safe(pydirectinput.click)
-    mark_self_input()
+    try:
+        return backend.click(x, y)
+    finally:
+        mark_self_input()
 
 
 def drag(x1, y1, x2, y2, steps=10):
     """누른 채로 (x1,y1)→(x2,y2)로 끌기 (목록 스크롤용)."""
+    backend = _cua()
     mark_self_input()
-    _safe(pydirectinput.moveTo, x1, y1)
-    _safe(pydirectinput.mouseDown)
     try:
-        for i in range(1, steps + 1):
-            _safe(pydirectinput.moveTo, int(x1 + (x2 - x1) * i / steps), int(y1 + (y2 - y1) * i / steps))
-            time.sleep(0.03)
+        return backend.drag(x1, y1, x2, y2, steps)
     finally:
-        _safe(pydirectinput.mouseUp)
         mark_self_input()
 
 
@@ -77,23 +79,21 @@ def hotkey(combo):
     keys = [k.strip() for k in combo.lower().split("+") if k.strip()]
     if not keys:
         raise ValueError("단축키가 비어 있습니다")
+    backend = _cua()
     mark_self_input()
-    pressed = []
     try:
-        for k in keys[:-1]:
-            _safe(pydirectinput.keyDown, k)
-            pressed.append(k)
-        _safe(pydirectinput.press, keys[-1])
+        return backend.hotkey(combo)
     finally:
-        for k in reversed(pressed):
-            _safe(pydirectinput.keyUp, k)
         mark_self_input()
 
 
 def press(key):
+    backend = _cua()
     mark_self_input()
-    _safe(pydirectinput.press, key)
-    mark_self_input()
+    try:
+        return backend.press(key)
+    finally:
+        mark_self_input()
 
 
 class UserInterrupt(Exception):
@@ -166,10 +166,10 @@ class HotkeyWatcher:
 
 
 def wheel(x, y, amount=-3):
-    """(x, y)로 마우스를 옮기고 휠을 굴린다. amount<0 이면 아래로 (칸 수).
-    게임은 120짜리 이벤트를 연달아 보내면 무시하므로, 칸 수만큼의 델타를 이벤트 하나로 보낸다."""
+    """Cua Driver의 창 대상 스크롤만 사용한다."""
+    backend = _cua()
     mark_self_input()
-    _safe(pydirectinput.moveTo, int(x), int(y))
-    time.sleep(0.3)                  # 게임 UI가 마우스 위치(호버)를 인식할 시간
-    user32.mouse_event(0x0800, 0, 0, (int(amount) * 120) & 0xFFFFFFFF, 0)       # MOUSEEVENTF_WHEEL
-    mark_self_input()
+    try:
+        return backend.wheel(x, y, amount)
+    finally:
+        mark_self_input()

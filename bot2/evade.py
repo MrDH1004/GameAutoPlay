@@ -11,10 +11,12 @@ import math
 import re
 import time
 
+import cv2
 import numpy as np
 
 from .collect import _matches, _tpl
 from .farm import _crop, _ocr
+from .map_vision import extract_road_mask, map_translation
 
 log = logging.getLogger("bot2")
 
@@ -22,6 +24,8 @@ MINIMAP = (175, 131)                 # 좌상단 미니맵: 누르면 세계지�
 CENTER = (960, 540)                  # 지도에서 내 캐릭터 위치
 MAP_TITLE_BOX = (100, 10, 330, 90)   # '세계지도' 제목
 WALK_BTN_BOX = (1400, 940, 1900, 1075)   # 핀을 누르면 나오는 [걸어가기] [축지술] 줄
+MAP_ZOOM_MAX = (1104, 1020)            # 지도 진입 시 기본 최대 확대 노브
+MAP_ZOOM_MID = (960, 1020)             # 하단 지도 확대 슬라이더의 중앙값(1920×1080 기준)
 REGION_TAB = (50, 180)               # 세계지도 왼쪽 '지역 정보' 탭 (실측)
 LIST_BOX = (100, 130, 420, 1060)     # 지역 정보 목록 (그룹 머리줄은 어둡고, 하위 지역 줄은 밝다)
 LIST_CLICK_X = 250
@@ -30,7 +34,7 @@ ROW_BRIGHT = 130                     # 하위 지역 줄 배경 밝기 기준 (�
 MIN_DIST = 50                        # 이 거리(m) 안의 지역은 '지금 내가 있는 지역'
 CACHE_SECS = 45 * 60                 # 미리 읽어 둔 지역 정보를 믿는 시간
 MAX_DIST = 900                       # 이보다 먼 지역으로는 걸어가지 않는다
-PX_PER_M = 27.0                      # 지도 190px ≈ 7m (실측)
+PX_PER_M = 13.4                      # 중앙 배율 실측: 지도 약 887px ≈ 이동 거리 66m
 SPEED_MPS = 1.3                      # 걷는 속도 추정 (넉넉하게)
 
 
@@ -74,10 +78,81 @@ def flee_directions(frame, dist):
     return out
 
 
+def road_escape_target(frame, max_dist, min_dist=None):
+    """세계지도에서 플레이어 표식과 연결된 밝은 도로 중 먼 클릭 지점을 찾는다.
+
+    반환값은 ``(x, y, dx, dy)``이며, 색상 분리가 불가능하면 None이다.
+    """
+    if frame is None or frame.size == 0:
+        return None
+    h, w = frame.shape[:2]
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hue, sat, val = (hsv[..., i] for i in range(3))
+
+    # 현재 위치의 금색 화살. 작은 노란 글자·장식은 연결 요소 크기로 제외한다.
+    marker_mask = ((hue >= 15) & (hue <= 35) & (sat >= 115) & (val >= 175)).astype(np.uint8)
+    count, labels, stats, centers = cv2.connectedComponentsWithStats(marker_mask, 8)
+    marker_candidates = []
+    for i in range(1, count):
+        x, y, bw, bh, area = stats[i]
+        if 20 <= area <= 2500 and 0.05 * w < x + bw / 2 < 0.95 * w and 0.08 * h < y + bh / 2 < 0.92 * h:
+            marker_candidates.append((area, centers[i]))
+    if marker_candidates:
+        _, center = max(marker_candidates, key=lambda item: item[0])
+        cx, cy = map(float, center)
+    else:
+        cx, cy = w / 2.0, h / 2.0
+
+    # 다중 크기 국소 대비로 도로 영역을 잡는다. 단순 색상 범위보다 지도별 명암 변화에 강하다.
+    road = extract_road_mask(frame)
+    if cv2.countNonZero(road) < 300:
+        road = ((hue >= 8) & (hue <= 30) & (sat >= 28) & (sat <= 125)
+                & (val >= 105) & (val <= 220)).astype(np.uint8) * 255
+        road = cv2.morphologyEx(road, cv2.MORPH_CLOSE, np.ones((11, 11), np.uint8))
+        road = cv2.morphologyEx(road, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+
+    # 플레이어와 가장 가까운 도로 연결 요소만 사용하여 호수·배경을 찍지 않는다.
+    n, road_labels, road_stats, _ = cv2.connectedComponentsWithStats(road, 8)
+    yy, xx = np.indices((h, w))
+    nearest = None
+    for i in range(1, n):
+        if road_stats[i, cv2.CC_STAT_AREA] < 300:
+            continue
+        ys, xs = np.where(road_labels == i)
+        if not len(xs):
+            continue
+        d2 = np.min((xs - cx) ** 2 + (ys - cy) ** 2)
+        if nearest is None or d2 < nearest[0]:
+            nearest = (d2, i)
+    if nearest is None or nearest[0] > (max(h, w) * 0.12) ** 2:
+        return None
+
+    component = (road_labels == nearest[1]).astype(np.uint8)
+    distance = np.hypot(xx - cx, yy - cy)
+    scale = w / 1920.0
+    limit = max(80.0, float(max_dist) * scale)
+    minimum = max(70.0, float(min_dist if min_dist is not None else max_dist * .75) * scale)
+    candidates = (component > 0) & (distance >= minimum) & (distance <= limit * 1.15)
+    margin = int(min(h, w) * 0.04)
+    candidates[:margin] = candidates[-margin:] = False
+    candidates[:, :margin] = candidates[:, -margin:] = False
+    if not np.any(candidates):
+        return None
+
+    # 도로 가장자리보다 중앙을 선호하면서 가능한 한 멀리 간다.
+    clearance = cv2.distanceTransform(component, cv2.DIST_L2, 5)
+    score = distance + np.minimum(clearance, 12.0) * 4.0
+    score[~candidates] = -1
+    ty, tx = np.unravel_index(np.argmax(score), score.shape)
+    return int(tx), int(ty), int(round(tx - cx)), int(round(ty - cy))
+
+
 class Evader:
-    def __init__(self, drv, dist_px=380):
+    def __init__(self, drv, dist_px=900, min_dist_px=None, min_meters=40):
         self.drv = drv
         self.dist = dist_px
+        self.min_dist = int(min_dist_px if min_dist_px is not None else dist_px * .75)
+        self.min_meters = int(min_meters)
         self.cache = None                # prepare()로 미리 읽어 둔 지역 정보
 
     def _map_open(self, img):
@@ -91,11 +166,19 @@ class Evader:
             d.key("esc")
             d.sleep(0.8)
 
-    def _walk_wait(self, dx, dy):
-        meters = math.hypot(dx, dy) / PX_PER_M
+    def _set_mid_zoom(self):
+        """분석·복귀 좌표가 항상 같은 축척이 되도록 지도 배율을 중앙값으로 고정한다."""
+        self.drv.drag(*MAP_ZOOM_MAX, *MAP_ZOOM_MID)
+        self.drv.sleep(0.8)
+
+    def _selected_distance(self, frame):
+        return parse_dist(_ocr(_crop(frame, DIST_BOX), 3))
+
+    def _walk_wait(self, dx, dy, meters=None):
+        meters = float(meters if meters is not None else math.hypot(dx, dy) / PX_PER_M)
         self.drv.sleep(3.0 + meters / SPEED_MPS)
 
-    def _go(self, offsets):
+    def _go(self, offsets, prefer_road=True, road_only=False):
         """지도를 열고 offsets 후보를 차례로 눌러 첫 번째로 걸어가기가 뜨는 곳으로 걷는다. 성공한 (dx, dy) 또는 None."""
         d = self.drv
         d.click(*MINIMAP)
@@ -104,15 +187,35 @@ class Evader:
             log.warning("자리 회피: 세계지도가 열리지 않음")
             self._close_map()
             return None
-        for dx, dy in offsets:
-            d.click(CENTER[0] + dx, CENTER[1] + dy)
+        self._set_mid_zoom()
+        frame = d.shot()
+        road = road_escape_target(frame, self.dist, self.min_dist) if prefer_road else None
+        if road_only and not road:
+            log.warning("자리 회피: 연결된 도로에서 최소 이동 거리 목표를 찾지 못함")
+            self._close_map()
+            return None
+        targets = ([(road[0], road[1], road[2], road[3])] if road else []) + [
+            (CENTER[0] + dx, CENTER[1] + dy, dx, dy) for dx, dy in offsets]
+        if road:
+            log.info("자리 회피: 도로 픽셀 분석 목표 (%d, %d), 현재 위치에서 (%+d, %+d)", *road)
+        for x, y, dx, dy in targets:
+            d.click(x, y)
             d.sleep(0.8)
-            hit = _matches(d.shot(), _tpl("world_walk_btn.png"), WALK_BTN_BOX, 0.85)
+            selected = d.shot()
+            hit = _matches(selected, _tpl("world_walk_btn.png"), WALK_BTN_BOX, 0.85)
             if not hit:
                 continue                                   # 걸을 수 없는 곳 (벽 등) → 다음 후보
+            meters = self._selected_distance(selected) if road else None
+            if road and (meters is None or meters < self.min_meters):
+                log.warning("자리 회피: 선택 경로 거리 %s → 최소 %dm 미달/판독 실패로 이동 취소",
+                            f"{meters}m" if meters is not None else "판독 불가", self.min_meters)
+                continue
             t = _tpl("world_walk_btn.png")
             d.click(hit[0][0] + t.shape[1] // 2, hit[0][1] + t.shape[0] // 2)
-            self._walk_wait(dx, dy)
+            self._walk_wait(dx, dy, meters)
+            if road:
+                return {"kind": "road", "offset": (dx, dy), "origin_map": frame,
+                        "origin_point": (x - dx, y - dy), "meters": meters}
             return (dx, dy)
         self._close_map()
         return None
@@ -238,31 +341,76 @@ class Evader:
         return False
 
     def flee(self, frame):
-        """몹에서 빠져나간다. 먼저 지역 정보 목록으로 걸어가 보고(막힌 곳 걱정 없음), 안 되면 지도의 몹이 적은 쪽을 눌러 걷는다.
-        돌려주는 값은 돌아올 때 쓴다 (dict = 지역 이동, tuple = 지도 오프셋). 실패하면 None."""
-        try:
-            tok = self.flee_area()
-        except Exception as e:                       # noqa: BLE001
-            log.warning("자리 회피(지역 목록) 오류: %s", e)
-            tok = None
-        if tok:
-            return tok
-        off = self._go(flee_directions(frame, self.dist))
+        """실제 지도에서 현재 위치와 연결된 도로의 먼 지점으로 걸어간다."""
+        off = self._go([], prefer_road=True, road_only=True)
         if off:
-            log.info("자리 회피: 지도 오프셋 (%d, %d)만큼 이동 (약 %.0fm)", off[0], off[1], math.hypot(*off) / PX_PER_M)
+            dx, dy = off["offset"]
+            log.info("자리 회피: 실제 지도 도로를 따라 (%d, %d) 이동 (약 %.0fm)",
+                     dx, dy, math.hypot(dx, dy) / PX_PER_M)
         else:
-            log.warning("자리 회피: 걸어갈 곳을 찾지 못함")
+            log.warning("자리 회피: 최소 거리 이상 연결된 도로를 찾지 못함")
         return off
+
+    def _back_road(self, token):
+        """회피 전후 지도 지형을 정합하여 저장한 원래 지점으로 최대 2회 보정 이동한다."""
+        d = self.drv
+        origin = token.get("origin_map")
+        origin_point = token.get("origin_point", CENTER)
+        offset = token.get("offset", (0, 0))
+        for attempt in range(3):
+            d.click(*MINIMAP)
+            d.sleep(1.5)
+            current = d.shot()
+            if not self._map_open(current):
+                self._close_map()
+                return False
+            self._set_mid_zoom()
+            current = d.shot()
+            aligned = map_translation(origin, current)
+            if aligned:
+                dx, dy, confidence = aligned
+                remaining = math.hypot(dx, dy)
+                log.info("자리 회피 복귀 정합: 잔여 %.0fpx · 신뢰도 %.2f", remaining, confidence)
+                if remaining <= 38:
+                    self._close_map()
+                    return True
+                x, y = origin_point[0] + dx, origin_point[1] + dy
+            elif attempt == 0:
+                dx, dy = -offset[0], -offset[1]
+                remaining = math.hypot(dx, dy)
+                x, y = CENTER[0] + dx, CENTER[1] + dy
+                log.warning("자리 회피 복귀: 지도 정합 실패 → 저장 오프셋으로 1회 복귀")
+            else:
+                self._close_map()
+                return False
+            x = int(max(120, min(current.shape[1] - 120, x)))
+            y = int(max(100, min(current.shape[0] - 130, y)))
+            d.click(x, y)
+            d.sleep(.8)
+            selected = d.shot()
+            hit = _matches(selected, _tpl("world_walk_btn.png"), WALK_BTN_BOX, .82)
+            if not hit:
+                self._close_map()
+                return False
+            meters = self._selected_distance(selected)
+            template = _tpl("world_walk_btn.png")
+            d.click(hit[0][0] + template.shape[1] // 2, hit[0][1] + template.shape[0] // 2)
+            self._walk_wait(dx, dy, meters)
+        return False
 
     def back(self, off):
         """원래 자리 근처로 돌아온다 (dict면 그 지역으로, tuple이면 반대 오프셋으로)."""
+        if isinstance(off, dict) and off.get("kind") == "road":
+            ok = self._back_road(off)
+            log.info("자리 회피: 원래 위치 복귀 %s", "완료" if ok else "확인 실패")
+            return ok
         if isinstance(off, dict):
             ok = self.back_area(off)
             if ok:
                 return True
             log.warning("자리 회피: 원래 지역으로 복귀하지 못함 (현재 자리에서 사냥)")
             return False
-        back = self._go([(-off[0], -off[1])])
+        back = self._go([(-off[0], -off[1])], prefer_road=False)
         if back:
             log.info("자리 회피: 원래 자리 근처로 복귀")
         else:

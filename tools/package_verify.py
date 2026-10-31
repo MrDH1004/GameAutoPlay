@@ -39,6 +39,15 @@ def main():
             first.terminate()
             first.wait(timeout=10)
     first_report = json.loads(report_path.read_text(encoding='utf-8'))
+    bundled_cua = executable.parent / '_internal' / 'cua-driver' / 'cua-driver.exe'
+    bundled_cua_helpers = all(
+        (bundled_cua.parent / name).is_file()
+        for name in ('cua-driver.exe', 'cua-driver-uia.exe', 'cua-cursor-theme.exe')
+    )
+    cua_version = subprocess.run(
+        [str(bundled_cua), '--version'], capture_output=True, text=True, timeout=30,
+        creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0), check=False,
+    ) if bundled_cua_helpers else None
     settings_path = data / 'gui_settings.json'
     settings = json.loads(settings_path.read_text(encoding='utf-8'))
     settings['farm/margin'] = 1.3
@@ -58,6 +67,7 @@ def main():
     result = {'version': VERSION, 'executable': str(executable), 'data_directory': str(data),
               'sha256': hashlib.sha256(executable.read_bytes()).hexdigest(),
               'first_launch': first_result == 0, 'duplicate_blocked': duplicate.returncode == 3,
+              'bundled_cua': bool(cua_version and cua_version.returncode == 0 and 'cua-driver' in cua_version.stdout.lower()),
               'pages': first_report['pages'], 'settings_roundtrip': first_report['settings_roundtrip'],
               'second_launch': second.returncode == 0, 'custom_settings_preserved': after.get('farm/margin') == 1.3,
               'unknown_settings_preserved': after.get('_future_extension') == 'preserve-me',

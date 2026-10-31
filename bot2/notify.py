@@ -86,14 +86,16 @@ class Notifier:
                                     {"photo": ("screen.jpg", img, "image/jpeg")})
                 else:
                     data = urllib.parse.urlencode({"chat_id": self.tg_chat, "text": text}).encode()
-                    urllib.request.urlopen(base + "/sendMessage", data=data, timeout=15).read()
+                    with urllib.request.urlopen(base + "/sendMessage", data=data, timeout=15) as response:
+                        response.read()
             if self.dc_url:
                 if img:
                     _post_multipart(self.dc_url, {"content": text[:1900]}, {"file": ("screen.jpg", img, "image/jpeg")})
                 else:
                     req = urllib.request.Request(self.dc_url, data=json.dumps({"content": text[:1900]}).encode(),
                                                  headers={"Content-Type": "application/json"})
-                    urllib.request.urlopen(req, timeout=15).read()
+                    with urllib.request.urlopen(req, timeout=15) as response:
+                        response.read()
         except Exception as e:  # noqa: BLE001
             log.warning("알림 전송 실패: %s", e)
 

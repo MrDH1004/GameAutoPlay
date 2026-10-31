@@ -95,6 +95,30 @@ class ButtonClickTest(unittest.TestCase):
         self.assertEqual(calls, [])                         # 끌 때는 아무것도 안 함
 
 
+class ManualFocusTest(unittest.TestCase):
+    def test_manual_command_focuses_before_consuming_request(self):
+        ignored, focused = [], []
+        b = types.SimpleNamespace(
+            dry_run=False, waiting_user=True, _user_wait_until=99.0,
+            _manual_focus_requested=False, _manual_focus_try_at=-1e9,
+            activity=types.SimpleNamespace(ignore_until_now=lambda *a: ignored.append(True)),
+        )
+        b._focus_game_window = lambda force=False: focused.append(force) or True
+        Bot.request_manual_focus(b)
+        self.assertTrue(Bot._focus_manual_command(b, 1.0))
+        self.assertEqual(focused, [True])
+        self.assertFalse(b._manual_focus_requested)
+        self.assertFalse(b.waiting_user)
+
+    def test_failed_focus_keeps_manual_request_pending(self):
+        b = types.SimpleNamespace(
+            _manual_focus_requested=True, _manual_focus_try_at=-1e9,
+            _focus_game_window=lambda force=False: False,
+        )
+        self.assertFalse(Bot._focus_manual_command(b, 1.0))
+        self.assertTrue(b._manual_focus_requested)
+
+
 class PowerGuardTest(unittest.TestCase):
     def test_saved_power_seeds_restart_guard(self):
         import bot2.farm as farm

@@ -22,7 +22,8 @@ def snap(**kw):
 
 class WalkSignalTest(unittest.TestCase):
     def test_perceiver_sees_the_walking_bar(self):
-        cfg = yaml.safe_load(open(os.path.join(ROOT, "config.yaml"), encoding="utf-8"))
+        with open(os.path.join(ROOT, "config.yaml"), encoding="utf-8") as stream:
+            cfg = yaml.safe_load(stream)
         p = Perceiver(Matcher(os.path.join(ROOT, "templates"), 0.85), cfg)
         self.assertFalse(p.look(cv2.imread(os.path.join(ROOT, "tests/fixtures/field_hp_95.png")), 0.0).walking)
         self.assertTrue(p.look(cv2.imread(os.path.join(ROOT, "tests/fixtures/walking_bar.png")), 1.0).walking)
@@ -81,7 +82,8 @@ class DebounceTest(unittest.TestCase):
     """이동 바는 이동 중에도 1~2초씩 사라진다(실측: 72초 관찰 중 6번 이상) → 그 틈에 T가 눌리면 안 된다."""
 
     def test_walking_flag_survives_a_short_flicker(self):
-        cfg = yaml.safe_load(open(os.path.join(ROOT, "config.yaml"), encoding="utf-8"))
+        with open(os.path.join(ROOT, "config.yaml"), encoding="utf-8") as stream:
+            cfg = yaml.safe_load(stream)
         p = Perceiver(Matcher(os.path.join(ROOT, "templates"), 0.85), cfg)
         bar = cv2.imread(os.path.join(ROOT, "tests/fixtures/walking_bar.png"))
         none = cv2.imread(os.path.join(ROOT, "tests/fixtures/field_hp_95.png"))

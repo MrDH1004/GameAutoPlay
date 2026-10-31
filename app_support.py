@@ -52,7 +52,16 @@ def environment_report(cfg, root, include_game=True):
         admin = bool(ctypes.windll.shell32.IsUserAnAdmin())
     except AttributeError:
         admin = False
-    add('입력 권한', 'ok' if admin else 'warning', '관리자 권한' if admin else '관리자 실행 또는 관리자 브리지가 필요합니다')
+    try:
+        from bot.cua_input import find_executable
+        cua_ready = bool(find_executable())
+    except (ImportError, OSError, RuntimeError):
+        cua_ready = False
+    if cua_ready:
+        add('입력 권한', 'ok', '일반 권한 GUI · Cua Driver 서비스 입력')
+    else:
+        add('입력 권한', 'ok' if admin else 'warning',
+            '관리자 권한' if admin else 'Cua Driver 서비스가 필요합니다')
     problems = validate_config(cfg)
     add('설정', 'error' if problems else 'ok', '\n'.join(problems) or '필수 항목과 수치 범위 정상')
     missing = missing_templates(cfg)
@@ -67,7 +76,7 @@ def environment_report(cfg, root, include_game=True):
         except Exception as error:
             add('게임 창', 'warning', type(error).__name__ + ': 창 상태를 읽지 못했습니다')
     dependencies = {}
-    for package in ('PySide6', 'mss', 'numpy', 'opencv-python', 'PyYAML', 'pydirectinput'):
+    for package in ('PySide6', 'mss', 'numpy', 'opencv-python', 'PyYAML'):
         try:
             dependencies[package] = version(package)
         except PackageNotFoundError:

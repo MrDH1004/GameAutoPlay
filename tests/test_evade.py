@@ -5,6 +5,7 @@ import types
 import unittest
 
 import numpy as np
+import cv2
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from bot2 import evade  # noqa: E402
@@ -25,10 +26,32 @@ class DirectionTest(unittest.TestCase):
         self.assertEqual(len(c), 7)
         self.assertEqual(c[0][0], 380)
 
+    def test_road_pixel_distribution_picks_a_distant_connected_road(self):
+        frame = np.full((1080, 1920, 3), (45, 55, 66), np.uint8)
+        cv2.line(frame, (960, 540), (1500, 540), (101, 129, 147), 45)
+        cv2.line(frame, (1250, 540), (1450, 350), (101, 129, 147), 35)
+        cv2.circle(frame, (960, 540), 14, (0, 190, 240), -1)
+        target = evade.road_escape_target(frame, 520)
+        self.assertIsNotNone(target)
+        x, y, dx, dy = target
+        self.assertGreater(dx, 300)
+        self.assertLess(abs(dy), 300)
+        self.assertGreater(x, 1200)
+
+    def test_map_zoom_is_fixed_to_middle_before_analysis(self):
+        calls = []
+        ev = evade.Evader(types.SimpleNamespace(
+            click=lambda *xy: calls.append(("click", xy)),
+            drag=lambda *xy: calls.append(("drag", xy)),
+            sleep=lambda seconds: calls.append(("sleep", seconds))))
+        ev._set_mid_zoom()
+        self.assertEqual(calls[0], ("drag", evade.MAP_ZOOM_MAX + evade.MAP_ZOOM_MID))
+
 
 def make_bot(hp, auto_on=True):
     b = types.SimpleNamespace()
-    b.hp_cfg = {"enabled": True, "rest_enabled": True}
+    b.hp_cfg = {"enabled": True, "rest_enabled": True,
+                "evade_below": 0.20, "rest_resume": 0.80, "evade_resume": 1.0}
     b.dry_run = False
     b.hp = hp
     b._rest = None
@@ -58,8 +81,8 @@ def snap(auto_on, state="COMBAT"):
 
 class EvadeFlowTest(unittest.TestCase):
     def test_low_hp_flee_then_return_then_resume(self):
-        b = make_bot(0.25)
-        self.assertTrue(b.tick(snap(True), 0))                    # HP 25% → 회피 시작 (T 끄는 중)
+        b = make_bot(0.18)
+        self.assertTrue(b.tick(snap(True), 0))                    # HP 18% → 회피 시작 (T 끄는 중)
         self.assertEqual(b._rest, "off")
         self.assertTrue(b._evade_pending)
         self.assertTrue(b.tick(snap(True), 4))                    # T 누름
@@ -71,8 +94,11 @@ class EvadeFlowTest(unittest.TestCase):
         b.hp = 0.6
         self.assertTrue(b.tick(snap(False, "IDLE"), 20))          # 회복 중
         self.assertEqual(b.calls, ["flee"])
+        b.hp = 0.8
+        self.assertTrue(b.tick(snap(False, "IDLE"), 40))          # 회피 중에는 100%까지 계속 회복
+        self.assertEqual(b.calls, ["flee"])
         b.hp = 1.0
-        self.assertTrue(b.tick(snap(False, "IDLE"), 40))          # 회복 → 돌아가고 자동 사냥 켜기
+        self.assertTrue(b.tick(snap(False, "IDLE"), 50))          # 100% 회복 → 돌아가고 자동 사냥 켜기
         self.assertEqual(b.calls, ["flee", ("back", (380, 0))])
         self.assertIsNone(b._evade)
         self.assertEqual(b._rest, "on")
@@ -129,7 +155,7 @@ class AreaPickTest(unittest.TestCase):
         calls = []
         ev = evade.Evader.__new__(evade.Evader)
         ev.back_area = lambda tok: calls.append(("area", tok)) or True
-        ev._go = lambda offs: calls.append(("pin", offs)) or (1, 1)
+        ev._go = lambda offs, **kwargs: calls.append(("pin", offs)) or (1, 1)
         ev.back({"area": "아래광장", "dist": 300})
         ev.back((380, 0))
         self.assertEqual(calls[0][0], "area")

@@ -1,0 +1,6497 @@
+{
+  "source": "https://kkaebigg.com/data/skills.json",
+  "source_date": "2026-10-04",
+  "collected_at": "2026-10-31T21:37:24",
+  "progression_excluded": true,
+  "styles": [
+    "절명",
+    "연타",
+    "강타",
+    "척살",
+    "저격",
+    "주술",
+    "파멸",
+    "강인",
+    "기동",
+    "헌신",
+    "기만",
+    "제압"
+  ],
+  "style_icons": {
+    "절명": "/assets/icons/styles/jeolmyeong.png",
+    "연타": "/assets/icons/styles/yeonta.png",
+    "강타": "/assets/icons/styles/gangta.png",
+    "척살": "/assets/icons/styles/cheoksal.png",
+    "저격": "/assets/icons/styles/jeogyeok.png",
+    "주술": "/assets/icons/styles/jusul.png",
+    "파멸": "/assets/icons/styles/pamyeol.png",
+    "강인": "/assets/icons/styles/gangin.png",
+    "기동": "/assets/icons/styles/gidong.png",
+    "헌신": "/assets/icons/styles/heonsin.png",
+    "기만": "/assets/icons/styles/giman.png",
+    "제압": "/assets/icons/styles/jeap.png"
+  },
+  "style_colors": {
+    "절명": "#9E2B25",
+    "연타": "#B0471A",
+    "강타": "#8A5A12",
+    "척살": "#7A2E4F",
+    "저격": "#245C9A",
+    "주술": "#5B3D99",
+    "파멸": "#3F4F8F",
+    "강인": "#2F6B3A",
+    "기동": "#1D6A5A",
+    "헌신": "#6A5B12",
+    "기만": "#6B3F7A",
+    "제압": "#4A5560"
+  },
+  "skills": [
+    {
+      "id": 0,
+      "name": "연속 찌르기",
+      "source_name": "연속 찌르기",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-01-yeonsok-jjireugi.webp",
+      "ultimate": false,
+      "cooldown": 7.0,
+      "motion": 0.2,
+      "coefficient": 179.20000553131104,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "대상을 단검으로 연달아 찔러 피해를 2회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 질풍 부여 기세 보유 중 적중 시 자신에게 공격력의 15% 보호막 적용",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "질풍",
+          "lines": [
+            "스킬 시전 시 자신에게 질풍 부여"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "기세 (보호막)",
+          "lines": [
+            "기세 보유 중 적중 시 자신에게 공격력의 15% 보호막 적용"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "삼단 찌르기",
+      "source_name": "삼단 찌르기",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-02-samdan-jjireugi.webp",
+      "ultimate": false,
+      "cooldown": 6.0,
+      "motion": 0.4,
+      "coefficient": 153.90000343322754,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "대상을 단검으로 연달아 찔러 피해를 3회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "충격 대상 적중 시 51.3% 추가피해 1회 (PvP 25.6%) 타격 성공 시 대상에게 관통 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "충격 (추가 피해)",
+          "lines": [
+            "충격 대상 적중 시 51.3% 추가피해 1회 (PvP 25.6%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "관통",
+          "lines": [
+            "타격 성공 시 대상에게 관통 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "내려찍기(절명)",
+      "source_name": "내려찍기",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-03-naeryeojjikgi.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.15,
+      "coefficient": 205.8000087738037,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "단검을 강하게 내려찍어 피해를 1회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "타격 성공 시 대상에게 낙인 부여 파열 대상 적중 시 받는 피해 10% 증가",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "낙인",
+          "lines": [
+            "타격 성공 시 대상에게 낙인 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파열 (받는 피해 증가)",
+          "lines": [
+            "파열 대상 적중 시 받는 피해 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "기습",
+      "source_name": "기습",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-04-giseup.webp",
+      "ultimate": false,
+      "cooldown": 16.0,
+      "motion": 0.3,
+      "coefficient": 419.6000099182129,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "이동기"
+      ],
+      "description": "대상에게 순간이동한 뒤 단검으로 찔러 피해를 1회 입힙니다.",
+      "range": 7.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "",
+      "effect_details": []
+    },
+    {
+      "id": 4,
+      "name": "환영 참격",
+      "source_name": "환영 참격",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-05-hwanyeong-chamgyeok.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.53,
+      "coefficient": 207.2000026702881,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "대상을 빠르게 벤 뒤 그림자를 소환해 추가 공격으로 피해를 7회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "출혈",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "심장 절단",
+      "source_name": "심장 절단",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-06-simjang-jeoldan.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.3,
+      "coefficient": 206.99999928474426,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "대상의 심장을 강하게 베어 피해를 3회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "출혈 상태의 적에게 23%의 추가 피해 (PvP 11.5%) 적에게 경직을 부여해 움직임을 멈춥니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "추가 피해 (출혈)",
+          "lines": [
+            "출혈 상태의 적에게 23%의 추가 피해 (PvP 11.5%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "경직",
+          "lines": [
+            "적에게 경직을 부여해 움직임을 멈춥니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "찌르기",
+      "source_name": "찌르기",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-07-jjireugi.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.11,
+      "coefficient": 204.99999523162842,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "대상을 단검으로 빠르게 찔러 피해를 2회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 질풍 부여 낙인 대상 적중 시 자신의 체력을 공격력의 10%만큼 회복",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "질풍",
+          "lines": [
+            "스킬 시전 시 자신에게 질풍 부여"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "낙인 (체력 회복)",
+          "lines": [
+            "낙인 대상 적중 시 자신의 체력을 공격력의 10%만큼 회복"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "약점 베기",
+      "source_name": "약점 베기",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-08-yakjeom-begi.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.35,
+      "coefficient": 312.6000165939331,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "대상의 약점을 빠르게 베어 피해를 3회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "원소 보유 중 적중 시 104.1% 추가피해 1회 (PvP 52%) 타격 성공 시 대상에게 낙인 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소 (추가 피해)",
+          "lines": [
+            "원소 보유 중 적중 시 104.1% 추가피해 1회 (PvP 52%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "낙인",
+          "lines": [
+            "타격 성공 시 대상에게 낙인 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "은신",
+      "source_name": "은신",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-09-eunsin.webp",
+      "ultimate": false,
+      "cooldown": 25.0,
+      "motion": 0.0,
+      "coefficient": 0,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜",
+        "생존",
+        "이동기"
+      ],
+      "description": "10초 동안 투명 상태가 됩니다. 투명 상태는 공격 시 해제됩니다. 투명 상태에서 도술을 1회 재사용할 수 있으며, 연계하여 기습을 사용할 수 있습니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "투명 상태가 됩니다. 공격 시 해제됩니다. 적에게 경직을 부여해 움직임을 멈춥니다. 연계 도술",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "은신",
+          "lines": [
+            "투명 상태가 됩니다. 공격 시 해제됩니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "경직",
+          "lines": [
+            "적에게 경직을 부여해 움직임을 멈춥니다."
+          ]
+        },
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "암습",
+      "source_name": "암습",
+      "style": "절명",
+      "icon": "/assets/icons/skills/jeolmyeong-10-amseup.webp",
+      "ultimate": true,
+      "cooldown": 30.0,
+      "motion": 0.59,
+      "coefficient": 994.4000244140625,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "암살자의 환영으로 변신해 양손의 단검으로 대상을 강하게 내려찍어 피해를 4회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "주먹 지르기",
+      "source_name": "주먹 지르기",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-01-jumeok-jireugi.webp",
+      "ultimate": false,
+      "cooldown": 7.0,
+      "motion": 0.4,
+      "coefficient": 203.99999618530273,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "숨 돌릴 틈 없이 주먹을 연달아 내질러 피해를 4회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "정밀 보유 중 적중 시 자신의 받는 피해 10% 감소 타격 성공 시 대상에게 충격 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "정밀 (받는 피해 감소)",
+          "lines": [
+            "정밀 보유 중 적중 시 자신의 받는 피해 10% 감소"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "충격",
+          "lines": [
+            "타격 성공 시 대상에게 충격 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "휘둘러 내려치기",
+      "source_name": "휘둘러 내려치기",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-02-hwidulreo-naeryeochigi.webp",
+      "ultimate": false,
+      "cooldown": 6.0,
+      "motion": 0.3,
+      "coefficient": 174.29999113082886,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "편곤을 거세게 휘돌린 뒤 머리 위에서 내리꽂아 피해를 3회 입힙니다.",
+      "range": 1.8,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "낙인 대상 적중 시 자신에게 공격력의 15% 보호막 적용 타격 성공 시 대상에게 파쇄 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "낙인 (보호막)",
+          "lines": [
+            "낙인 대상 적중 시 자신에게 공격력의 15% 보호막 적용"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파쇄",
+          "lines": [
+            "타격 성공 시 대상에게 파쇄 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "묵직한 주먹",
+      "source_name": "묵직한 주먹",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-03-mukjikhan-jumeok.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.25,
+      "coefficient": 131.5999984741211,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "이동기"
+      ],
+      "description": "대상과의 거리를 단숨에 좁혀 묵직한 주먹을 꽂아 넣고 피해를 2회 입힙니다.",
+      "range": 2.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "이동 속도가 15% 증가합니다. 연계 도술",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "이동 속도 증가",
+          "lines": [
+            "이동 속도가 15% 증가합니다."
+          ]
+        },
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "연쇄 타격",
+      "source_name": "연쇄 타격",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-04-yeonswae-tagyeok.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.55,
+      "coefficient": 195.99999487400055,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "편곤을 쉼 없이 휘둘러 전방을 휩쓸며 피해를 5회 입힙니다.",
+      "range": 2.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "방어력이 10% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "방어력 감소",
+          "lines": [
+            "방어력이 10% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "회전 난격",
+      "source_name": "회전 난격",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-05-hoejeon-nangyeok.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 1.4,
+      "coefficient": 251.69999301433563,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "생존"
+      ],
+      "description": "편곤을 원형으로 크게 휘둘러 주변을 난도질하며 피해를 6회 입히고, 마무리 일격으로 피해를 1회 입힙니다.",
+      "range": 2.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "기세 보유 중 적중 시 자신의 체력을 공격력의 10%만큼 회복 타격 성공 시 대상에게 파쇄 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "기세 (체력 회복)",
+          "lines": [
+            "기세 보유 중 적중 시 자신의 체력을 공격력의 10%만큼 회복"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파쇄",
+          "lines": [
+            "타격 성공 시 대상에게 파쇄 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "집중 연타",
+      "source_name": "집중 연타",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-06-jipjung-yeonta.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 1.3,
+      "coefficient": 291.00000858306885,
+      "targets": 1,
+      "roles": [
+        "단일 딜"
+      ],
+      "description": "온 정신을 주먹 끝에 모아 피해를 5회 퍼붓고, 마지막 일격으로 피해를 1회 입힙니다.",
+      "range": 1.8,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "",
+      "effect_details": []
+    },
+    {
+      "id": 16,
+      "name": "난타",
+      "source_name": "난타",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-07-nanta.webp",
+      "ultimate": false,
+      "cooldown": 11.0,
+      "motion": 1.8,
+      "coefficient": 277.19999849796295,
+      "targets": 10,
+      "roles": [
+        "광역 딜",
+        "생존"
+      ],
+      "description": "혼을 실은 주먹을 폭풍처럼 내질러 전방에 피해를 14회 입힙니다.",
+      "range": 3.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "",
+      "effect_details": []
+    },
+    {
+      "id": 17,
+      "name": "폭주",
+      "source_name": "폭주",
+      "style": "연타",
+      "icon": "/assets/icons/skills/yeonta-08-pokju.webp",
+      "ultimate": true,
+      "cooldown": 50.0,
+      "motion": 3.0,
+      "coefficient": 1847.8000164031982,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "폭주하는 기세로 전방에 주먹을 퍼부어 피해를 10회 입히고, 마지막 강타로 피해를 1회 입힙니다.",
+      "range": 1.8,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "화상 상태의 적에게 매 타격마다 38.8% 추가 피해를 입힙니다. (PvP 19.4%) 시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "추가 피해 (화상)",
+          "lines": [
+            "화상 상태의 적에게 매 타격마다 38.8% 추가 피해를 입힙니다. (PvP 19.4%)"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "내려치기(강타)",
+      "source_name": "내려치기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-01-naeryeochigi.webp",
+      "ultimate": false,
+      "cooldown": 6.0,
+      "motion": 0.9,
+      "coefficient": 140.10000228881836,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "망치에 온몸의 무게를 실어 전방을 내려치고 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 기세 부여 파열 대상 적중 시 받는 피해 10% 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "기세",
+          "lines": [
+            "스킬 시전 시 자신에게 기세 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파열 (받는 피해 증가)",
+          "lines": [
+            "파열 대상 적중 시 받는 피해 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "올려치기",
+      "source_name": "올려치기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-02-olryeochigi.webp",
+      "ultimate": false,
+      "cooldown": 6.5,
+      "motion": 0.7,
+      "coefficient": 155.9999942779541,
+      "targets": 5,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "대검을 지면에서 힘차게 치켜올려 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 기세 부여 관통 대상 적중 시 방어력 10% 감소",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "기세",
+          "lines": [
+            "스킬 시전 시 자신에게 기세 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "관통 (방어력 감소)",
+          "lines": [
+            "관통 대상 적중 시 방어력 10% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "대검 찍기",
+      "source_name": "대검 찍기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-03-daegeom-jjikgi.webp",
+      "ultimate": false,
+      "cooldown": 7.0,
+      "motion": 0.7,
+      "coefficient": 165.10000228881836,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프"
+      ],
+      "description": "대검을 두 손으로 움켜쥐고 전방에 내리꽂아 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 기세 부여 정밀 보유 중 적중 시 자신의 주는 피해 10% 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "기세",
+          "lines": [
+            "스킬 시전 시 자신에게 기세 부여"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "정밀 (주는 피해 증가)",
+          "lines": [
+            "정밀 보유 중 적중 시 자신의 주는 피해 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "크게 베기",
+      "source_name": "크게 베기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-04-keuge-begi.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.7,
+      "coefficient": 285.19999980926514,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프"
+      ],
+      "description": "대검에 힘을 응축해 전방을 크게 가르며 차지 단계에 따라 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "정밀 보유 중 적중 시 자신의 치명타 적중 5 증가 타격 성공 시 대상에게 파열 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "정밀 (치명타 적중 증가)",
+          "lines": [
+            "정밀 보유 중 적중 시 자신의 치명타 적중 5 증가"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파열",
+          "lines": [
+            "타격 성공 시 대상에게 파열 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "연속 충격",
+      "source_name": "연속 충격",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-05-yeonsok-chunggyeok.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.9,
+      "coefficient": 302.39999294281006,
+      "targets": 5,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "망치로 지면을 깨뜨리고 충격을 연달아 폭발시켜 차지 단계에 따라 피해를 2회 입힙니다.",
+      "range": 2.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "타격 성공 시 대상에게 충격 부여 추적 대상 적중 시 방어력 10% 감소",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "충격",
+          "lines": [
+            "타격 성공 시 대상에게 충격 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "추적 (방어력 감소)",
+          "lines": [
+            "추적 대상 적중 시 방어력 10% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "휘둘러치기",
+      "source_name": "휘둘러치기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-06-hwidulreochigi.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.9,
+      "coefficient": 188.69999647140503,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "생존"
+      ],
+      "description": "망치를 크게 휘둘러 전방을 내려치고 다음 일격을 준비하며 피해를 1회 입힙니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "질풍 보유 중 적중 시 자신에게 공격력의 15% 보호막 적용 타격 성공 시 대상에게 파쇄 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "질풍 (보호막)",
+          "lines": [
+            "질풍 보유 중 적중 시 자신에게 공격력의 15% 보호막 적용"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파쇄",
+          "lines": [
+            "타격 성공 시 대상에게 파쇄 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "검기 날리기",
+      "source_name": "검기 날리기",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-07-geomgi-nalrigi.webp",
+      "ultimate": false,
+      "cooldown": 11.0,
+      "motion": 0.7,
+      "coefficient": 428.20000648498535,
+      "targets": 5,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "대검을 힘껏 휘둘러 날카로운 검기를 뿜어내고 차지 단계에 따라 피해를 1회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "타격 성공 시 대상에게 파열 부여 한기 대상 적중 시 받는 체력 치유 효과 10% 감소",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "파열",
+          "lines": [
+            "타격 성공 시 대상에게 파열 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "한기 (치유 효과 감소)",
+          "lines": [
+            "한기 대상 적중 시 받는 체력 치유 효과 10% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "검기 폭발",
+      "source_name": "검기 폭발",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-08-geomgi-pokbal.webp",
+      "ultimate": false,
+      "cooldown": 13.0,
+      "motion": 0.9,
+      "coefficient": 509.39998626708984,
+      "targets": 5,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "대검을 지면에 박아 힘을 응축한 뒤 폭발시키며 차지 단계에 따라 피해를 1회 입힙니다.",
+      "range": 3.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "방어력을 10% 증가시킵니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "방어력 증가",
+          "lines": [
+            "방어력을 10% 증가시킵니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "대검 강타",
+      "source_name": "대검 강타",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-09-daegeom-gangta.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 1.1,
+      "coefficient": 473.40002059936523,
+      "targets": 6,
+      "roles": [
+        "광역 딜",
+        "버프"
+      ],
+      "description": "몸을 회전시키며 대검에 힘을 모아 전방을 강타하고 차지 단계에 따라 피해를 2회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력을 10% 증가시킵니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "풀 차지 시 공격력 증가",
+          "lines": [
+            "공격력을 10% 증가시킵니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "돌풍 강격",
+      "source_name": "돌풍 강격",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-10-dolpung-ganggyeok.webp",
+      "ultimate": false,
+      "cooldown": 11.0,
+      "motion": 2.0,
+      "coefficient": 268.19999516010284,
+      "targets": 5,
+      "roles": [
+        "단일 딜",
+        "이동기"
+      ],
+      "description": "대검을 휘두르며 돌풍처럼 전진해 피해를 3회 입히고, 축적된 원심력으로 올려 베어 피해를 1회 입힙니다.",
+      "range": 3.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "",
+      "effect_details": []
+    },
+    {
+      "id": 28,
+      "name": "천벌",
+      "source_name": "천벌",
+      "style": "강타",
+      "icon": "/assets/icons/skills/gangta-11-cheonbeol.webp",
+      "ultimate": true,
+      "cooldown": 45.0,
+      "motion": 1.5,
+      "coefficient": 2335.4000091552734,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프",
+        "생존",
+        "이동기"
+      ],
+      "description": "하늘 높이 도약한 뒤 천벌처럼 망치를 내리꽂아 차지 단계에 따라 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다. 방어력을 10% 감소시킵니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "풀 차지 시 방어력 감소",
+          "lines": [
+            "방어력을 10% 감소시킵니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "먹 베기",
+      "source_name": "먹 베기",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-01-meok-begi.webp",
+      "ultimate": false,
+      "cooldown": 7.0,
+      "motion": 0.3,
+      "coefficient": 217.60001182556152,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "붓에 먹을 머금고 글씨를 쓰듯 단숨에 베어 피해를 1회 입힌 뒤, 먹 그림으로 피해를 1회 추가로 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "수호 보유 중 먹 베기 적중 시 자신의 체력을 공격력의 10%만큼 회복",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "수호 (체력 회복)",
+          "lines": [
+            "수호 보유 중 먹 베기 적중 시 자신의 체력을 공격력의 10%만큼 회복"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "name": "삼묵법",
+      "source_name": "삼묵법",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-02-sammukbeop.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 1.0,
+      "coefficient": 285.0999981164932,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "세 획의 먹선을 긋듯 빠르게 베어 피해를 3회 입히고, 완성된 먹 그림으로 피해를 1회 추가로 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "방어력이 10% 감소합니다. 적에게 경직을 부여해 움직임을 멈춥니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "방어력 감소",
+          "lines": [
+            "방어력이 10% 감소합니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "경직",
+          "lines": [
+            "적에게 경직을 부여해 움직임을 멈춥니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "name": "무수불축",
+      "source_name": "무수불축",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-03-musubulchuk.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.95,
+      "coefficient": 253.1999945640564,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "물 흐르듯 매끄럽게 발도해 피해를 6회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "체력이 25% 이하인 대상에게 주는 피해가 25% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (척살)",
+          "lines": [
+            "체력이 25% 이하인 대상에게 주는 피해가 25% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "name": "필력종횡",
+      "source_name": "필력종횡",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-04-pilryeokjonghoeng.webp",
+      "ultimate": false,
+      "cooldown": 7.0,
+      "motion": 0.7,
+      "coefficient": 219.1999912261963,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "먹선을 가로로 긋고 다시 세로로 내리그어 피해를 2회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "체력이 75% 이상인 대상에게 주는 피해가 25% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (척살)",
+          "lines": [
+            "체력이 75% 이상인 대상에게 주는 피해가 25% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "name": "묵영점정",
+      "source_name": "묵영점정",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-05-mukyeongjeomjeong.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.9,
+      "coefficient": 384.0999960899353,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "보이지 않을 만큼 빠르게 발도해 피해를 6회 입힌 뒤, 완성된 먹 그림자들이 일제히 나타나 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "체력이 50% 이하인 대상에게 주는 피해가 25% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (척살)",
+          "lines": [
+            "체력이 50% 이하인 대상에게 주는 피해가 25% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "name": "용사비등",
+      "source_name": "용사비등",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-06-yongsabideung.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.8,
+      "coefficient": 316.30001068115234,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "용이 치솟듯 부드럽게 회전하며 원심력을 검에 실어 피해를 1회 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "체력이 50% 이상인 대상에게 주는 피해가 25% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (척살)",
+          "lines": [
+            "체력이 50% 이상인 대상에게 주는 피해가 25% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "name": "일필휘지",
+      "source_name": "일필휘지",
+      "style": "척살",
+      "icon": "/assets/icons/skills/cheoksal-07-ilpilhwiji.webp",
+      "ultimate": true,
+      "cooldown": 50.0,
+      "motion": 1.0,
+      "coefficient": 1737.1999740600586,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "한 번의 붓놀림처럼 거침없이 발도해 피해를 2회 입히고, 먹 그림자가 뒤따라 피해를 2회 추가로 입힙니다.",
+      "range": 2.2,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "받는 피해 증가 상태의 적에게 기존 타격 피해가 10% 증가합니다. 시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (받는 피해 증가)",
+          "lines": [
+            "받는 피해 증가 상태의 적에게 기존 타격 피해가 10% 증가합니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "name": "밀쳐내는 화살",
+      "source_name": "밀쳐내는 화살",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-01-milchyeonaeneun-hwasal.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.3,
+      "coefficient": 215.79999923706055,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜"
+      ],
+      "description": "쇠뇌의 장력을 폭발시켜 적을 밀쳐내고 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 정밀 부여 충격 대상 적중 시 이동속도 20% 감소",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "정밀",
+          "lines": [
+            "스킬 시전 시 자신에게 정밀 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "충격 (이동속도 감소)",
+          "lines": [
+            "충격 대상 적중 시 이동속도 20% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "name": "반동 사격",
+      "source_name": "반동 사격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-02-bandong-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.3,
+      "coefficient": 238.89999389648438,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존",
+        "이동기"
+      ],
+      "description": "화살을 놓는 반동에 몸을 맡겨 뒤로 물러나며 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 정밀 부여 관통 대상 적중 시 자신의 받는 피해 10% 감소",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "정밀",
+          "lines": [
+            "스킬 시전 시 자신에게 정밀 부여"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "관통 (받는 피해 감소)",
+          "lines": [
+            "관통 대상 적중 시 자신의 받는 피해 10% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "name": "사격",
+      "source_name": "사격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-03-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 4.5,
+      "motion": 0.3,
+      "coefficient": 133.20000171661377,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프",
+        "버프"
+      ],
+      "description": "활시위를 힘껏 당겨 대상에게 묵직한 화살을 쏘아 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "파쇄 대상 적중 시 보호막 제거 및 44.4% 추가피해 1회 (PvP 14.4%) 타격 성공 시 대상에게 추적 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "파쇄 (보호막 제거/추가 피해)",
+          "lines": [
+            "파쇄 대상 적중 시 보호막 제거 및 44.4% 추가피해 1회 (PvP 14.4%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "추적",
+          "lines": [
+            "타격 성공 시 대상에게 추적 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "name": "쇠뇌 사격",
+      "source_name": "쇠뇌 사격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-04-soenoe-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 5.0,
+      "motion": 0.3,
+      "coefficient": 148.39999675750732,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "쇠뇌를 곧게 겨누어 날카로운 화살을 쏘아 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "한기 대상 적중 시 49.4% 추가피해 1회 (PvP 16%) 타격 성공 시 대상에게 추적 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "한기 (추가 피해)",
+          "lines": [
+            "한기 대상 적중 시 49.4% 추가피해 1회 (PvP 16%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "추적",
+          "lines": [
+            "타격 성공 시 대상에게 추적 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "name": "쐐기 화살",
+      "source_name": "쐐기 화살",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-05-sswaegi-hwasal.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.4,
+      "coefficient": 296.19998931884766,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "쐐기가 박힌 화살을 쇠뇌에 걸어 깊숙이 꽂아 넣고 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상의 보호막을 제거합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "보호막 제거",
+          "lines": [
+            "대상의 보호막을 제거합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "name": "이중 사격",
+      "source_name": "이중 사격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-06-ijung-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 5.5,
+      "motion": 0.3,
+      "coefficient": 163.1999969482422,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "한 번의 호흡에 두 화살을 잇달아 쏘아 피해를 2회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "질풍 보유 중 적중 시 54.4% 추가피해 1회 (PvP 17.6%) 타격 성공 시 대상에게 추적 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "질풍 (추가 피해)",
+          "lines": [
+            "질풍 보유 중 적중 시 54.4% 추가피해 1회 (PvP 17.6%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "추적",
+          "lines": [
+            "타격 성공 시 대상에게 추적 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "name": "일점 저격",
+      "source_name": "일점 저격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-07-iljeom-jeogyeok.webp",
+      "ultimate": false,
+      "cooldown": 15.0,
+      "motion": 0.3,
+      "coefficient": 557.2000026702881,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "온 힘을 활시위에 응축해 한 점을 조준하고, 차지 단계에 따라 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "마비 상태의 적에게 10%의 피해 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (마비)",
+          "lines": [
+            "마비 상태의 적에게 10%의 피해 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "name": "집중 사격",
+      "source_name": "집중 사격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-08-jipjung-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.3,
+      "coefficient": 239.59999084472656,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프"
+      ],
+      "description": "숨을 죽이고 대상의 움직임을 읽은 뒤 정확히 사격하여 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 15% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "이동 속도 증가",
+          "lines": [
+            "이동 속도가 15% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "name": "폭발하는 화살",
+      "source_name": "폭발하는 화살",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-09-pokbalhaneun-hwasal.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.45,
+      "coefficient": 362.69999742507935,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프",
+        "버프"
+      ],
+      "description": "불붙은 화살을 쇠뇌에 장전해 폭발시키며 피해를 3회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "빙결 상태의 적에게 40.3%의 추가 피해 (PvP 13%) 대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "추가 피해 (빙결)",
+          "lines": [
+            "빙결 상태의 적에게 40.3%의 추가 피해 (PvP 13%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "화상",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "name": "꿰뚫는 저격",
+      "source_name": "꿰뚫는 저격",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-10-kkwettulneun-jeogyeok.webp",
+      "ultimate": false,
+      "cooldown": 15.0,
+      "motion": 0.525,
+      "coefficient": 457.8000068664551,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "관통용 특수 화살을 쇠뇌에 장전해 연속으로 꿰뚫으며 피해를 2회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상이 받는 피해가 10% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "받는 피해 증가",
+          "lines": [
+            "대상이 받는 피해가 10% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "name": "정조준",
+      "source_name": "정조준",
+      "style": "저격",
+      "icon": "/assets/icons/skills/jeogyeok-11-jeongjojun.webp",
+      "ultimate": true,
+      "cooldown": 40.0,
+      "motion": 0.3,
+      "coefficient": 1579.3999671936035,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "거대한 쇠뇌를 펼쳐 대상의 급소를 정밀하게 겨눈 뒤 필살의 화살로 피해를 1회 입힙니다.",
+      "range": 8.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 적용된 출혈·화상·감전·약화 1개당 주는 피해가 15% 증가합니다. 시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "피해 증가 (상태이상)",
+          "lines": [
+            "대상에게 적용된 출혈·화상·감전·약화 1개당 주는 피해가 15% 증가합니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "name": "부적 던지기",
+      "source_name": "부적 던지기",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-01-bujeok-deonjigi.webp",
+      "ultimate": false,
+      "cooldown": 4.5,
+      "motion": 0.35,
+      "coefficient": 99.09999966621399,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "부적에 깃든 주력을 대상에게 날려 피해를 1회 입히고, 주위 적 1명에게 마지막 피해 계수의 50%의 피해를 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "치명타 저항을 1 감소시킵니다 (최대 100)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "약화",
+          "lines": [
+            "치명타 저항을 1 감소시킵니다 (최대 100)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "name": "살 날리기",
+      "source_name": "살 날리기",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-02-sal-nalrigi.webp",
+      "ultimate": false,
+      "cooldown": 5.0,
+      "motion": 0.35,
+      "coefficient": 110.30000448226929,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "날카로운 살기를 대상에게 날려 피해를 1회 입히고, 주위 적 1명에게 마지막 피해 계수의 50%의 피해를 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "치명타 저항을 1 감소시킵니다 (최대 100)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "약화",
+          "lines": [
+            "치명타 저항을 1 감소시킵니다 (최대 100)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "name": "신벌의 영역",
+      "source_name": "신벌의 영역",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-03-sinbeolui-yeongyeok.webp",
+      "ultimate": false,
+      "cooldown": 17.0,
+      "motion": 0.5,
+      "coefficient": 310.80000400543213,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "부적으로 대상을 표식한 뒤 신벌의 영역을 펼쳐 피해를 12회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "받는 회복량이 50% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "받는 회복 감소",
+          "lines": [
+            "받는 회복량이 50% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "name": "영혼 소용돌이",
+      "source_name": "영혼 소용돌이",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-04-yeonghon-soyongdoli.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.5,
+      "coefficient": 368.2000160217285,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "떠도는 영혼을 한곳에 끌어모아 소용돌이를 일으키고 피해를 14회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": true,
+      "mobility": false,
+      "effects": "방어력이 10% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "방어력 감소",
+          "lines": [
+            "방어력이 10% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "name": "저주 내리기",
+      "source_name": "저주 내리기",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-05-jeoju-naerigi.webp",
+      "ultimate": false,
+      "cooldown": 14.0,
+      "motion": 0.5,
+      "coefficient": 254.0000081062317,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "지면에 저주의 문양을 새겨 일정 범위를 잠식하고 피해를 10회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력이 10% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "공격력 감소",
+          "lines": [
+            "공격력이 10% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "name": "신내림",
+      "source_name": "신내림",
+      "style": "주술",
+      "icon": "/assets/icons/skills/jusul-06-sinnaerim.webp",
+      "ultimate": true,
+      "cooldown": 76.0,
+      "motion": 0.7,
+      "coefficient": 1074.6000051498413,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프",
+        "생존"
+      ],
+      "description": "신령의 기운을 불러내 일정 범위를 성역으로 뒤덮고 피해를 6회 입힙니다.",
+      "range": 6.0,
+      "radius": 3.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다. 지속적으로 중첩당 7% 피해를 입힙니다. 5중첩 시 반경 3m 내 최대 5명의 적에게 358.2% 피해를 입히고 중첩이 초기화됩니다. (PvP 1.7% · 152.2%) 받는 치명타 피해량이 30% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "강화 저주",
+          "lines": [
+            "지속적으로 중첩당 7% 피해를 입힙니다. 5중첩 시 반경 3m 내 최대 5명의 적에게 358.2% 피해를 입히고 중첩이 초기화됩니다. (PvP 1.7% · 152.2%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "받는 치명타 피해량 증가",
+          "lines": [
+            "받는 치명타 피해량이 30% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "name": "낙뢰",
+      "source_name": "낙뢰",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-01-nakroe.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.5,
+      "coefficient": 141.99999570846558,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "벼락을 떨어뜨려 대상과 주변의 적에게 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 원소 부여 관통 대상 적중 시 방어력 10% 감소",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소",
+          "lines": [
+            "스킬 시전 시 자신에게 원소 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "관통 (방어력 감소)",
+          "lines": [
+            "관통 대상 적중 시 방어력 10% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "name": "날카로운 얼음창",
+      "source_name": "날카로운 얼음창",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-02-nalkaroun-eoleumchang.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.5,
+      "coefficient": 142.0000046491623,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "생존"
+      ],
+      "description": "거대한 얼음창을 소환하여 범위 내 대상에게 피해를 5회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "기세 보유 중 적중 시 자신의 체력을 공격력의 10%만큼 회복 타격 성공 시 대상에게 한기 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "기세 (체력 회복)",
+          "lines": [
+            "기세 보유 중 적중 시 자신의 체력을 공격력의 10%만큼 회복"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "한기",
+          "lines": [
+            "타격 성공 시 대상에게 한기 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "name": "번개 폭풍",
+      "source_name": "번개 폭풍",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-03-beongae-pokpung.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.6,
+      "coefficient": 179.10000085830688,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프"
+      ],
+      "description": "번개 폭풍을 생성하여 범위 내 대상에게 피해를 3회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%) 대상을 마비시켜 행동 불가 상태로 만듭니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "감전",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "마비",
+          "lines": [
+            "대상을 마비시켜 행동 불가 상태로 만듭니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "name": "붕괴하는 대지",
+      "source_name": "붕괴하는 대지",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-04-bunggoehaneun-daeji.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.6,
+      "coefficient": 160.19999980926514,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프"
+      ],
+      "description": "대지를 붕괴시켜 범위 내 대상에게 피해를 2회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 원소 부여 추적 대상 적중 시 이동속도 20% 감소",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소",
+          "lines": [
+            "스킬 시전 시 자신에게 원소 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "추적 (이동속도 감소)",
+          "lines": [
+            "추적 대상 적중 시 이동속도 20% 감소"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "name": "서리의 잔향",
+      "source_name": "서리의 잔향",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-05-seoriui-janhyang.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.5,
+      "coefficient": 150.9999930858612,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프",
+        "이동기"
+      ],
+      "description": "서리 영역을 생성하고 뒤로 이동합니다.\n영역 내 대상에게 피해를 10회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 50% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "이동속도 감소",
+          "lines": [
+            "이동 속도가 50% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "name": "얼음화살",
+      "source_name": "얼음화살",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-06-eoleumhwasal.webp",
+      "ultimate": false,
+      "cooldown": 6.0,
+      "motion": 1.0,
+      "coefficient": 107.00000077486038,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프"
+      ],
+      "description": "얼음화살을 연달아 발사하여 대상과 주변의 적에게 피해를 5회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "원소 보유 중 적중 시 35.6% 추가피해 1회 (PvP 17.8%) 타격 성공 시 대상에게 한기 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소 (추가 피해)",
+          "lines": [
+            "원소 보유 중 적중 시 35.6% 추가피해 1회 (PvP 17.8%)"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "한기",
+          "lines": [
+            "타격 성공 시 대상에게 한기 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "name": "연쇄 번개",
+      "source_name": "연쇄 번개",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-07-yeonswae-beongae.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.5,
+      "coefficient": 141.99999570846558,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "전이 속성의 번개를 발사하여 최대 5명의 대상에게 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 원소 부여 파쇄 대상 적중 시 받는 피해 10% 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소",
+          "lines": [
+            "스킬 시전 시 자신에게 원소 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파쇄 (받는 피해 증가)",
+          "lines": [
+            "파쇄 대상 적중 시 받는 피해 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "name": "요혼격",
+      "source_name": "요혼격",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-08-yohongyeok.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.6,
+      "coefficient": 160.29999554157257,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "요기를 응축하여 대상에게 피해를 3회 입힙니다. 추가로 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상이 받는 피해가 10% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "받는 피해 증가",
+          "lines": [
+            "대상이 받는 피해가 10% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "name": "화염 분출",
+      "source_name": "화염 분출",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-09-hwayeom-bunchul.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.5,
+      "coefficient": 160.099995136261,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "화염을 분출하여 범위 내 대상에게 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "스킬 시전 시 자신에게 원소 부여 파쇄 대상 적중 시 받는 피해 10% 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "원소",
+          "lines": [
+            "스킬 시전 시 자신에게 원소 부여"
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "파쇄 (받는 피해 증가)",
+          "lines": [
+            "파쇄 대상 적중 시 받는 피해 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "name": "화염구",
+      "source_name": "화염구",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-10-hwayeomgu.webp",
+      "ultimate": false,
+      "cooldown": 11.0,
+      "motion": 0.5,
+      "coefficient": 196.70000076293945,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "화염구를 발사하여 대상과 주변의 적에게 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "화상",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "name": "요기 폭발",
+      "source_name": "요기 폭발",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-11-yogi-pokbal.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.6,
+      "coefficient": 178.4000039100647,
+      "targets": 10,
+      "roles": [
+        "단일 딜"
+      ],
+      "description": "응축된 요기를 폭발시켜 대상에게 피해를 4회 입힙니다. 추가로 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "",
+      "effect_details": []
+    },
+    {
+      "id": 64,
+      "name": "하늘의 심판",
+      "source_name": "하늘의 심판",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-12-haneului-simpan.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.6,
+      "coefficient": 216.30001068115234,
+      "targets": 4,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "거대한 운석을 소환하여 대상에게 피해를 1회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "화상",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "name": "대폭발",
+      "source_name": "대폭발",
+      "style": "파멸",
+      "icon": "/assets/icons/skills/pamyeol-13-daepokbal.webp",
+      "ultimate": true,
+      "cooldown": 50.0,
+      "motion": 0.6,
+      "coefficient": 972.6000308990479,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "정신 집중 상태에서 거대한 구체를 낙하시켜 범위 내 대상에게 피해를 3회 입힙니다.",
+      "range": 6.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "5명 이상 타격 시 피해량이 점차 감소하며 30명 일 때 20%의 피해를 입힙니다. 시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "다중 타격 피해 분산",
+          "lines": [
+            "5명 이상 타격 시 피해량이 점차 감소하며 30명 일 때 20%의 피해를 입힙니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "name": "강인한 의지",
+      "source_name": "강인한 의지",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-01-ganginhan-uiji.webp",
+      "ultimate": false,
+      "cooldown": 30.0,
+      "motion": 0.5,
+      "coefficient": 245.00000476837158,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "흔들리지 않는 의지로 기운을 방출해 주변 적에게 피해를 1회 입힙니다. 자신에게 강화 보호막을 부여합니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "[호법] 공격력의 35%에 해당하는 강화 보호막을 적용합니다. 보호막 지속 중 받는 피해가 20% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "강화 보호막",
+          "lines": [
+            "[호법] 공격력의 35%에 해당하는 강화 보호막을 적용합니다. 보호막 지속 중 받는 피해가 20% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "name": "방패 내려찍기",
+      "source_name": "방패 내려찍기",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-02-bangpae-naeryeojjikgi.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.5,
+      "coefficient": 134.80000495910645,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "방패를 지면에 내리꽂아 피해를 1회 입히고, 자신에게 받는 피해 감소 효과를 부여합니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "받는 피해를 15% 감소시킵니다. 스킬 시전 시 자신에게 수호 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "받는 피해 감소",
+          "lines": [
+            "받는 피해를 15% 감소시킵니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "수호",
+          "lines": [
+            "스킬 시전 시 자신에게 수호 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "name": "방패 밀기",
+      "source_name": "방패 밀기",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-03-bangpae-milgi.webp",
+      "ultimate": false,
+      "cooldown": 15.0,
+      "motion": 0.45,
+      "coefficient": 204.29999828338623,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "방패 뒤에 몸을 숨기고 거세게 밀어붙여 대상을 밀쳐내며 피해를 1회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전자의 공격력의 70%만큼 보호막을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 보호막",
+          "lines": [
+            "시전자의 공격력의 70%만큼 보호막을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "name": "방패 충격파",
+      "source_name": "방패 충격파",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-04-bangpae-chunggyeokpa.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.5,
+      "coefficient": 275.6999969482422,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "방패로 자신을 지키며 응축된 충격을 사방으로 터뜨려 피해를 1회 입힙니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전자의 공격력의 35%만큼 보호막을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신과 아군에게 보호막",
+          "lines": [
+            "시전자의 공격력의 35%만큼 보호막을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "name": "방패 치기",
+      "source_name": "방패 치기",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-05-bangpae-chigi.webp",
+      "ultimate": false,
+      "cooldown": 14.0,
+      "motion": 0.45,
+      "coefficient": 190.19999504089355,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "방패로 적을 쳐 피해를 1회 입히고, 자신의 방어력을 증가시킵니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "방어력을 30% 증가시킵니다. 스킬 시전 시 자신에게 수호 부여",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "방어력 증가",
+          "lines": [
+            "방어력을 30% 증가시킵니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "수호",
+          "lines": [
+            "스킬 시전 시 자신에게 수호 부여"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "name": "전투의 함성",
+      "source_name": "전투의 함성",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-06-jeontuui-hamseong.webp",
+      "ultimate": false,
+      "cooldown": 70.0,
+      "motion": 0.7,
+      "coefficient": 211.70001029968262,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "생존"
+      ],
+      "description": "전장을 울리는 함성으로 자신에게 군중 제어를 해제 후 면역을 부여하고, 주변 적을 밀쳐내며 피해를 1회 입힙니다. 어떤 상태에서도 사용할 수 있습니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "모든 상태 이상 효과에 면역이 됩니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 면역",
+          "lines": [
+            "모든 상태 이상 효과에 면역이 됩니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "name": "방패 낙하",
+      "source_name": "방패 낙하",
+      "style": "강인",
+      "icon": "/assets/icons/skills/gangin-07-bangpae-nakha.webp",
+      "ultimate": true,
+      "cooldown": 80.0,
+      "motion": 1.6,
+      "coefficient": 1277.9000282287598,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프",
+        "생존"
+      ],
+      "description": "거대한 방패를 하늘에서 떨어뜨리듯 내리꽂아 주변에 피해를 1회 입힙니다. 어떤 상태에서도 사용할 수 있습니다.",
+      "range": 1.6,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다. 대상을 기절시켜 행동 불가 상태로 만듭니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "기절",
+          "lines": [
+            "대상을 기절시켜 행동 불가 상태로 만듭니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "name": "급소 관통",
+      "source_name": "급소 관통",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-01-geupso-gwantong.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.7,
+      "coefficient": 189.900004863739,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프",
+        "이동기"
+      ],
+      "description": "그림자처럼 파고들어 급소에 단검을 깊숙이 찔러 피해를 1회 입힙니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "출혈",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "name": "도약 찌르기",
+      "source_name": "도약 찌르기",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-02-doyak-jjireugi.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.8,
+      "coefficient": 152.1999955177307,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존",
+        "이동기"
+      ],
+      "description": "도약과 함께 거리를 단숨에 좁혀 창끝으로 꿰뚫고 피해를 1회 입힙니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "수호 보유 중 도약 찌르기 적중 시 자신에게 공격력의 15% 보호막 적용",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "수호 (보호막)",
+          "lines": [
+            "수호 보유 중 도약 찌르기 적중 시 자신에게 공격력의 15% 보호막 적용"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "name": "쌍검 가르기",
+      "source_name": "쌍검 가르기",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-03-ssanggeom-gareugi.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.45,
+      "coefficient": 190.6000018119812,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "이동기"
+      ],
+      "description": "쌍검을 교차한 채 목표 지점까지 돌진하며 피해를 1회 입힙니다. 도술을 1회 재사용할 수 있습니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "속박 상태의 적에게 23.5%의 추가 피해 (PvP 11.7%) 연계 도술",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "추가 피해 (속박)",
+          "lines": [
+            "속박 상태의 적에게 23.5%의 추가 피해 (PvP 11.7%)"
+          ]
+        },
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "name": "후퇴 사격",
+      "source_name": "후퇴 사격",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-04-hutoe-sagyeok.webp",
+      "ultimate": false,
+      "cooldown": 8.0,
+      "motion": 0.7,
+      "coefficient": 151.69999599456787,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프",
+        "이동기"
+      ],
+      "description": "몸을 뒤로 날리며 전방을 향해 화살을 쏘아 피해를 1회 입힙니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 15% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "이동속도 감소",
+          "lines": [
+            "이동 속도가 15% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "name": "휩쓸어 베기",
+      "source_name": "휩쓸어 베기",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-05-hwipsseuleo-begi.webp",
+      "ultimate": false,
+      "cooldown": 9.0,
+      "motion": 0.8,
+      "coefficient": 172.39999771118164,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "생존",
+        "이동기"
+      ],
+      "description": "대상에게 돌진해 언월도로 주변을 크게 휩쓸며 피해를 2회 입힙니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": true,
+      "effects": "수호 보유 중 휩쓸어 베기 적중 시 자신의 방어력 10% 증가",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "수호 (방어력 증가)",
+          "lines": [
+            "수호 보유 중 휩쓸어 베기 적중 시 자신의 방어력 10% 증가"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "name": "월식",
+      "source_name": "월식",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-06-wolsik.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.7,
+      "coefficient": 154.40000295639038,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "이동기"
+      ],
+      "description": "자리에 그림자를 남기고 적에게 순간이동해 피해를 최대 3회 입힙니다. 도술을 1회 재사용할 수 있습니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "연계 도술",
+      "effect_details": [
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "name": "일섬",
+      "source_name": "일섬",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-07-ilseom.webp",
+      "ultimate": false,
+      "cooldown": 11.0,
+      "motion": 0.7,
+      "coefficient": 210.99998950958252,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "발도 자세에서 한 줄기 섬광으로 변해 전방을 가르며 경로상의 모든 대상에게 피해를 1회 입힙니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "감전",
+          "lines": [
+            "대상에게 지속적으로 공격력의 2%만큼 피해를 입힙니다. (PvP 3.6%)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "name": "연속 쇄도",
+      "source_name": "연속 쇄도",
+      "style": "기동",
+      "icon": "/assets/icons/skills/gidong-08-yeonsok-swaedo.webp",
+      "ultimate": true,
+      "cooldown": 30.0,
+      "motion": 0.45,
+      "coefficient": 952.0000457763672,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "생존"
+      ],
+      "description": "검광을 번뜩여 피해를 1회 입힙니다. 도술을 최대 3회 재사용할 수 있습니다.",
+      "range": 2.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다. 연계 도술",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        },
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "name": "불굴",
+      "source_name": "불굴",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-01-bulgul.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.7,
+      "coefficient": 137.30000257492065,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "자신의 위치에 영역을 생성해 범위 안의 적에게 피해를 1회 입히고, 자신과 아군에게 이로운 효과를 부여합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "치명타 저항, 회피, 도술 막기가 각각 100 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "불굴",
+          "lines": [
+            "치명타 저항, 회피, 도술 막기가 각각 100 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "name": "산들 바람",
+      "source_name": "산들 바람",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-02-sandeul-baram.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.7,
+      "coefficient": 137.50000298023224,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프"
+      ],
+      "description": "주변에 산들바람을 일으켜 적에게 피해를 5회 입히고, 자신과 아군의 이동 속도를 증가시킵니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 40% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "이동 속도 증가",
+          "lines": [
+            "이동 속도가 40% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "name": "생명의 축복",
+      "source_name": "생명의 축복",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-03-saengmyeongui-chukbok.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 0.7,
+      "coefficient": 0,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "지정된 범위에 생명의 축복이 깃든 영역을 펼쳐 아군의 생명력을 회복합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력의 35%만큼 즉시 회복합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "즉시 회복",
+          "lines": [
+            "공격력의 35%만큼 즉시 회복합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "name": "생명의 흐름",
+      "source_name": "생명의 흐름",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-04-saengmyeongui-heureum.webp",
+      "ultimate": false,
+      "cooldown": 15.0,
+      "motion": 0.7,
+      "coefficient": 0,
+      "targets": 1,
+      "roles": [
+        "버프",
+        "생존"
+      ],
+      "description": "생명의 힘을 고요한 리듬으로 맥동시켜 일정 시간 자신 또는 대상의 생명력을 회복합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력의 12%만큼 초당 1회 회복합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "체력 지속 회복",
+          "lines": [
+            "공격력의 12%만큼 초당 1회 회복합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "name": "최후의 저항",
+      "source_name": "최후의 저항",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-05-choehuui-jeohang.webp",
+      "ultimate": false,
+      "cooldown": 80.0,
+      "motion": 0.0,
+      "coefficient": 0,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "시전 즉시 자신에게 불사 효과를 부여합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "일정 시간 불사 상태가 되어 사망하지 않습니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "불사",
+          "lines": [
+            "일정 시간 불사 상태가 되어 사망하지 않습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "name": "용맹의 기운",
+      "source_name": "용맹의 기운",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-06-yongmaengui-giun.webp",
+      "ultimate": false,
+      "cooldown": 30.0,
+      "motion": 0.7,
+      "coefficient": 151.80000066757202,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "주변 적에게 피해를 2회 입히고, 자신과 아군에게 이로운 효과를 부여합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력이 15% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "공격력 증가",
+          "lines": [
+            "공격력이 15% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "name": "개전의 가호",
+      "source_name": "개전의 가호",
+      "style": "헌신",
+      "icon": "/assets/icons/skills/heonsin-07-gaejeonui-gaho.webp",
+      "ultimate": true,
+      "cooldown": 90.0,
+      "motion": 0.7,
+      "coefficient": 722.000002861023,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "버프",
+        "생존"
+      ],
+      "description": "자신의 위치에 개전의 가호를 펼쳐 적에게 피해를 5회 입히고, 자신과 아군에게 보호막과 이로운 효과를 부여합니다.",
+      "range": 5.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "공격력의 120%에 해당하는 보호막을 적용합니다. 치명타 적중 10 증가 치명타 피해 10% 증가 도술 재사용 대기시간을 10% 감소시킵니다. 시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "보호막",
+          "lines": [
+            "공격력의 120%에 해당하는 보호막을 적용합니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "치명타 적중 증가",
+          "lines": [
+            "치명타 적중 10 증가"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "치명타 피해 증가",
+          "lines": [
+            "치명타 피해 10% 증가"
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "도술 재사용 대기시간 감소",
+          "lines": [
+            "도술 재사용 대기시간을 10% 감소시킵니다."
+          ]
+        },
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "name": "간파의 눈",
+      "source_name": "간파의 눈",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-01-ganpaui-nun.webp",
+      "ultimate": false,
+      "cooldown": 40.0,
+      "motion": 1.0,
+      "coefficient": 0,
+      "targets": 1,
+      "roles": [
+        "버프"
+      ],
+      "description": "모든 속임수를 꿰뚫어 보는 눈을 유지합니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "은신을 감지합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "탐지 (은신)",
+          "lines": [
+            "은신을 감지합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 89,
+      "name": "공간 결계",
+      "source_name": "공간 결계",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-02-gonggan-gyeolgye.webp",
+      "ultimate": false,
+      "cooldown": 15.0,
+      "motion": 1.0,
+      "coefficient": 239.59999084472656,
+      "targets": 5,
+      "roles": [
+        "군중제어",
+        "단일 딜",
+        "디버프",
+        "생존"
+      ],
+      "description": "깃창을 공중에서 내리꽂아 공간을 봉쇄하고 피해를 4회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "받는 피해를 10% 감소시킵니다. 대상이 받는 피해가 10% 증가합니다.",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "받는 피해 감소",
+          "lines": [
+            "받는 피해를 10% 감소시킵니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "받는 피해 증가",
+          "lines": [
+            "대상이 받는 피해가 10% 증가합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "name": "광기의 칼놀림",
+      "source_name": "광기의 칼놀림",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-03-gwanggiui-kalnolrim.webp",
+      "ultimate": false,
+      "cooldown": 13.0,
+      "motion": 0.9,
+      "coefficient": 206.09999299049377,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어"
+      ],
+      "description": "광기에 물든 환영 단검으로 범위 내 대상을 난도질해 피해를 3회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상을 침묵시켜 도술 사용을 막습니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "침묵",
+          "lines": [
+            "대상을 침묵시켜 도술 사용을 막습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "name": "솟아오르는 창",
+      "source_name": "솟아오르는 창",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-04-sotaoreuneun-chang.webp",
+      "ultimate": false,
+      "cooldown": 16.0,
+      "motion": 0.6,
+      "coefficient": 254.29999828338623,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "지면 아래 숨겨둔 환영의 창을 솟구치게 해 적에게 피해를 1회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "받는 회복량이 50% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "받는 회복 감소",
+          "lines": [
+            "받는 회복량이 50% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 92,
+      "name": "슬쩍 베기",
+      "source_name": "슬쩍 베기",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-05-seuljjeok-begi.webp",
+      "ultimate": false,
+      "cooldown": 12.0,
+      "motion": 0.7,
+      "coefficient": 243.0999994277954,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "허공에서 환영의 단검을 꺼내 슬쩍 베어 피해를 1회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시야가 좁아집니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "암흑",
+          "lines": [
+            "시야가 좁아집니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 93,
+      "name": "어지럼 유발",
+      "source_name": "어지럼 유발",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-06-eojireom-yubal.webp",
+      "ultimate": false,
+      "cooldown": 10.0,
+      "motion": 0.8,
+      "coefficient": 190.9999966621399,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜"
+      ],
+      "description": "환영 단검을 원형으로 휘둘러 감각을 뒤흔들고 피해를 1회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 50% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "이동속도 감소",
+          "lines": [
+            "이동 속도가 50% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 94,
+      "name": "환상술",
+      "source_name": "환상술",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-07-hwansangsul.webp",
+      "ultimate": false,
+      "cooldown": 18.0,
+      "motion": 0.75,
+      "coefficient": 329.9000084400177,
+      "targets": 1,
+      "roles": [
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "허공을 가득 메운 환영 단검을 대상에게 내려꽂아 피해를 6회 입히고, 추가로 피해를 1회 입힙니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상의 보호막을 제거합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "보호막 제거",
+          "lines": [
+            "대상의 보호막을 제거합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "name": "회전하는 칼날",
+      "source_name": "회전하는 칼날",
+      "style": "기만",
+      "icon": "/assets/icons/skills/giman-08-hoejeonhaneun-kalnal.webp",
+      "ultimate": true,
+      "cooldown": 60.0,
+      "motion": 0.8,
+      "coefficient": 2044.0000534057617,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "디버프"
+      ],
+      "description": "회전하는 환영 칼날을 몸 주위에 둘러 피해를 14회 입힙니다. 타격 성공시 이로운 효과를 1개 제거합니다.",
+      "range": 5.5,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "타격마다 대상의 이로운 효과를 1개 제거합니다. [호법] 은 제거할 수 없습니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "이로운 효과 제거",
+          "lines": [
+            "타격마다 대상의 이로운 효과를 1개 제거합니다.",
+            "[호법] 은 제거할 수 없습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "name": "도깨비 불",
+      "source_name": "도깨비 불",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-01-dokkaebi-bul.webp",
+      "ultimate": false,
+      "cooldown": 13.0,
+      "motion": 1.0,
+      "coefficient": 176.9999921321869,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어"
+      ],
+      "description": "도깨비불을 불러내 대상 주변에서 연속으로 폭발시켜 피해를 6회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "변이 상태가 되어 이동을 제외한 행동을 할 수 없으며, 피해를 받으면 해제됩니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "변이",
+          "lines": [
+            "변이 상태가 되어 이동을 제외한 행동을 할 수 없으며, 피해를 받으면 해제됩니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 97,
+      "name": "머리치기",
+      "source_name": "머리치기",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-02-meorichigi.webp",
+      "ultimate": false,
+      "cooldown": 16.0,
+      "motion": 0.6,
+      "coefficient": 183.29999446868896,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어"
+      ],
+      "description": "봉을 머리 위로 치켜든 뒤 전방에 내리꽂아 피해를 1회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "4초 동안 대상을 침묵시켜 도술 사용을 막습니다. 4초 동안 이동속도가 50% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "침묵",
+          "lines": [
+            "4초 동안 대상을 침묵시켜 도술 사용을 막습니다."
+          ]
+        },
+        {
+          "type": "약화",
+          "name": "이동속도 감소",
+          "lines": [
+            "4초 동안 이동속도가 50% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 98,
+      "name": "쇠사슬 가시",
+      "source_name": "쇠사슬 가시",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-03-soesaseul-gasi.webp",
+      "ultimate": false,
+      "cooldown": 25.0,
+      "motion": 0.7,
+      "coefficient": 232.59999752044678,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜"
+      ],
+      "description": "가시 돋친 쇠사슬을 소환해 대상을 옭아매며 피해를 2회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상을 속박시켜 이동을 제한합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "속박",
+          "lines": [
+            "대상을 속박시켜 이동을 제한합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 99,
+      "name": "얼음 감옥",
+      "source_name": "얼음 감옥",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-04-eoleum-gamok.webp",
+      "ultimate": false,
+      "cooldown": 35.0,
+      "motion": 0.8,
+      "coefficient": 208.80000591278076,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜",
+        "디버프"
+      ],
+      "description": "대상을 얼음 감옥에 가두고 산산이 깨뜨려 피해를 2회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상을 빙결시켜 행동 불가 상태로 만듭니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "빙결",
+          "lines": [
+            "대상을 빙결시켜 행동 불가 상태로 만듭니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "name": "응축하는 바람",
+      "source_name": "응축하는 바람",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-05-eungchukhaneun-baram.webp",
+      "ultimate": false,
+      "cooldown": 18.0,
+      "motion": 0.6,
+      "coefficient": 205.8000087738037,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어"
+      ],
+      "description": "바람을 한 점에 응축해 자신의 위치에 폭발 영역을 만들고, 1초 후 피해를 1회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "수면 상태가 되어 행동할 수 없습니다. 피해를 받으면 해제됩니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "수면",
+          "lines": [
+            "수면 상태가 되어 행동할 수 없습니다. 피해를 받으면 해제됩니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "name": "지진",
+      "source_name": "지진",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-06-jijin.webp",
+      "ultimate": false,
+      "cooldown": 22.0,
+      "motion": 1.683,
+      "coefficient": 207.39998817443848,
+      "targets": 1,
+      "roles": [
+        "군중제어",
+        "단일 딜"
+      ],
+      "description": "지면을 강하게 내려쳐 균열을 만든 뒤 피해를 2회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "대상을 속박시켜 이동을 제한합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "속박",
+          "lines": [
+            "대상을 속박시켜 이동을 제한합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "회전 일격",
+      "source_name": "회전 일격",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-07-hoejeon-ilgyeok.webp",
+      "ultimate": false,
+      "cooldown": 20.0,
+      "motion": 1.2,
+      "coefficient": 209.20000076293945,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프"
+      ],
+      "description": "봉을 크게 회전시켜 주변을 휩쓴 뒤 강하게 내리쳐 피해를 1회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 75% 감소합니다.",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "이동속도 감소",
+          "lines": [
+            "이동 속도가 75% 감소합니다."
+          ]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "얼어붙은 대지",
+      "source_name": "얼어붙은 대지",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-08-eoleobuteun-daeji.webp",
+      "ultimate": false,
+      "cooldown": 28.0,
+      "motion": 1.0,
+      "coefficient": 232.39999115467072,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "군중제어",
+        "디버프"
+      ],
+      "description": "서리로 뒤덮어 범위 내 적에게 피해를 7회 입힙니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "이동 속도가 중첩당 15% 감소합니다. (최대 3중첩)",
+      "effect_details": [
+        {
+          "type": "약화",
+          "name": "얼어붙은 다리",
+          "lines": [
+            "이동 속도가 중첩당 15% 감소합니다. (최대 3중첩)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "사슬 묶기",
+      "source_name": "사슬 묶기",
+      "style": "제압",
+      "icon": "/assets/icons/skills/jeap-09-saseul-mukgi.webp",
+      "ultimate": true,
+      "cooldown": 30.0,
+      "motion": 0.5,
+      "coefficient": 957.6000094413757,
+      "targets": 5,
+      "roles": [
+        "광역 딜",
+        "생존",
+        "이동기"
+      ],
+      "description": "전방으로 이동하며 주변의 적에게 피해를 3회 입힙니다. 도술을 최대 2회까지 재사용할 수 있습니다.",
+      "range": 4.0,
+      "radius": 0.0,
+      "pull": false,
+      "mobility": false,
+      "effects": "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다. 연계 도술",
+      "effect_details": [
+        {
+          "type": "강화",
+          "name": "자신에게 슈퍼 아머",
+          "lines": [
+            "시전 중 자신에게 모든 군중 제어 효과에 대한 면역을 부여합니다."
+          ]
+        },
+        {
+          "type": "",
+          "name": "",
+          "lines": [
+            "연계 도술"
+          ]
+        }
+      ]
+    }
+  ],
+  "user_builds": [
+    {
+      "id": 1223,
+      "name": "[킹무덱]SOOP, 유튜브 단무 분당 70마리 0티어덱",
+      "likes": 327,
+      "skills": [
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "방패 충격파",
+        "검기 폭발",
+        "공간 결계"
+      ],
+      "order": [
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "번개 폭풍",
+        "방패 충격파",
+        "요기 폭발",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1247,
+      "name": "[유튜브 미남용사] 이강인덱 (여전히 좋음 해트트릭)",
+      "likes": 277,
+      "skills": [
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "생명의 흐름",
+        "방패 충격파",
+        "강인한 의지",
+        "공간 결계",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "대검 강타",
+        "방패 밀기",
+        "검기 폭발",
+        "방패 충격파",
+        "검기 날리기",
+        "강인한 의지"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1292,
+      "name": "[서강준덱] SOOP 김진솔 패치후 마지막버젼",
+      "likes": 158,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "연속 충격",
+        "방패 밀기",
+        "공간 결계",
+        "크게 베기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "크게 베기",
+        "검기 폭발",
+        "연속 충격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1227,
+      "name": "[킹무덱]체력 유지가 잘 될 시 기존 킹무덱 변형덱",
+      "likes": 145,
+      "skills": [
+        "하늘의 심판",
+        "검기 날리기",
+        "요기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "연쇄 번개",
+        "검기 폭발",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "연쇄 번개",
+        "방패 밀기",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": null
+    },
+    {
+      "id": 1232,
+      "name": "서강준 변형덱 (사냥터개선 후)",
+      "likes": 108,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "방패 충격파",
+        "방패 밀기",
+        "생명의 흐름",
+        "공간 결계",
+        "서리의 잔향"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "서리의 잔향",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "방패 충격파",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1221,
+      "name": "385K 주술 안전성 GOAT",
+      "likes": 94,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "저주 내리기",
+        "영혼 소용돌이",
+        "검기 폭발",
+        "방패 밀기",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "방패 밀기",
+        "생명의 흐름",
+        "공간 결계",
+        "저주 내리기",
+        "영혼 소용돌이",
+        "검기 폭발",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1272,
+      "name": "[쵸피-네모덱] 무과금파멸50메테오6돌 분당66.6마리",
+      "likes": 52,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "방패 밀기",
+        "생명의 흐름",
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "대검 강타",
+        "요기 폭발",
+        "번개 폭풍",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1305,
+      "name": "[트이니] 절명+저격 현시점 DPS1등 빌드",
+      "likes": 39,
+      "skills": [
+        "연속 찌르기",
+        "내려찍기(절명)",
+        "심장 절단",
+        "환영 참격",
+        "꿰뚫는 저격",
+        "찌르기",
+        "이중 사격",
+        "사격"
+      ],
+      "order": [
+        "꿰뚫는 저격",
+        "사격",
+        "연속 찌르기",
+        "이중 사격",
+        "내려찍기(절명)",
+        "찌르기",
+        "환영 참격",
+        "심장 절단"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1226,
+      "name": "절치덱",
+      "likes": 25,
+      "skills": [
+        "찌르기",
+        "내려찍기(절명)",
+        "연속 찌르기",
+        "살 날리기",
+        "꿰뚫는 저격",
+        "이중 사격",
+        "부적 던지기",
+        "사격"
+      ],
+      "order": [
+        "사격",
+        "연속 찌르기",
+        "이중 사격",
+        "꿰뚫는 저격",
+        "내려찍기(절명)",
+        "살 날리기",
+        "찌르기",
+        "부적 던지기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1224,
+      "name": "(옥쓔) 저주받은 주술빌드 V.2.5",
+      "likes": 18,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "신벌의 영역",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "검기 폭발",
+        "대검 강타",
+        "공간 결계"
+      ],
+      "order": [
+        "영혼 소용돌이",
+        "공간 결계",
+        "대검 강타",
+        "검기 폭발",
+        "저주 내리기",
+        "신벌의 영역",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1231,
+      "name": "[픽트] 도깨비의 세계 아니고 강타의 세계요.",
+      "likes": 15,
+      "skills": [
+        "검기 폭발",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "연속 충격",
+        "생명의 흐름",
+        "방패 밀기",
+        "요기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "대검 강타",
+        "검기 날리기",
+        "요기 폭발",
+        "방패 밀기",
+        "연속 충격",
+        "공간 결계",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1326,
+      "name": "[김호러] 6없찐덱 6돌 없을때 이게 최고입니다",
+      "likes": 13,
+      "skills": [
+        "요기 폭발",
+        "하늘의 심판",
+        "번개 폭풍",
+        "검기 폭발",
+        "방패 밀기",
+        "돌풍 강격",
+        "검기 날리기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "요기 폭발",
+        "하늘의 심판",
+        "돌풍 강격",
+        "번개 폭풍",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1259,
+      "name": "근접전용 절명,저격 강화 단일 DPS 상위",
+      "likes": 12,
+      "skills": [
+        "내려찍기(절명)",
+        "연속 찌르기",
+        "찌르기",
+        "휘둘러 내려치기",
+        "사격",
+        "이중 사격",
+        "꿰뚫는 저격",
+        "부적 던지기"
+      ],
+      "order": [
+        "꿰뚫는 저격",
+        "내려찍기(절명)",
+        "휘둘러 내려치기",
+        "찌르기",
+        "사격",
+        "연속 찌르기",
+        "이중 사격",
+        "부적 던지기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1304,
+      "name": "짬뽕지존덱",
+      "likes": 11,
+      "skills": [
+        "요기 폭발",
+        "하늘의 심판",
+        "번개 폭풍",
+        "강인한 의지",
+        "대검 강타",
+        "방패 밀기",
+        "방패 충격파",
+        "생명의 흐름"
+      ],
+      "order": [
+        "방패 밀기",
+        "방패 충격파",
+        "강인한 의지",
+        "생명의 흐름",
+        "대검 강타",
+        "번개 폭풍",
+        "하늘의 심판",
+        "요기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1233,
+      "name": "패치후 제자리 파밍",
+      "likes": 10,
+      "skills": [
+        "공간 결계",
+        "번개 폭풍",
+        "요기 폭발",
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "저주 내리기",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "저주 내리기",
+        "공간 결계",
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1251,
+      "name": "치지직 새초롬) 360k 분당 3000 / 메테오6돌",
+      "likes": 9,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "생명의 흐름",
+        "방패 충격파",
+        "방패 밀기",
+        "검기 폭발",
+        "대검 강타"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "하늘의 심판",
+        "검기 폭발",
+        "방패 충격파",
+        "요기 폭발",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1248,
+      "name": "우주 학살 덱 ( 주술기반 우물동굴 재료 파밍)",
+      "likes": 9,
+      "skills": [
+        "살 날리기",
+        "영혼 소용돌이",
+        "공간 결계",
+        "부적 던지기",
+        "연쇄 번개",
+        "요기 폭발",
+        "회전 난격",
+        "내려치기(강타)"
+      ],
+      "order": [
+        "공간 결계",
+        "연쇄 번개",
+        "요기 폭발",
+        "영혼 소용돌이",
+        "내려치기(강타)",
+        "회전 난격",
+        "부적 던지기",
+        "살 날리기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1244,
+      "name": "메테오6돌 강파오덱 385k 노물약 분당65마리",
+      "likes": 9,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "방패 밀기",
+        "생명의 흐름",
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "order": [
+        "대검 강타",
+        "방패 밀기",
+        "생명의 흐름",
+        "하늘의 심판",
+        "검기 폭발",
+        "요기 폭발",
+        "번개 폭풍",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1309,
+      "name": "[트이니] 1대1 OR 소규모 교전 최강빌드",
+      "likes": 7,
+      "skills": [
+        "약점 베기",
+        "내려찍기(절명)",
+        "방패 치기",
+        "환영 참격",
+        "꿰뚫는 저격",
+        "찌르기",
+        "이중 사격",
+        "기습"
+      ],
+      "order": [
+        "꿰뚫는 저격",
+        "방패 치기",
+        "내려찍기(절명)",
+        "약점 베기",
+        "이중 사격",
+        "찌르기",
+        "환영 참격",
+        "기습"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1300,
+      "name": "[기동맨 방게1이] 360++기동덱",
+      "likes": 7,
+      "skills": [
+        "쌍검 가르기",
+        "도약 찌르기",
+        "휩쓸어 베기",
+        "월식",
+        "일섬",
+        "방패 밀기",
+        "방패 치기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "일섬",
+        "방패 치기",
+        "휩쓸어 베기",
+        "도약 찌르기",
+        "방패 밀기",
+        "월식",
+        "쌍검 가르기"
+      ],
+      "ultimate": "연속 쇄도"
+    },
+    {
+      "id": 1281,
+      "name": "냠냠덱 385k 안정적 빌드(65마리 이상, 설명)",
+      "likes": 7,
+      "skills": [
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "생명의 흐름",
+        "대검 강타",
+        "검기 폭발",
+        "방패 밀기",
+        "방패 충격파"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "대검 강타",
+        "요기 폭발",
+        "방패 충격파",
+        "검기 폭발",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1229,
+      "name": "요기동굴 370k 15젠 50~60마리",
+      "likes": 7,
+      "skills": [
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "생명의 흐름",
+        "공간 결계",
+        "강인한 의지",
+        "연쇄 번개",
+        "저주 내리기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "강인한 의지",
+        "연쇄 번개",
+        "공간 결계",
+        "저주 내리기",
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1245,
+      "name": "비경 엽전 70~75마리",
+      "likes": 6,
+      "skills": [
+        "공간 결계",
+        "광기의 칼놀림",
+        "환상술",
+        "하늘의 심판",
+        "요기 폭발",
+        "솟아오르는 창",
+        "영혼 소용돌이",
+        "연쇄 번개"
+      ],
+      "order": [
+        "하늘의 심판",
+        "광기의 칼놀림",
+        "환상술",
+        "영혼 소용돌이",
+        "연쇄 번개",
+        "요기 폭발",
+        "솟아오르는 창",
+        "공간 결계"
+      ],
+      "ultimate": "회전하는 칼날"
+    },
+    {
+      "id": 1225,
+      "name": "쿨감메테오덱 폐광 분당 75++",
+      "likes": 6,
+      "skills": [
+        "생명의 흐름",
+        "방패 밀기",
+        "영혼 소용돌이",
+        "부적 던지기",
+        "살 날리기",
+        "검기 폭발",
+        "하늘의 심판",
+        "요기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "영혼 소용돌이",
+        "하늘의 심판",
+        "검기 폭발",
+        "요기 폭발",
+        "부적 던지기",
+        "살 날리기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1338,
+      "name": "[김호러] 저격 절명 단일",
+      "likes": 5,
+      "skills": [
+        "일점 저격",
+        "꿰뚫는 저격",
+        "폭발하는 화살",
+        "기습",
+        "내려찍기(절명)",
+        "환영 참격",
+        "심장 절단",
+        "검기 날리기"
+      ],
+      "order": [
+        "폭발하는 화살",
+        "환영 참격",
+        "심장 절단",
+        "꿰뚫는 저격",
+        "기습",
+        "검기 날리기",
+        "일점 저격",
+        "내려찍기(절명)"
+      ],
+      "ultimate": "정조준"
+    },
+    {
+      "id": 1314,
+      "name": "굴비덱",
+      "likes": 5,
+      "skills": [
+        "약점 베기",
+        "찌르기",
+        "심장 절단",
+        "환영 참격",
+        "기습",
+        "내려찍기(절명)",
+        "삼단 찌르기",
+        "연속 찌르기"
+      ],
+      "order": [
+        "기습",
+        "내려찍기(절명)",
+        "찌르기",
+        "약점 베기",
+        "연속 찌르기",
+        "삼단 찌르기",
+        "환영 참격",
+        "심장 절단"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1286,
+      "name": "[보똥덱 Mk.2] 님 6돌 없잖아요 덱 / 분당 55",
+      "likes": 5,
+      "skills": [
+        "검기 폭발",
+        "검기 날리기",
+        "대검 강타",
+        "생명의 흐름",
+        "방패 충격파",
+        "방패 밀기",
+        "요기 폭발",
+        "공간 결계"
+      ],
+      "order": [
+        "대검 강타",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1284,
+      "name": "쪼덱 [파멸 무과금용 덱] 385k 노물약 가능",
+      "likes": 5,
+      "skills": [
+        "번개 폭풍",
+        "검기 폭발",
+        "요기 폭발",
+        "서리의 잔향",
+        "생명의 흐름",
+        "공간 결계",
+        "하늘의 심판",
+        "방패 밀기"
+      ],
+      "order": [
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "번개 폭풍",
+        "서리의 잔향",
+        "검기 폭발",
+        "요기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1228,
+      "name": "[비룡승운] 무과금 385K 광역(물약x) 분 40마리",
+      "likes": 5,
+      "skills": [
+        "검기 폭발",
+        "대검 강타",
+        "검기 날리기",
+        "강인한 의지",
+        "방패 충격파",
+        "방패 치기",
+        "방패 밀기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 충격파",
+        "대검 강타",
+        "강인한 의지",
+        "검기 폭발",
+        "방패 치기",
+        "검기 날리기",
+        "방패 밀기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1325,
+      "name": "우물 사냥 분당 93마리 이상",
+      "likes": 4,
+      "skills": [
+        "요기 폭발",
+        "하늘의 심판",
+        "번개 폭풍",
+        "연쇄 번개",
+        "공간 결계",
+        "영혼 소용돌이",
+        "대검 강타",
+        "검기 폭발"
+      ],
+      "order": [
+        "공간 결계",
+        "영혼 소용돌이",
+        "번개 폭풍",
+        "하늘의 심판",
+        "연쇄 번개",
+        "요기 폭발",
+        "대검 강타",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1270,
+      "name": "10.31 패치 이후 멤버쉽 없을때 강타",
+      "likes": 4,
+      "skills": [
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발",
+        "방패 밀기",
+        "방패 충격파",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "방패 충격파",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1327,
+      "name": "기동단들아 일어나라",
+      "likes": 3,
+      "skills": [
+        "생명의 흐름",
+        "서리의 잔향",
+        "후퇴 사격",
+        "일섬",
+        "휩쓸어 베기",
+        "쌍검 가르기",
+        "방패 밀기",
+        "월식"
+      ],
+      "order": [
+        "생명의 흐름",
+        "서리의 잔향",
+        "후퇴 사격",
+        "일섬",
+        "휩쓸어 베기",
+        "쌍검 가르기",
+        "방패 밀기",
+        "월식"
+      ],
+      "ultimate": "연속 쇄도"
+    },
+    {
+      "id": 1315,
+      "name": "우물 분당 98++ 메테오 몰빵 올인덱",
+      "likes": 3,
+      "skills": [
+        "사격",
+        "이중 사격",
+        "영혼 소용돌이",
+        "부적 던지기",
+        "살 날리기",
+        "연쇄 번개",
+        "하늘의 심판",
+        "요기 폭발"
+      ],
+      "order": [
+        "하늘의 심판",
+        "영혼 소용돌이",
+        "요기 폭발",
+        "연쇄 번개",
+        "사격",
+        "이중 사격",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1313,
+      "name": "주술 연타 (난타 6돌까지 가볼 생각)",
+      "likes": 3,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "영혼 소용돌이",
+        "대검 찍기",
+        "회전 난격",
+        "난타",
+        "방패 밀기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 찍기",
+        "회전 난격",
+        "영혼 소용돌이",
+        "난타",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1310,
+      "name": "7칸 2힐2쉴드 15젠 오버파밍 버티고강타",
+      "likes": 3,
+      "skills": [
+        "검기 날리기",
+        "대검 강타",
+        "방패 밀기",
+        "검기 폭발",
+        "방패 충격파",
+        "생명의 축복",
+        "생명의 흐름"
+      ],
+      "order": [
+        "대검 강타",
+        "생명의 흐름",
+        "방패 충격파",
+        "생명의 축복",
+        "검기 폭발",
+        "방패 밀기",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1277,
+      "name": "전왕 PVP 세팅",
+      "likes": 3,
+      "skills": [
+        "내려찍기(절명)",
+        "심장 절단",
+        "환영 참격",
+        "찌르기",
+        "부적 던지기",
+        "꿰뚫는 저격",
+        "쌍검 가르기",
+        "기습"
+      ],
+      "order": [
+        "기습",
+        "꿰뚫는 저격",
+        "부적 던지기",
+        "찌르기",
+        "환영 참격",
+        "심장 절단",
+        "내려찍기(절명)",
+        "쌍검 가르기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1235,
+      "name": "메테오6돌 제자리 파멸 385 노포션",
+      "likes": 3,
+      "skills": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "방패 밀기",
+        "방패 충격파",
+        "대검 강타",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "대검 강타",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1312,
+      "name": "단일 보스(절명 연타)",
+      "likes": 2,
+      "skills": [
+        "삼단 찌르기",
+        "찌르기",
+        "내려찍기(절명)",
+        "주먹 지르기",
+        "집중 연타",
+        "묵직한 주먹",
+        "연쇄 타격",
+        "꿰뚫는 저격"
+      ],
+      "order": [
+        "꿰뚫는 저격",
+        "연쇄 타격",
+        "내려찍기(절명)",
+        "찌르기",
+        "집중 연타",
+        "묵직한 주먹",
+        "주먹 지르기",
+        "삼단 찌르기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1307,
+      "name": "[기동맨 방게1이]360++ 강타+기동덱",
+      "likes": 2,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "일섬",
+        "월식",
+        "생명의 흐름",
+        "서리의 잔향",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "일섬",
+        "방패 밀기",
+        "서리의 잔향",
+        "대검 강타",
+        "검기 날리기",
+        "월식",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1302,
+      "name": "안전370k 6돌 메테오 노물약 저스펙덱 분당 55이상",
+      "likes": 2,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "공간 결계",
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "서리의 잔향"
+      ],
+      "order": [
+        "대검 강타",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "하늘의 심판",
+        "서리의 잔향",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1297,
+      "name": "단일비경 445k",
+      "likes": 2,
+      "skills": [
+        "생명의 축복",
+        "내려찍기(절명)",
+        "찌르기",
+        "연속 찌르기",
+        "방패 밀기",
+        "꿰뚫는 저격",
+        "사격",
+        "이중 사격"
+      ],
+      "order": [
+        "생명의 축복",
+        "방패 밀기",
+        "꿰뚫는 저격",
+        "사격",
+        "내려찍기(절명)",
+        "찌르기",
+        "연속 찌르기",
+        "이중 사격"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1276,
+      "name": "몸약한 메테오 6돌 파멸(360K 1분 55~60마리)",
+      "likes": 2,
+      "skills": [
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "검기 폭발",
+        "생명의 축복"
+      ],
+      "order": [
+        "생명의 흐름",
+        "생명의 축복",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1273,
+      "name": "서스케덱(서강준 변형)",
+      "likes": 2,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "방패 충격파",
+        "방패 밀기",
+        "생명의 흐름",
+        "공간 결계",
+        "서리의 잔향"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 충격파",
+        "서리의 잔향",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "방패 밀기",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1254,
+      "name": "[무쿨덱] 무한 쿨감 덱",
+      "likes": 2,
+      "skills": [
+        "하늘의 심판",
+        "환상술",
+        "광기의 칼놀림",
+        "연쇄 번개",
+        "영혼 소용돌이",
+        "요기 폭발",
+        "공간 결계",
+        "부적 던지기"
+      ],
+      "order": [
+        "하늘의 심판",
+        "환상술",
+        "광기의 칼놀림",
+        "연쇄 번개",
+        "영혼 소용돌이",
+        "요기 폭발",
+        "공간 결계",
+        "부적 던지기"
+      ],
+      "ultimate": null
+    },
+    {
+      "id": 1241,
+      "name": "무과금 7칸 기만,파멸덱 (황무지,우물,비경 파밍용)",
+      "likes": 2,
+      "skills": [
+        "생명의 흐름",
+        "공간 결계",
+        "어지럼 유발",
+        "광기의 칼놀림",
+        "연쇄 번개",
+        "번개 폭풍",
+        "요기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "요기 폭발",
+        "번개 폭풍",
+        "연쇄 번개",
+        "어지럼 유발",
+        "광기의 칼놀림"
+      ],
+      "ultimate": "회전하는 칼날"
+    },
+    {
+      "id": 1236,
+      "name": "주술+강타 feat.낮은스킬랩 분당53~60",
+      "likes": 2,
+      "skills": [
+        "영혼 소용돌이",
+        "살 날리기",
+        "부적 던지기",
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "영혼 소용돌이",
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1337,
+      "name": "챠미덱",
+      "likes": 1,
+      "skills": [
+        "공간 결계",
+        "광기의 칼놀림",
+        "어지럼 유발",
+        "방패 밀기",
+        "검기 폭발",
+        "내려치기(강타)",
+        "크게 베기",
+        "꿰뚫는 저격"
+      ],
+      "order": [
+        "공간 결계",
+        "꿰뚫는 저격",
+        "어지럼 유발",
+        "광기의 칼놀림",
+        "크게 베기",
+        "내려치기(강타)",
+        "방패 밀기",
+        "검기 폭발"
+      ],
+      "ultimate": "회전하는 칼날"
+    },
+    {
+      "id": 1335,
+      "name": "385 기만 1분60마리",
+      "likes": 1,
+      "skills": [
+        "솟아오르는 창",
+        "환상술",
+        "광기의 칼놀림",
+        "방패 충격파",
+        "생명의 흐름",
+        "방패 밀기",
+        "검기 폭발",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "환상술",
+        "공간 결계",
+        "방패 밀기",
+        "검기 폭발",
+        "방패 충격파",
+        "솟아오르는 창",
+        "광기의 칼놀림"
+      ],
+      "ultimate": "회전하는 칼날"
+    },
+    {
+      "id": 1334,
+      "name": "쿨쿨덱",
+      "likes": 1,
+      "skills": [
+        "삼단 찌르기",
+        "내려찍기(절명)",
+        "심장 절단",
+        "환영 참격",
+        "부적 던지기",
+        "찌르기",
+        "이중 사격",
+        "사격"
+      ],
+      "order": [
+        "사격",
+        "이중 사격",
+        "내려찍기(절명)",
+        "찌르기",
+        "삼단 찌르기",
+        "환영 참격",
+        "심장 절단",
+        "부적 던지기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1328,
+      "name": "(저격고점) 높은 dps 상태이상 저격",
+      "likes": 1,
+      "skills": [
+        "폭발하는 화살",
+        "꿰뚫는 저격",
+        "일점 저격",
+        "기습",
+        "환영 참격",
+        "번개 폭풍",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "order": [
+        "기습",
+        "환영 참격",
+        "폭발하는 화살",
+        "꿰뚫는 저격",
+        "번개 폭풍",
+        "일점 저격",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "정조준"
+    },
+    {
+      "id": 1322,
+      "name": "제자리사냥 주술 강타덱",
+      "likes": 1,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "영혼 소용돌이",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "돌풍 강격",
+        "검기 폭발"
+      ],
+      "order": [
+        "영혼 소용돌이",
+        "공간 결계",
+        "방패 밀기",
+        "생명의 흐름",
+        "검기 폭발",
+        "돌풍 강격",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1320,
+      "name": "메테오 6돌이전 깨떡변형 파멸강타 우물 80마리",
+      "likes": 1,
+      "skills": [
+        "요기 폭발",
+        "연쇄 번개",
+        "번개 폭풍",
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "공간 결계",
+        "방패 충격파"
+      ],
+      "order": [
+        "방패 충격파",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발",
+        "연쇄 번개",
+        "번개 폭풍",
+        "대검 강타",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1317,
+      "name": "ㅇㅇㅇㅇ",
+      "likes": 1,
+      "skills": [
+        "찌르기",
+        "삼단 찌르기",
+        "내려찍기(절명)",
+        "휘둘러 내려치기",
+        "사격",
+        "쇠뇌 사격",
+        "꿰뚫는 저격",
+        "이중 사격"
+      ],
+      "order": [
+        "쇠뇌 사격",
+        "사격",
+        "휘둘러 내려치기",
+        "찌르기",
+        "이중 사격",
+        "삼단 찌르기",
+        "꿰뚫는 저격",
+        "내려찍기(절명)"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1311,
+      "name": "[파멸+강타덱} 360k 노물약 분 당 50마리 덱",
+      "likes": 1,
+      "skills": [
+        "연쇄 번개",
+        "요기 폭발",
+        "하늘의 심판",
+        "번개 폭풍",
+        "검기 폭발",
+        "공간 결계",
+        "방패 밀기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "공간 결계",
+        "생명의 흐름",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "요기 폭발",
+        "연쇄 번개",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1308,
+      "name": "동투력 제자리 사냥 분당 70+",
+      "likes": 1,
+      "skills": [
+        "공간 결계",
+        "영혼 소용돌이",
+        "부적 던지기",
+        "살 날리기",
+        "생명의 흐름",
+        "연쇄 번개",
+        "요기 폭발",
+        "번개 폭풍"
+      ],
+      "order": [
+        "공간 결계",
+        "연쇄 번개",
+        "요기 폭발",
+        "번개 폭풍",
+        "영혼 소용돌이",
+        "부적 던지기",
+        "살 날리기",
+        "생명의 흐름"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1303,
+      "name": "파멸 평민덱",
+      "likes": 1,
+      "skills": [
+        "대검 강타",
+        "검기 폭발",
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "생명의 흐름",
+        "공간 결계",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "대검 강타",
+        "검기 폭발",
+        "번개 폭풍",
+        "요기 폭발",
+        "하늘의 심판"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1301,
+      "name": "쪼덱[파멸 무과금 385k] 파멸30강수준",
+      "likes": 1,
+      "skills": [
+        "번개 폭풍",
+        "검기 폭발",
+        "요기 폭발",
+        "서리의 잔향",
+        "생명의 흐름",
+        "공간 결계",
+        "하늘의 심판",
+        "방패 밀기"
+      ],
+      "order": [
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "번개 폭풍",
+        "서리의 잔향",
+        "요기 폭발",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1299,
+      "name": "동투력 사냥터 제자리 사냥 분당70+",
+      "likes": 1,
+      "skills": [
+        "연쇄 번개",
+        "요기 폭발",
+        "하늘의 심판",
+        "방패 밀기",
+        "검기 폭발",
+        "생명의 흐름",
+        "영혼 소용돌이",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "영혼 소용돌이",
+        "공간 결계",
+        "방패 밀기",
+        "검기 폭발",
+        "연쇄 번개",
+        "요기 폭발",
+        "하늘의 심판"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1291,
+      "name": "[파멸,강타덱] 360k 노물약 분 당40마리",
+      "likes": 1,
+      "skills": [
+        "연쇄 번개",
+        "서리의 잔향",
+        "요기 폭발",
+        "대검 강타",
+        "검기 폭발",
+        "공간 결계",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "공간 결계",
+        "연쇄 번개",
+        "서리의 잔향",
+        "대검 강타",
+        "검기 폭발",
+        "요기 폭발",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1290,
+      "name": "385K 파멸 안전성 GOAT / 분당 50~60 ▾",
+      "likes": 1,
+      "skills": [
+        "하늘의 심판",
+        "서리의 잔향",
+        "생명의 흐름",
+        "방패 밀기",
+        "요기 폭발",
+        "대검 강타",
+        "방패 충격파",
+        "번개 폭풍"
+      ],
+      "order": [
+        "하늘의 심판",
+        "서리의 잔향",
+        "생명의 흐름",
+        "방패 밀기",
+        "요기 폭발",
+        "대검 강타",
+        "방패 충격파",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1285,
+      "name": "파멸 1힐 제자리 중소과금~랭커용 / 분당 70이상",
+      "likes": 1,
+      "skills": [
+        "하늘의 심판",
+        "연쇄 번개",
+        "검기 폭발",
+        "요기 폭발",
+        "환상술",
+        "번개 폭풍",
+        "화염 분출",
+        "생명의 흐름"
+      ],
+      "order": [
+        "하늘의 심판",
+        "생명의 흐름",
+        "검기 폭발",
+        "요기 폭발",
+        "환상술",
+        "번개 폭풍",
+        "화염 분출",
+        "연쇄 번개"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1267,
+      "name": "370k 제자리 광역 29만 투력 분당 60마리 풀피유",
+      "likes": 1,
+      "skills": [
+        "검기 폭발",
+        "검기 날리기",
+        "저주 내리기",
+        "살 날리기",
+        "부적 던지기",
+        "방패 밀기",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "저주 내리기",
+        "검기 폭발",
+        "검기 날리기",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1263,
+      "name": "[망묘덱] 아슬 아슬 생존하면서 광역사냥",
+      "likes": 1,
+      "skills": [
+        "번개 폭풍",
+        "요기 폭발",
+        "하늘의 심판",
+        "검기 폭발",
+        "방패 밀기",
+        "강인한 의지",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "강인한 의지",
+        "공간 결계",
+        "검기 폭발",
+        "요기 폭발",
+        "번개 폭풍",
+        "하늘의 심판"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1253,
+      "name": "❄️☃️서리 너무싫어 강타덱",
+      "likes": 1,
+      "skills": [
+        "검기 폭발",
+        "검기 날리기",
+        "연속 충격",
+        "대검 강타",
+        "저주 내리기",
+        "방패 밀기",
+        "생명의 축복",
+        "요기 폭발"
+      ],
+      "order": [
+        "생명의 축복",
+        "방패 밀기",
+        "저주 내리기",
+        "대검 강타",
+        "검기 날리기",
+        "요기 폭발",
+        "검기 폭발",
+        "연속 충격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1242,
+      "name": "서강준덱",
+      "likes": 1,
+      "skills": [
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "생명의 흐름",
+        "서리의 잔향",
+        "요기 폭발",
+        "방패 밀기",
+        "방패 충격파"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "서리의 잔향",
+        "대검 강타",
+        "검기 날리기",
+        "요기 폭발",
+        "방패 충격파",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1240,
+      "name": "해강준 마릿수 보장",
+      "likes": 1,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "방패 충격파",
+        "방패 밀기",
+        "생명의 흐름",
+        "요기 폭발",
+        "영혼 소용돌이"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "영혼 소용돌이",
+        "대검 강타",
+        "검기 날리기",
+        "방패 충격파",
+        "요기 폭발",
+        "검기 폭발"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1340,
+      "name": "[유재천덱] 니가 6메테오 밖에 없어? 그럼 이거써그냥",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "붕괴하는 대지",
+        "요기 폭발",
+        "화염 분출",
+        "번개 폭풍",
+        "서리의 잔향",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "서리의 잔향",
+        "하늘의 심판",
+        "붕괴하는 대지",
+        "요기 폭발",
+        "화염 분출",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1339,
+      "name": "절명 연타",
+      "likes": 0,
+      "skills": [
+        "연속 찌르기",
+        "삼단 찌르기",
+        "내려찍기(절명)",
+        "찌르기",
+        "부적 던지기",
+        "묵직한 주먹",
+        "주먹 지르기",
+        "올려치기"
+      ],
+      "order": [
+        "묵직한 주먹",
+        "주먹 지르기",
+        "삼단 찌르기",
+        "올려치기",
+        "연속 찌르기",
+        "내려찍기(절명)",
+        "찌르기",
+        "부적 던지기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1336,
+      "name": "다다익선 마리덱 (마릿수는 제일 많이 나옴)",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "연쇄 번개",
+        "번개 폭풍",
+        "공간 결계",
+        "검기 폭발",
+        "검기 날리기",
+        "영혼 소용돌이"
+      ],
+      "order": [
+        "공간 결계",
+        "영혼 소용돌이",
+        "번개 폭풍",
+        "하늘의 심판",
+        "연쇄 번개",
+        "요기 폭발",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1333,
+      "name": "[묘씨]370 단일비경 안전자사 박보검덱",
+      "likes": 0,
+      "skills": [
+        "삼단 찌르기",
+        "내려찍기(절명)",
+        "찌르기",
+        "생명의 축복",
+        "방패 치기",
+        "환영 참격",
+        "심장 절단",
+        "이중 사격"
+      ],
+      "order": [
+        "생명의 축복",
+        "방패 치기",
+        "삼단 찌르기",
+        "내려찍기(절명)",
+        "찌르기",
+        "환영 참격",
+        "심장 절단",
+        "이중 사격"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1332,
+      "name": "우물동굴 여포 6돌 메테오빌드",
+      "likes": 0,
+      "skills": [
+        "영혼 소용돌이",
+        "살 날리기",
+        "부적 던지기",
+        "쇠뇌 사격",
+        "사격",
+        "이중 사격",
+        "요기 폭발",
+        "하늘의 심판"
+      ],
+      "order": [
+        "하늘의 심판",
+        "요기 폭발",
+        "영혼 소용돌이",
+        "살 날리기",
+        "부적 던지기",
+        "쇠뇌 사격",
+        "사격",
+        "이중 사격"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1331,
+      "name": "절명 연타",
+      "likes": 0,
+      "skills": [
+        "휘둘러 내려치기",
+        "연속 찌르기",
+        "내려찍기(절명)",
+        "삼단 찌르기",
+        "주먹 지르기",
+        "묵직한 주먹",
+        "올려치기",
+        "이중 사격"
+      ],
+      "order": [
+        "묵직한 주먹",
+        "주먹 지르기",
+        "삼단 찌르기",
+        "올려치기",
+        "연속 찌르기",
+        "이중 사격",
+        "내려찍기(절명)",
+        "휘둘러 내려치기"
+      ],
+      "ultimate": "암습"
+    },
+    {
+      "id": 1329,
+      "name": "기만+주술덱",
+      "likes": 0,
+      "skills": [
+        "공간 결계",
+        "광기의 칼놀림",
+        "솟아오르는 창",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "생명의 축복",
+        "번개 폭풍"
+      ],
+      "order": [
+        "공간 결계",
+        "광기의 칼놀림",
+        "솟아오르는 창",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "생명의 축복",
+        "번개 폭풍"
+      ],
+      "ultimate": "회전하는 칼날"
+    },
+    {
+      "id": 1324,
+      "name": "[김대표]360k 6돌기준 파멸강타덱",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "연쇄 번개",
+        "공간 결계",
+        "방패 밀기",
+        "생명의 흐름",
+        "검기 날리기",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "연쇄 번개",
+        "방패 밀기",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1321,
+      "name": "[540°덱] 무소과금 385K 사냥가능 by XES",
+      "likes": 0,
+      "skills": [
+        "크게 베기",
+        "대검 강타",
+        "검기 폭발",
+        "돌풍 강격",
+        "번개 폭풍",
+        "방패 충격파",
+        "방패 밀기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "번개 폭풍",
+        "생명의 흐름",
+        "대검 강타",
+        "방패 밀기",
+        "검기 폭발",
+        "방패 충격파",
+        "돌풍 강격",
+        "크게 베기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1318,
+      "name": "닭복근덱",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "검기 폭발",
+        "대검 강타",
+        "검기 날리기",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "요기 폭발",
+        "검기 폭발",
+        "대검 강타",
+        "검기 날리기",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1316,
+      "name": "나만 쓸수있는 530k 분당 75마리이상",
+      "likes": 0,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "공간 결계",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "부적 던지기",
+        "살 날리기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1306,
+      "name": "[유튜브 슛티비] 공이뻥덱 385K 쉽쥬",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발",
+        "방패 밀기",
+        "강인한 의지",
+        "용맹의 기운",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "용맹의 기운",
+        "방패 밀기",
+        "강인한 의지",
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1298,
+      "name": "385k 분당 50마리 빌드",
+      "likes": 0,
+      "skills": [
+        "검기 폭발",
+        "검기 날리기",
+        "대검 강타",
+        "영혼 소용돌이",
+        "생명의 흐름",
+        "방패 밀기",
+        "강인한 의지",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "대검 강타",
+        "방패 밀기",
+        "영혼 소용돌이",
+        "검기 폭발",
+        "검기 날리기",
+        "강인한 의지"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1296,
+      "name": "띠보 해월2 10월31일 패치 기준 설명 있음",
+      "likes": 0,
+      "skills": [
+        "검기 폭발",
+        "대검 강타",
+        "검기 날리기",
+        "방패 충격파",
+        "강인한 의지",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "저주 내리기",
+        "영혼 소용돌이",
+        "방패 충격파",
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발",
+        "강인한 의지"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1295,
+      "name": "메푸어 요기동굴",
+      "likes": 0,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "하늘의 심판",
+        "강인한 의지",
+        "방패 밀기",
+        "방패 충격파",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "대검 강타",
+        "방패 충격파",
+        "검기 폭발",
+        "강인한 의지",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1294,
+      "name": "주술회전덱(재료파밍용, 설명참조)",
+      "likes": 0,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "저주 내리기",
+        "영혼 소용돌이",
+        "회전 난격",
+        "연쇄 번개",
+        "올려치기",
+        "공간 결계"
+      ],
+      "order": [
+        "공간 결계",
+        "연쇄 번개",
+        "영혼 소용돌이",
+        "올려치기",
+        "회전 난격",
+        "저주 내리기",
+        "살 날리기",
+        "부적 던지기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1293,
+      "name": "[옥순덱] 파멸 + 강타 15마리 패치이후 변경완",
+      "likes": 0,
+      "skills": [
+        "검기 폭발",
+        "대검 강타",
+        "연쇄 번개",
+        "요기 폭발",
+        "번개 폭풍",
+        "방패 밀기",
+        "생명의 흐름",
+        "하늘의 심판"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "연쇄 번개",
+        "검기 폭발",
+        "대검 강타"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1289,
+      "name": "360k 올 파멸 분당 49마리 6메테오x",
+      "likes": 0,
+      "skills": [
+        "요기 폭발",
+        "하늘의 심판",
+        "화염 분출",
+        "번개 폭풍",
+        "검기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "강인한 의지"
+      ],
+      "order": [
+        "방패 밀기",
+        "생명의 흐름",
+        "번개 폭풍",
+        "검기 폭발",
+        "강인한 의지",
+        "요기 폭발",
+        "하늘의 심판",
+        "화염 분출"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1288,
+      "name": "원힐 주술 강타덱 / 6돌시 효율 Goat",
+      "likes": 0,
+      "skills": [
+        "대검 강타",
+        "부적 던지기",
+        "살 날리기",
+        "저주 내리기",
+        "검기 폭발",
+        "돌풍 강격",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "검기 폭발",
+        "대검 강타",
+        "저주 내리기",
+        "돌풍 강격",
+        "부적 던지기",
+        "살 날리기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1287,
+      "name": "주술신식을 이용한 짬뽕덱(370k 분당 55~60)",
+      "likes": 0,
+      "skills": [
+        "부적 던지기",
+        "살 날리기",
+        "저주 내리기",
+        "검기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "요기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "요기 폭발",
+        "검기 폭발",
+        "저주 내리기",
+        "부적 던지기",
+        "살 날리기"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1282,
+      "name": "[메슬렁덱]메테오6돌 최고의 생존덱",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "검기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "방패 충격파",
+        "강인한 의지"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "강인한 의지",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1280,
+      "name": "[저테오덱] 저스펙 메테오덱 노물약 385k 60마리+",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "하늘의 심판",
+        "공간 결계",
+        "강인한 의지",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "대검 강타",
+        "방패 밀기",
+        "공간 결계",
+        "하늘의 심판",
+        "검기 폭발",
+        "강인한 의지",
+        "검기 날리기"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1279,
+      "name": "이강인덱 진솔님편",
+      "likes": 0,
+      "skills": [
+        "대검 강타",
+        "검기 폭발",
+        "검기 날리기",
+        "연속 충격",
+        "방패 밀기",
+        "방패 충격파",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "방패 충격파",
+        "검기 폭발",
+        "연속 충격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1278,
+      "name": "[온리강타덱] 10월 31일 패치후",
+      "likes": 0,
+      "skills": [
+        "크게 베기",
+        "대검 강타",
+        "방패 밀기",
+        "검기 폭발",
+        "검기 날리기",
+        "휘둘러치기",
+        "연속 충격",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "크게 베기",
+        "휘둘러치기",
+        "검기 폭발",
+        "검기 날리기",
+        "연속 충격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1275,
+      "name": "안정성 이강인덱",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "크게 베기",
+        "방패 충격파",
+        "검기 폭발",
+        "연속 충격"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "크게 베기",
+        "방패 충격파",
+        "검기 폭발",
+        "연속 충격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1274,
+      "name": "묘룡1 좌랑의 385k 분당60마리 노물약 메테오덱",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "검기 폭발",
+        "방패 충격파",
+        "서리의 잔향",
+        "요기 폭발",
+        "대검 강타",
+        "방패 밀기",
+        "생명의 흐름"
+      ],
+      "order": [
+        "하늘의 심판",
+        "생명의 흐름",
+        "방패 밀기",
+        "서리의 잔향",
+        "대검 강타",
+        "요기 폭발",
+        "방패 충격파",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1269,
+      "name": "[반동강] 370k공2.9 방2.4 1분55-60마리",
+      "likes": 0,
+      "skills": [
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "돌풍 강격",
+        "대검 찍기",
+        "반동 사격",
+        "생명의 흐름",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "공간 결계",
+        "반동 사격",
+        "대검 강타",
+        "대검 찍기",
+        "검기 날리기",
+        "검기 폭발",
+        "돌풍 강격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1268,
+      "name": "[한 단계 윗 사냥터] 2만후반 기준 380K 강타덱",
+      "likes": 0,
+      "skills": [
+        "방패 밀기",
+        "생명의 흐름",
+        "대검 강타",
+        "검기 날리기",
+        "검기 폭발",
+        "연속 충격",
+        "돌풍 강격",
+        "공간 결계"
+      ],
+      "order": [
+        "방패 밀기",
+        "생명의 흐름",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "검기 폭발",
+        "연속 충격",
+        "돌풍 강격"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1265,
+      "name": "개인저장용",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "방패 밀기",
+        "생명의 흐름",
+        "검기 폭발",
+        "대검 강타",
+        "강인한 의지"
+      ],
+      "order": [
+        "생명의 흐름",
+        "대검 강타",
+        "하늘의 심판",
+        "요기 폭발",
+        "방패 밀기",
+        "강인한 의지",
+        "번개 폭풍",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1262,
+      "name": "요강준덱(전투력37만기준 360k 분당 50마리)",
+      "likes": 0,
+      "skills": [
+        "검기 폭발",
+        "요기 폭발",
+        "검기 날리기",
+        "대검 강타",
+        "방패 충격파",
+        "방패 밀기",
+        "공간 결계",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "대검 강타",
+        "검기 날리기",
+        "공간 결계",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1260,
+      "name": "29만투력360k 6돌파 파멸신식 2강인 2강타 1힐",
+      "likes": 0,
+      "skills": [
+        "요기 폭발",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "강인한 의지",
+        "생명의 흐름",
+        "검기 폭발",
+        "대검 강타"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "방패 밀기",
+        "번개 폭풍",
+        "강인한 의지",
+        "요기 폭발",
+        "검기 폭발",
+        "대검 강타"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1258,
+      "name": "[텐시야덱] 패치 후 강타 \"몹몰이덱\" 360~385k",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "검기 날리기",
+        "검기 폭발",
+        "대검 강타",
+        "강인한 의지",
+        "공간 결계",
+        "방패 밀기",
+        "영혼 소용돌이"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "대검 강타",
+        "강인한 의지",
+        "검기 폭발",
+        "검기 날리기",
+        "영혼 소용돌이"
+      ],
+      "ultimate": "천벌"
+    },
+    {
+      "id": 1256,
+      "name": "무한 파멸.,.,. 이게 정답이다 안아파열~~~~~~",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "생명의 흐름",
+        "방패 밀기",
+        "검기 폭발",
+        "강인한 의지",
+        "공간 결계"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "공간 결계",
+        "방패 밀기",
+        "번개 폭풍",
+        "요기 폭발",
+        "검기 폭발",
+        "강인한 의지"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1255,
+      "name": "피키블라인더스 (No - 생명)",
+      "likes": 0,
+      "skills": [
+        "회전 난격",
+        "붕괴하는 대지",
+        "연쇄 번개",
+        "대검 찍기",
+        "하늘의 심판",
+        "방패 밀기",
+        "날카로운 얼음창",
+        "돌풍 강격"
+      ],
+      "order": [
+        "하늘의 심판",
+        "대검 찍기",
+        "붕괴하는 대지",
+        "날카로운 얼음창",
+        "연쇄 번개",
+        "회전 난격",
+        "방패 밀기",
+        "돌풍 강격"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1252,
+      "name": "[빙글뱅글] 385K ⭐제자리사냥⭐ 분당70~75마리",
+      "likes": 0,
+      "skills": [
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍",
+        "공간 결계",
+        "영혼 소용돌이",
+        "생명의 흐름",
+        "방패 밀기",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "하늘의 심판",
+        "요기 폭발",
+        "방패 밀기",
+        "공간 결계",
+        "번개 폭풍",
+        "영혼 소용돌이",
+        "검기 폭발"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1250,
+      "name": "무소과금)저렙파멸 오프라인사냥용세팅",
+      "likes": 0,
+      "skills": [
+        "번개 폭풍",
+        "하늘의 심판",
+        "요기 폭발",
+        "강인한 의지",
+        "방패 밀기",
+        "방패 충격파",
+        "생명의 흐름",
+        "검기 폭발"
+      ],
+      "order": [
+        "생명의 흐름",
+        "요기 폭발",
+        "방패 밀기",
+        "번개 폭풍",
+        "방패 충격파",
+        "검기 폭발",
+        "강인한 의지",
+        "하늘의 심판"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1249,
+      "name": "360K 안정성 효율 덱 (분당 단 2.5개, 50몹)",
+      "likes": 0,
+      "skills": [
+        "번개 폭풍",
+        "검기 폭발",
+        "저주 내리기",
+        "하늘의 심판",
+        "연쇄 번개",
+        "공간 결계",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "저주 내리기",
+        "검기 폭발",
+        "연쇄 번개",
+        "하늘의 심판",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1246,
+      "name": "강하늘덱 490k 3900 노물약 (심판6돌 기준)",
+      "likes": 0,
+      "skills": [
+        "검기 폭발",
+        "요기 폭발",
+        "번개 폭풍",
+        "하늘의 심판",
+        "용맹의 기운",
+        "방패 밀기",
+        "공간 결계",
+        "생명의 흐름"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "공간 결계",
+        "검기 폭발",
+        "용맹의 기운",
+        "하늘의 심판",
+        "요기 폭발",
+        "번개 폭풍"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1239,
+      "name": "210~290k 노물약 주술 기만 강",
+      "likes": 0,
+      "skills": [
+        "영혼 소용돌이",
+        "저주 내리기",
+        "신벌의 영역",
+        "공간 결계",
+        "환상술",
+        "생명의 흐름",
+        "요기 폭발",
+        "돌풍 강격"
+      ],
+      "order": [
+        "신벌의 영역",
+        "요기 폭발",
+        "공간 결계",
+        "영혼 소용돌이",
+        "저주 내리기",
+        "환상술",
+        "돌풍 강격",
+        "생명의 흐름"
+      ],
+      "ultimate": "신내림"
+    },
+    {
+      "id": 1238,
+      "name": "패치 후 360k 노 물약 스킬트리",
+      "likes": 0,
+      "skills": [
+        "요기 폭발",
+        "서리의 잔향",
+        "연쇄 번개",
+        "검기 폭발",
+        "대검 강타",
+        "생명의 축복",
+        "생명의 흐름",
+        "방패 밀기"
+      ],
+      "order": [
+        "연쇄 번개",
+        "서리의 잔향",
+        "대검 강타",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 밀기",
+        "생명의 축복",
+        "생명의 흐름"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1237,
+      "name": "파멸 강인 순수 안정성",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "방패 충격파",
+        "검기 폭발",
+        "강인한 의지"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "번개 폭풍",
+        "요기 폭발",
+        "방패 충격파",
+        "검기 폭발",
+        "강인한 의지"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1234,
+      "name": "마녀시츄덱",
+      "likes": 0,
+      "skills": [
+        "영혼 소용돌이",
+        "연쇄 번개",
+        "화염 분출",
+        "하늘의 심판",
+        "요기 폭발",
+        "공간 결계",
+        "방패 밀기",
+        "불굴"
+      ],
+      "order": [
+        "영혼 소용돌이",
+        "연쇄 번개",
+        "화염 분출",
+        "하늘의 심판",
+        "요기 폭발",
+        "공간 결계",
+        "방패 밀기",
+        "불굴"
+      ],
+      "ultimate": "대폭발"
+    },
+    {
+      "id": 1230,
+      "name": "메생댁 (메테오각성 생존력극대화)",
+      "likes": 0,
+      "skills": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "서리의 잔향",
+        "번개 폭풍",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파"
+      ],
+      "order": [
+        "생명의 흐름",
+        "방패 밀기",
+        "하늘의 심판",
+        "서리의 잔향",
+        "번개 폭풍",
+        "요기 폭발",
+        "검기 폭발",
+        "방패 충격파"
+      ],
+      "ultimate": "대폭발"
+    }
+  ]
+}

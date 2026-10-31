@@ -90,6 +90,14 @@ def _draw(name, p, color):
             for x, y in ((10, 9), (13, 11), (17, 5)):
                 path.lineTo(x, y)
             p.drawPath(path)
+        elif name == "flow":
+            p.drawRoundedRect(QRectF(7, 2.5, 6, 4), 1, 1)
+            p.drawRoundedRect(QRectF(2, 13.5, 6, 4), 1, 1)
+            p.drawRoundedRect(QRectF(12, 13.5, 6, 4), 1, 1)
+            p.drawLine(QPointF(10, 6.5), QPointF(10, 10))
+            p.drawLine(QPointF(5, 10), QPointF(15, 10))
+            p.drawLine(QPointF(5, 10), QPointF(5, 13.5))
+            p.drawLine(QPointF(15, 10), QPointF(15, 13.5))
         elif name == "preview":
             p.drawRoundedRect(QRectF(2.5, 3.5, 15, 10), 2, 2)
             p.drawLine(QPointF(10, 14), QPointF(10, 17))
@@ -110,6 +118,12 @@ def _draw(name, p, color):
             p.drawRoundedRect(QRectF(3, 3, 14, 14), 2, 2)
             for y in (6, 10, 14):
                 p.drawLine(QPointF(6, y), QPointF(14, y))
+        elif name == "update":
+            p.drawArc(QRectF(3, 3, 14, 14), 35 * 16, 285 * 16)
+            path = QPainterPath(QPointF(15.5, 3.5))
+            path.lineTo(16.5, 8)
+            path.lineTo(12, 6.5)
+            p.drawPath(path)
         elif name == "support":
             p.drawEllipse(QPointF(10, 10), 7, 7)
             path = QPainterPath(QPointF(7.5, 7))

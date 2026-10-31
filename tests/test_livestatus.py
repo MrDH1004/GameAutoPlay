@@ -5,8 +5,8 @@ import time
 import types
 import unittest
 from collections import deque
-
 import cv2
+import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -46,6 +46,19 @@ class LiveStatusTest(unittest.TestCase):
     def test_read_quest_top(self):
         q = ls.read_quest(load("field_hp_95.png"))
         self.assertTrue(q)                                   # 트래커 맨 위에 퀘스트 제목이 있음
+
+    def test_refresh_reuses_recent_bot_frame(self):
+        frame = np.zeros((1080, 1920, 3), np.uint8)
+        window = types.SimpleNamespace(locate=lambda: True, is_minimized=lambda: False,
+                                       grab=lambda: self.fail("최근 프레임이 있는데 다시 캡처함"))
+        bot = types.SimpleNamespace(paused=False, waiting_user=False, window=window, cfg={},
+                                    stop_event=types.SimpleNamespace(is_set=lambda: False),
+                                    _in_field=lambda _frame: False)
+        live = ls.LiveStatus(bot, interval=3.0)
+        live.note_frame(False, frame)
+        live.refresh()
+        self.assertIs(live._latest_frame, frame)
+        self.assertFalse(live.data["field"])
 
 
 if __name__ == "__main__":

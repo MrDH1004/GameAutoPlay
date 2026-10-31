@@ -16,6 +16,7 @@ from .farm import _crop, _ocr
 from .safety import hp_ratio, target_fill
 from .shop import read_potion_count
 from .startup import read_map_name
+from .perception import autohunt_on
 
 log = logging.getLogger(__name__)
 
@@ -28,11 +29,25 @@ def read_target(frame):
     fill = target_fill(frame)
     if fill <= 0.02:
         return None
-    txt = _ocr(_crop(frame, TARGET_NAME_BOX), 2)
+    crop = _crop(frame, TARGET_NAME_BOX)
+    txt = _ocr(crop, 2)
     power = None
     m = re.search(r"(\d+(?:\.\d)?)\s*([KkMm])", txt)
     if m:
         power = int(round(float(m.group(1)) * (1000 if m.group(2) in "Kk" else 1_000_000)))
+        # 밝은 칼 아이콘을 OCR이 숫자 1로 붙여 '170K'를 '1170K'로 읽는 경우가 있다.
+        # 위험 판정에 쓰이는 큰 값만 다른 이진화 모드로 재확인해 5배 이상 차이면
+        # 아이콘이 제거된 작은 값을 채택한다.
+        if power >= 1_000_000:
+            alt_txt = _ocr(crop, 4)
+            alt = re.search(r"(\d+(?:\.\d)?)\s*([KkMm])", alt_txt)
+            if alt:
+                alt_power = int(round(float(alt.group(1)) * (
+                    1000 if alt.group(2) in "Kk" else 1_000_000)))
+                if alt_power >= 10_000 and power >= alt_power * 5:
+                    log.info("타겟 전투력 OCR 아이콘 오독 보정: %s → %s", power, alt_power)
+                    power = alt_power
+                    txt = alt_txt
     name = re.sub(r"\d+(?:\.\d)?\s*[KkMm]|\d+\s*m\b|[^\w가-힣 ]", " ", txt)
     name = re.sub(r"\s+", " ", name).strip()
     name = re.sub(r"\s+\d{1,3}$", "", name)                    # 거리 표시('11m')의 숫자만 남은 것
@@ -61,13 +76,19 @@ class LiveStatus:
         self._stop = threading.Event()
         self._thread = None
         self._reader_window = None
+        self._latest_frame = None
+        self._latest_frame_at = 0.0
 
     # ---- 봇 루프에서 매 틱 호출 (가벼움) ----
-    def note_frame(self, known):
-        """이번 틱 화면을 아는 화면으로 분류했는지 기록 (동기화 인식률용)."""
+    def note_frame(self, known, frame=None):
+        """인식률을 기록하고 봇 루프의 최신 프레임을 상황판 OCR과 공유한다."""
         self._seen.append(bool(known))
         if known:
             self._last_ok = time.monotonic()
+        if frame is not None:
+            # grab()은 매번 새 배열을 반환하므로 복사하지 않아도 다음 캡처에 덮어써지지 않는다.
+            self._latest_frame = frame
+            self._latest_frame_at = time.monotonic()
 
     def sync(self):
         """동기화 요약: {'rate': 0~1, 'age': 마지막 인식 후 초, 'why': 대기 사유 또는 ''}"""
@@ -84,8 +105,6 @@ class LiveStatus:
             why = "게임 창을 찾지 못함"
         elif b.window.is_minimized():
             why = "게임 창 최소화"
-        elif not b.window.is_foreground():
-            why = "게임 창이 앞이 아님"
         return {"rate": rate, "age": age, "why": why}
 
     # ---- 읽기 스레드 ----
@@ -118,17 +137,23 @@ class LiveStatus:
             window = b.window
         if not window.locate() or window.is_minimized():
             return
-        frame = window.grab()
+        # 봇 루프가 막혀 최신 프레임이 오래됐을 때만 별도로 캡처한다.
+        # 정상 동작 중에는 같은 1920x1080 캡처를 재사용해 캡처 횟수와 메모리 대역폭을 줄인다.
+        if self._latest_frame is not None and time.monotonic() - self._latest_frame_at <= max(5.0, self.interval * 2):
+            frame = self._latest_frame
+        else:
+            frame = window.grab()
         known = b._in_field(frame)
         d = {"at": time.monotonic(), "field": known}
         if known:
             d["map"] = read_map_name(frame)
             d["hp"] = round(hp_ratio(frame), 2)
+            d["auto_on"] = autohunt_on(frame, b.cfg)
             d["potions"] = read_potion_count(frame)
             d["target"] = read_target(frame)
             d["quest"] = read_quest(frame)
         else:
-            d["map"], d["hp"], d["potions"], d["target"], d["quest"] = None, None, None, None, None
+            d["map"], d["hp"], d["auto_on"], d["potions"], d["target"], d["quest"] = None, None, None, None, None, None
         self.data = {**self.data, **{k: v for k, v in d.items() if v is not None or k in ("target",)}}
         self.data["field"] = known
         if not known:

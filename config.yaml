@@ -2,9 +2,19 @@
 # 창 제목의 일부 (대소문자 무시, 부분 일치). 런처/브라우저 창과 구분하기 위해 프로세스 이름도 확인.
 window_title: "도깨비의세계"
 process_name: "dokkaebi.exe"
+focus_on_start: false       # Cua 창 캡처로 뒤에 있는 게임도 읽으므로 시작할 때 포커스를 빼앗지 않는다.
+
+# 마우스 입력은 Cua 백그라운드 창 전달만 사용하며 물리 커서 우회는 금지한다.
+cua_input:
+  enabled: true
+  capture_enabled: false   # 평상시 스크린샷은 mss 사용, 실제 입력할 때만 Cua 호출
+  cursor_motion_ms: 1      # 클릭 위치로 즉시 이동(커서 이동 애니메이션 없음)
+  session: "dokkaebi-helper"
+  timeout: 12
 
 # ===== 루프 =====
-loop_interval: 0.5        # 화면 확인 주기 (초)
+loop_interval: 0.5        # 전환·이동·입력 직후의 빠른 화면 확인 주기 (초)
+stable_loop_interval: 2.0 # 안정적인 전투·대기 중 화면 확인 주기 (초)
 match_threshold: 0.85     # 템플릿 매칭 기본 임계값 (0~1, 높을수록 엄격)
 
 # ===== 사용자 조작 감지 =====
@@ -28,13 +38,56 @@ field_indicator:
   region: [0.75, 0.85, 0.15, 0.15]
 
 # ===== 문파 도움 =====
-# 왼쪽 아래 주황색 악수 아이콘이 실제로 보일 때 눌러 문파원의 도움 요청에 응답한다.
+# 왼쪽 아래 초록색 지도·악수 아이콘이 실제로 보일 때 눌러 문파원의 도움 요청에 응답한다.
 clan_help:
   enabled: true
   template: clan_help.png
   region: [0.0, 0.68, 0.07, 0.20]
   threshold: 0.90
   cooldown: 30
+
+# ===== 매일 21시 보스토벌 =====
+# 20:55에 무료 걸어가기를 먼저 시작하고 21:00까지 미도착하면 축지술로 전환한다.
+# 이 작업의 축지술은 금액 제한 없이 예외이며, 대상 보스명과 버튼을 확인했을 때 누른다.
+boss_hunt:
+  enabled: true
+  mountain_tiger_enabled: true   # 월·수·금·일: 산신 산군대호
+  skeleton_general_enabled: true # 화·목·토: 해골장군
+  prepare_at: "20:55"
+  starts_at: "21:00"
+  duration_minutes: 5
+  finish_absent_seconds: 10
+  retry_seconds: 30
+  travel_timeout_seconds: 420
+  icon_template: boss_hunt_icon.png
+  title_template: boss_hunt_title.png
+  icon_threshold: 0.88
+
+# ===== 매일 22시 낙화의 전장 요화선녀 =====
+# 21:58부터 메뉴 → 낙화의 전장 → 입장 가능한 일반 채널 순서로 진입한다.
+# 입장 뒤 낙화 전용 미니맵의 현재 안전 위치를 유지하고 프리셋 B(단일 저격)와 AUTO를 켠다.
+nakhwa_boss:
+  enabled: true
+  prepare_at: "21:58"
+  starts_at: "22:00"
+  entry_window_minutes: 30
+  retry_seconds: 15
+  stay_at_current_position: false    # 입장 가장자리는 몬스터가 없으므로 전용 지도 사냥 지점으로 이동
+  scoreboard_tab: [0.974, 0.114]    # 우측 낙화 전용 임무(?) 탭: 점수표를 항상 펼침
+  map_open_target: [0.179, 0.129]     # 필드 좌상단 낙화 전용 미니맵 중앙
+  direct_minimap_target: [0.208, 0.174]  # 첨부 화면의 우하단 통로 사냥 위치(약 400, 188)
+  center_move_target: [0.504, 0.509]  # 첨부 지도 중앙 녹색 지점(약 968, 550)
+  boss_move_target: [0.504, 0.509]    # 요화선녀도 같은 안전 사냥 지점 사용
+  center_move_wait_seconds: 90
+  hunt_preset: 2                      # 프리셋 B: 단일 저격 세팅
+  auto_button: [0.887, 0.942]
+
+# ===== 대시보드 기간 이벤트 =====
+event_calendar:
+  nakhwa_depth:
+    title: "낙화의 전장 · 심처 개방"
+    starts_at: "2026-10-17T23:00:00"
+    ends_at: "2026-10-18T23:00:00"
 
 # ===== 전투 판별 =====
 # 상단 중앙 대상 몬스터 체력 바의 ⚔ 아이콘. 보이면 전투 중 → 퀘스트 클릭/영기 수련 보류
@@ -58,6 +111,8 @@ quest_tracker:
   scan:
     enabled: true
     region: [0.78, 0.06, 0.2, 0.40]   # 트래커 영역 (비율)
+    main_tab: [0.975, 0.113]            # 우측 세로 메뉴 첫 번째 ? 두루마리: 메인 퀘스트 목록
+    main_tab_wait: 0.6
     max_pages: 8
     page_notches: 36                  # 한 페이지당 휠 칸 수 (1칸 ≈ 3px)
   nudge_minutes: 5                   # 퀘스트 목록 변화 없이 전투만 이만큼 계속되면 퀘스트를 다시 누른다 (0이면 끔)
@@ -68,6 +123,8 @@ quest_tracker:
 yeonggi:
   enabled: true
   interval: 180            # 확인 주기 (초)
+  clan_help_interval: 300  # 진행 중 수련 바로가기 → '문파 도움' 확인 주기 (5분)
+  clan_help_retry: 300     # 버튼이 없을 때 재확인 (5분)
   retry_delay: 30          # 화면 열기에 실패했을 때 다시 시도할 때까지 (초)
   max_tries: 6             # 한 번에 시도할 노드 수
   node_threshold: 0.8      # "0/1" 노드 인식 임계값 (노드 배경이 조금씩 달라 기본값보다 낮춤)
@@ -82,6 +139,8 @@ yeonggi:
     train: yg_train.png                # 팝업 '수련' 버튼
     impossible: yg_impossible.png      # "현재 수련이 불가능합니다."
     close: yg_close.png                # 팝업 X
+    current_go: yg_current_go.png      # 하단 진행 중 수련 카드의 '바로가기'
+    clan_help: yg_clan_help.png        # 영기 수련 하단 '문파 도움'
   regions:                             # [x, y, w, h] 화면 비율 (생략하면 전체 검색)
     menu_button: [0.9, 0.0, 0.1, 0.1]
     title: [0.0, 0.0, 0.2, 0.08]
@@ -90,6 +149,8 @@ yeonggi:
     node_empty: [0.0, 0.2, 1.0, 0.55]
     node_ready: [0.0, 0.2, 1.0, 0.65]    # 위쪽 아이콘/내기 수련 버튼의 빨간 점은 제외
     close: [0.3, 0.05, 0.5, 0.4]
+    current_go: [0.52, 0.86, 0.16, 0.12]
+    clan_help: [0.28, 0.68, 0.20, 0.16]
 
 # ===== 팝업 처리 (위에서부터 우선순위) =====
 # action: click(템플릿 위치 클릭, 기본값) | key(키 입력)
@@ -160,6 +221,8 @@ mission:
   cooldown: 90            # 임무 화면 확인 최소 간격(초)
   skip_seconds: 600       # 진행 못 한 탭을 건너뛰는 시간
   badge_threshold: 0.85
+  story_badge_threshold: 0.65  # 실제 게임 화면의 초록 '적합' 배지 허용치
+  story_retry_seconds: 15      # 순간 인식 실패 시 빠르게 재확인
   templates:
     title: ms_title.png        # 임무 화면 제목
     auto: ms_auto.png          # '자동 진행'
@@ -173,7 +236,7 @@ mission:
 
 # ===== v2: NPC 대화 스킵 =====
 dialog:
-  method: click    # click = 넘기기 버튼 클릭, key = ESC 키
+  method: key      # '넘기기 ESC'가 실제로 보일 때만 ESC. '대화 다음'은 버튼 클릭
   key: esc
   gap: 0.6         # 연속 스킵 최소 간격(초). 대화가 끝난 직후 ESC가 필드에서 메뉴를 여는 것을 막는다
 
@@ -201,6 +264,38 @@ farm:
   reselect_minutes: 15      # 이 주기로 전투력을 다시 읽어 사냥터를 올리거나 내린다
   upgrade_gain: 1.15        # 더 센 사냥터가 지금보다 이 배수 이상일 때만 올라간다 (잦은 이동 방지)
   death_ban_minutes: 60     # 사망한 사냥터를 제외하는 시간
+
+# ===== 일반 모드 =====
+# 퀘스트·사냥터 재선택 없이 현재 위치에서 자동 사냥한다. 저체력 때는 실제 지도 도로를 따라
+# 일정 거리 이상 피신하고 HP 100% 회복 후 지도 지형을 정합해 원래 위치로 돌아온다.
+normal_mode:
+  enabled: true
+
+# ===== 망자의 마을 3단계 전투 =====
+# 캐릭터 HP가 충분할 때는 광역, 낮아지면 단일 저격으로 바꿔 물약 소모를 줄인다.
+# 일일 전용으로 입장한 경우 지정 시간을 채운 뒤 나가 다음 일일을 진행한다.
+secret_realm_combat:
+  enabled: true
+  aoe_preset: 4                 # 기본 D 광역 · A=1, B=2, C=3, D=4, E=5
+  single_preset: 2              # 기본 B 저격
+  single_below_hp_percent: 65     # 게임 물약 60% 발동 전에 먼저 단일 전환
+  aoe_resume_hp_percent: 90
+  switch_cooldown_seconds: 15
+  daily_duration_minutes: 60
+
+# ===== 일일 임무 전용 모드 =====
+# 본편·서사·주간은 진행하지 않는다. 메인 미션 목록을 끝까지 두 번 확인해 [일일]이
+# 모두 사라지면 완료로 판정하고 앵벌 모드로 전환한다.
+daily_mode:
+  enabled: false
+  absence_confirm_seconds: 8
+  active_absence_confirm_seconds: 180  # 진행 시작한 일일이 트래커에서 숨으면 충분히 사냥한 뒤 임무 탭 재확인
+  tracker_monitor_seconds: 5  # 일일 모드에서 메인 퀘스트 목록을 끝까지 내려 재확인하는 주기
+
+# ===== 서사 임무 전용 모드 =====
+# 서사 탭에서 게임이 현재 전투력에 맞다고 표시한 '적합' 임무만 수락·자동 진행한다.
+story_mode:
+  enabled: false
 
 # ===== 멈춤 감시 =====
 # 이 시간 동안 이동/전투/대화가 전혀 없으면 화면을 저장하고 단계별로 복구 (3번 연속 실패하면 일시정지)
@@ -235,16 +330,19 @@ hp:
   potion_gap: 6.0         # 물약 최소 간격(초)
   danger_below: 0.2       # 이 아래면 위험 알림
   rest_enabled: true      # 보스가 아닌데 HP가 낮으면 잡던 몹까지만 잡고 자동 사냥을 끄고 회복
-  evade_guide_first: true # 위험 시 무료 길라잡이 순간이동 우선, 실패하면 기존 걸어가기
+  evade_guide_first: false # 위험 시 현재 세계지도의 도로 픽셀을 분석해 먼 길로 걸어서 피신
   startup_risk_check: true # 시작·재개 시 몬스터 전투력 두 프레임 확인
   rest_below: 0.50        # 이 비율 이하면 휴식 시작 (보스가 아닐 때: 잡던 몹까지만 잡고 자동 사냥 끔)
-  rest_resume: 0.98       # 이 비율 이상 차면(=100%, HP 바 읽기 오차 감안) 자동 사냥 다시 켜기. 휴식 중엔 이 아래면 계속 물약
+  rest_resume: 0.80       # 일반 휴식 복귀 기준
+  evade_resume: 1.00      # 자리 회피는 HP 100% 회복 후 원래 위치로 복귀
   rest_finish_max: 300    # 잡던 몹은 죽을 때까지 기다린다(사용자 지시). 이 시간(초)은 몹이 아예 안 죽는 비정상 상태 방지용
   rest_max: 600           # 이 시간(초)이 지나도 안 차면 그냥 다시 켜기 (물약 쿨타임·자연 회복이 느릴 때 무한 대기 방지)
   rest_fight_below: 0.15  # 쉬는 중 공격받아 HP가 이 아래로 떨어지면 다시 싸움
   evade_enabled: true     # 자리 회피: 자동 사냥 중 HP가 evade_below 이하면 세계지도로 몹이 적은 쪽(걸어가기, 무료)으로 빠졌다가 회복 후 같은 거리만큼 돌아와 다시 사냥
-  evade_below: 0.30
-  evade_dist_px: 380      # 지도에서 빠지는 거리 (190px ≈ 7m)
+  evade_below: 0.20
+  evade_dist_px: 900      # 지도 중앙 배율에서 탐색할 최대 거리(1920×1080 기준 픽셀)
+  evade_min_dist_px: 560  # 중앙 배율 40m 후보를 찾기 위한 최소 픽셀 거리
+  evade_min_meters: 40    # 걸어가기 버튼 위 실제 표시 거리가 이 값 이상일 때만 이동
   evade_cooldown: 60      # 회피 후 이 시간(초) 안에는 다시 회피하지 않음 (그때는 일반 휴식)
 
 # ===== 화첩 / 유물 수집 =====
@@ -276,10 +374,10 @@ rewards:
   achievements: false    # 업적 완료 체크는 주기적으로 안 함 (사용자 지시, 새 도술 습득 감지도 같이 꺼짐)
   guide: false           # 길라잡이 보상 받기도 안 함 (사용자 지시)
 
-# ===== 보스 도술 프리셋 자동 전환 =====
-# 보스 체력바가 보이면 도술 화면(K)에서 보스 프리셋으로, 보스가 안 보이면 일반 프리셋으로 바꾼다 (전환에 약 4초).
+# ===== 도술 프리셋 =====
+# 사용자 지정 프리셋을 앱이 임의로 변경하지 않는다.
 preset:
-  enabled: true
+  enabled: false
   normal: 1               # 도술 프리셋 번호 (1 일반)
   boss: 2                 # (2 보스)
   boss_seconds: 3         # 보스가 이만큼 보이면 전환
@@ -293,11 +391,13 @@ enhance:
   interval_minutes: 180
 
 # ===== HP 물약 자동 구매 =====
-# 하단 물약 칸(Ctrl+1) 개수가 buy_below 미만이면 타바로 성 잡화 상점(복분이)으로 걸어가서 소지 한도(250)까지 산다.
+# 하단 물약 칸(Ctrl+1) 개수가 buy_below 이하면 타바로 성 잡화 상점(복분이)으로 걸어가서 물약 200개만 산다.
 # 세계지도 '위치'에 저장한 '타바로 성(112,104)'(복분이 앞)을 쓴다. 축지술(유료)은 쓰지 않는다.
 potion_shop:
   enabled: true
   buy_below: 50
+  purchase_amount: 200    # 전체 구매 금지: 한 번에 정확히 이 수량만 구매
+  stack_limit: 250        # 게임 물약 소지 한도(수량 창 최대값 계산용)
   auto_per_day: 1         # 자동 구매는 하루 이만큼만 (제어판 '물약 구매' 버튼은 제한 없음)
   item: 2단               # 2단 체력 회복 물약 (1,200골드) / 1단 (450골드)
   check_minutes: 5

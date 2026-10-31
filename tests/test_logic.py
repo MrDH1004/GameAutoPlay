@@ -113,8 +113,11 @@ class TrackerAndDigitsTest(unittest.TestCase):
         self.assertTrue(500 <= left <= 600, left)
 
     def test_potion_count(self):
-        from bot2.shop import read_potion_count
+        from bot2.shop import purchase_quantity, read_potion_count
         self.assertEqual(read_potion_count(img("potion_ctrl1_250.png")), 250)     # 물약이 Ctrl+1 칸에 있을 때
+        self.assertEqual(purchase_quantity(50), 200)
+        self.assertEqual(purchase_quantity(5), 200)
+        self.assertEqual(purchase_quantity(51), 0)       # 200개를 전부 담을 수 없으면 전체 구매하지 않음
 
     def test_shop_templates(self):
         from bot2.rewards import _seen, _tpl
@@ -133,7 +136,9 @@ class DeathRetryTest(unittest.TestCase):
         import types
         from bot2.brain import Bot
         safety.DEATH_LOG = os.path.join(ROOT, "logs", "_test_deaths.jsonl")
-        b = Bot(config(), dry_run=True)
+        cfg = config()
+        cfg["normal_mode"]["enabled"] = False
+        b = Bot(cfg, dry_run=True)
         b._save_screen = lambda f, p: None
         f = img("death_base_revive.png")
         b._on_dead(types.SimpleNamespace(frame=f, state="DEAD"), 100)

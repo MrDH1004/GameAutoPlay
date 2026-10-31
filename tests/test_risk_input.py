@@ -8,10 +8,20 @@ from bot.vision import Match
 from bot2.brain import Bot
 from bot2.farm import FarmTask, StopRequested, guide_spots
 from bot2.risk import RiskGuard
+from bot2.livestatus import read_target
 from tests.test_evade import make_bot, snap
 
 
 class RiskTest(unittest.TestCase):
+    @patch('bot2.livestatus.target_fill', return_value=0.8)
+    @patch('bot2.livestatus._ocr', side_effect=['1170K 우물 역병쥐', '170K 우물 역병쥐'])
+    @patch('bot2.livestatus._crop', return_value='crop')
+    def test_target_power_removes_sword_icon_false_leading_one(
+            self, _crop_mock, _ocr_mock, _fill_mock):
+        target = read_target('frame')
+        self.assertEqual(target['power'], 170000)
+        self.assertEqual(target['name'], '우물 역병쥐')
+
     def test_two_distinct_matching_frames_confirm_danger(self):
         guard = RiskGuard(1.5)
         guard.arm(0)
@@ -44,16 +54,16 @@ class RiskTest(unittest.TestCase):
         self.assertTrue(farm.escape(104000, 1))
         self.assertLess(picked[-1]['power'], banned_power)
 
-    def test_teleport_evade_recovers_without_returning_to_danger(self):
+    def test_low_hp_uses_road_evade_and_returns_after_full_recovery(self):
         bot = make_bot(0.2)
         bot.power = 104000
         bot.farm = types.SimpleNamespace(power=104000, escape=lambda power, now: bot.calls.append('teleport') or True)
         bot.tick(snap(True), 0)
         bot.tick(snap(False), 5)
-        self.assertEqual(bot.calls, ['teleport'])
+        self.assertEqual(bot.calls, ['flee'])
         bot.hp = 1.0
         bot.tick(snap(False, 'IDLE'), 10)
-        self.assertEqual(bot.calls, ['teleport'])
+        self.assertEqual(bot.calls, ['flee', ('back', (380, 0))])
         self.assertEqual(bot._rest, 'on')
 
     def test_startup_risk_moves_or_pauses_on_failure(self):
@@ -95,20 +105,27 @@ class InputGuardTest(unittest.TestCase):
         with self.assertRaises(actions.UserInterrupt):
             Bot._check_user(bot)
 
-    def test_ctrl_is_released_when_press_fails(self):
-        with patch.object(actions.pydirectinput, 'keyDown') as down, patch.object(actions.pydirectinput, 'keyUp') as up, \
-             patch.object(actions.pydirectinput, 'press', side_effect=RuntimeError('input failed')):
-            with self.assertRaises(RuntimeError):
-                actions.hotkey('ctrl+1')
-        down.assert_called_once_with('ctrl')
-        up.assert_called_once_with('ctrl')
+    def test_cua_background_capture_allows_focus_loss(self):
+        bot = self.make_bot()
+        bot.window.is_foreground = lambda: False
+        bot.window.background_capture = True
+        Bot._check_user(bot)
 
-    def test_mouse_is_released_when_drag_fails(self):
-        with patch.object(actions.pydirectinput, 'moveTo', side_effect=[None, RuntimeError('failed')]), \
-             patch.object(actions.pydirectinput, 'mouseDown'), patch.object(actions.pydirectinput, 'mouseUp') as up:
-            with self.assertRaises(RuntimeError):
+    def test_cua_input_backend_allows_focus_before_real_input(self):
+        bot = self.make_bot()
+        bot.window.is_foreground = lambda: False
+        bot.window.background_capture = False
+        bot.window.cua_input_enabled = True
+        Bot._check_user(bot)
+
+    def test_physical_input_is_refused_without_cua(self):
+        old = actions._input_backend
+        actions._input_backend = None
+        try:
+            with self.assertRaisesRegex(RuntimeError, "물리 입력 없이"):
                 actions.drag(1, 1, 10, 10)
-        up.assert_called_once()
+        finally:
+            actions._input_backend = old
 
     def test_clan_help_rechecks_field_and_icon_before_click(self):
         found = {

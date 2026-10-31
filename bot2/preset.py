@@ -1,18 +1,15 @@
-"""보스 전투 감지 → 도술 프리셋 자동 전환 (1 일반 ↔ 2 보스).
-
-도술 화면(K) 아래쪽 프리셋 선택(▲)을 열어 고른 뒤 뒤로가기로 닫는다 (약 4초).
-보스 체력바(combat_boss.png)가 boss_seconds 이상 보이면 보스 프리셋, 보스가 normal_seconds 동안 안 보이면 일반 프리셋.
-"""
+"""우측 하단 H 빠른 메뉴로 저장된 도술 프리셋 A~E를 전환한다."""
 import logging
-import time
 
 from .farm import BotDriver
-from .rewards import BACK, _seen, _tpl
 
 log = logging.getLogger(__name__)
 
-PRESET_TOGGLE = (1323, 1033)
-PRESET_ROWS = {1: (1245, 980), 2: (1245, 935), 3: (1245, 890)}
+# 1920x1080 필드 HUD의 H 빠른 프리셋 메뉴. H를 누르면 A~E가 위로 펼쳐진다.
+PRESET_ROWS = {
+    1: (1558, 931), 2: (1558, 867), 3: (1558, 803),
+    4: (1558, 739), 5: (1558, 675),
+}
 
 
 class PresetSwitcher:
@@ -28,29 +25,20 @@ class PresetSwitcher:
         self._boss_since = None
         self._last_boss = 0.0
         self._last_switch = 0.0
-        self.t_title = _tpl("dosul_title.png")
 
     def boss_visible(self, frame):
         return bool(self.bot.matcher.find(frame, "combat_boss.png", self.region))
 
     def switch(self, n):
+        n = max(1, min(5, int(n)))
         d = self.drv
-        d.key("k")
-        for _ in range(6):
-            d.sleep(0.6)
-            if _seen(d.shot(), self.t_title, (0, 0, 400, 90)):
-                break
-        else:
-            log.warning("프리셋 전환: 도술 화면이 열리지 않음")
-            return False
-        d.click(*PRESET_TOGGLE)
-        d.sleep(0.8)
+        d.key("h")
+        d.sleep(0.5)
         d.click(*PRESET_ROWS[n])
-        d.sleep(0.8)
-        d.click(*BACK)
-        d.sleep(1.0)
+        d.sleep(0.7)
         self.current = n
-        log.info("도술 프리셋 → %d (%s)", n, "보스" if n == self.boss else "일반")
+        log.info("H 빠른 전환 → 프리셋 %s (%s)", chr(64 + n),
+                 "단일" if n == self.boss else "광역")
         return True
 
     def tick(self, snap, now):

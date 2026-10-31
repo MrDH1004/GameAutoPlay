@@ -46,12 +46,9 @@ class RestTest(unittest.TestCase):
         self.assertTrue(b.tick(snap("IDLE", False), 11))        # 꺼짐 확인 → 회복 대기
         self.assertEqual(b._rest, "rest")
         b.hp = 0.8
-        self.assertTrue(b.tick(snap("IDLE", False), 20))        # 80%는 아직 부족 → 계속 쉼
-        self.assertEqual(b.presses, ["t"])
-        b.hp = 0.99
-        self.assertTrue(b.tick(snap("IDLE", False), 30))        # 98% 이상(=100%) → 다시 켜기
+        self.assertTrue(b.tick(snap("IDLE", False), 20))        # 80% 이상 → 다시 켜기
         self.assertEqual(b.presses, ["t", "t"])
-        self.assertFalse(b.tick(snap("IDLE", True), 31))        # 켜짐 확인 → 끝
+        self.assertFalse(b.tick(snap("IDLE", True), 21))        # 켜짐 확인 → 끝
         self.assertIsNone(b._rest)
 
     def test_boss_no_rest(self):

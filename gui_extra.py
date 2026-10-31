@@ -183,7 +183,8 @@ class PreviewTab(QWidget):
                     from bot.vision import Matcher
                     from bot.window import GameWindow
                     from bot2.perception import Perceiver
-                    cfg = yaml.safe_load(open(os.path.join(ROOT, "config.yaml"), encoding="utf-8"))
+                    with open(os.path.join(ROOT, "config.yaml"), encoding="utf-8") as stream:
+                        cfg = yaml.safe_load(stream)
                     self._win = GameWindow(cfg["window_title"], cfg.get("process_name"))
                     self._eyes = Perceiver(Matcher(os.path.join(ROOT, "templates"), cfg.get("match_threshold", 0.85)), cfg)
                 win, eyes = self._win, self._eyes

@@ -1,7 +1,7 @@
-"""HP 물약 자동 구매: 타바로 성 잡화 상점(복분이)에서 2단 체력 회복 물약을 소지 한도까지 산다.
+"""HP 물약 자동 구매: 타바로 성 잡화 상점(복분이)에서 한 번에 정해진 수량만 산다.
 
 경로: M(세계지도) → 왼쪽 '위치' → 저장해 둔 '타바로 성(112,104)'(복분이 앞) → 걸어가기(무료)
-      → 도착하면 G(상호작용) → 잡화 상점 → 2단 체력 회복 물약 → 수량 최대(▶|) → 확인 → 구매 → 뒤로.
+      → 도착하면 G(상호작용) → 잡화 상점 → 2단 체력 회복 물약 → 목표 수량 조절 → 확인 → 구매 → 뒤로.
 축지술(유료)은 쓰지 않는다. 좌표는 1920x1080 기준.
 """
 import logging
@@ -19,6 +19,7 @@ SIDE_SAVED = (50, 400)                          # 세계지도 왼쪽 '위치' �
 WALK_BTN = (1634, 1019)
 SHOP_ROW = {"2단": (220, 300), "1단": (220, 196)}
 QTY_MAX = (1093, 558)
+QTY_MINUS = (868, 558)
 QTY_OK = (1047, 679)
 BUY = (1615, 1036)
 
@@ -53,12 +54,21 @@ def read_potion_count(frame):
     return max(vals) if vals else None
 
 
+def purchase_quantity(current, amount=200, stack_limit=250):
+    """전체 구매 대신 고정 수량을 살 수 있는지 계산한다. 공간이 부족하면 구매하지 않는다."""
+    current = max(0, int(current))
+    amount = max(0, int(amount))
+    return amount if current + amount <= int(stack_limit) else 0
+
+
 class PotionShop:
     def __init__(self, bot, cfg):
         self.bot = bot
         self.drv = BotDriver(bot)
         self.cfg = cfg or {}
         self.below = int(self.cfg.get("buy_below", 50))
+        self.purchase_amount = int(self.cfg.get("purchase_amount", 200))
+        self.stack_limit = int(self.cfg.get("stack_limit", 250))
         self.item = self.cfg.get("item", "2단")
         self.check_every = float(self.cfg.get("check_minutes", 5)) * 60
         self.max_per_day = int(self.cfg.get("auto_per_day", 1))     # 자동 구매 하루 최대 횟수 (수동 버튼은 제한 없음)
@@ -83,7 +93,7 @@ class PotionShop:
         n = read_potion_count(snap.frame)
         if n is not None:
             self.last_count = n
-            if n < self.below:
+            if n <= self.below:
                 used = self.auto_today()
                 if self._fails_day != date.today():
                     self._fails_day, self._fails = date.today(), 0
@@ -96,7 +106,8 @@ class PotionShop:
                                     n, used)
                         self.bot.notifier.send(f"HP 물약 {n}개 남음. 오늘 자동 구매는 끝 (수동 구매 버튼 사용)", key="potion_limit")
                     return False
-                log.info("HP 물약 %d개 (< %d) → 자동 구매하러 감 (오늘 %d/%d회)", n, self.below, used + 1, self.max_per_day)
+                log.info("HP 물약 %d개 (<= %d) → 물약 %d개 자동 구매하러 감 (오늘 %d/%d회)",
+                         n, self.below, self.purchase_amount, used + 1, self.max_per_day)
                 self._auto = True
                 return True
         return False
@@ -169,14 +180,27 @@ class PotionShop:
             d.sleep(1.0)
         return False
 
-    def _buy(self):
+    def _buy(self, current):
         d = self.drv
+        quantity = purchase_quantity(current, self.purchase_amount, self.stack_limit)
+        if quantity <= 0:
+            log.warning("물약 구매 생략: 현재 %d개라 %d개를 더 담을 공간이 없음 (소지 한도 %d)",
+                        current, self.purchase_amount, self.stack_limit)
+            return False
         d.click(*SHOP_ROW.get(self.item, SHOP_ROW["2단"]))
         if not self._wait(self.t_qty, (760, 340, 1160, 420), 4):
             log.info("물약 구매: 수량 창이 안 뜸 (이미 한도까지 있음)")
             return False
         d.click(*QTY_MAX)
         d.sleep(0.6)
+        # 최대 구매 수량에서 원하는 고정 구매량을 초과하는 만큼 뺀다.
+        decrement = max(0, (self.stack_limit - current) - quantity)
+        for index in range(decrement):
+            d.click(*QTY_MINUS)
+            if index and index % 10 == 0:
+                d.sleep(0.1)
+        log.info("물약 구매 수량 설정: 현재 %d + 구매 %d = 구매 후 %d (최대에서 %d회 감소)",
+                 current, quantity, current + quantity, decrement)
         d.click(*QTY_OK)
         d.sleep(1.0)
         d.click(*BUY)
@@ -190,7 +214,18 @@ class PotionShop:
         self._auto = False
         log.info("물약 %s 구매", "수동(버튼)" if manual else "자동")
         self.next_check = now + self.check_every
-        log.info("물약 구매 시작 (타바로 성 잡화 상점)")
+        current = self.last_count
+        if current is None:
+            current = read_potion_count(self.drv.shot())
+        if current is None:
+            log.warning("물약 구매 보류: 현재 보유량을 읽지 못해 200개 구매 가능 여부를 안전하게 계산할 수 없음")
+            return False
+        if not purchase_quantity(current, self.purchase_amount, self.stack_limit):
+            log.info("물약 구매 생략: 현재 %d개라 %d개 구매 시 소지 한도 %d개를 넘음",
+                     current, self.purchase_amount, self.stack_limit)
+            return True
+        log.info("물약 구매 시작 (현재 %d개 + 구매 %d개, 타바로 성 잡화 상점)",
+                 current, self.purchase_amount)
         if auto:
             self._fails += 1                    # 상점 도착 전 실패(지도 안 열림 등)는 하루 3번까지 10분 뒤 재시도
             if self._fails < 3:
@@ -204,7 +239,7 @@ class PotionShop:
                 log.warning("물약 구매: 상점에 도착/열기 실패")
                 self.bot.notifier.send("물약 구매 실패 (상점에 도착하지 못함)", key="potion_shop")
                 return False
-            ok = self._buy()
+            ok = self._buy(current)
             if auto:
                 self._count_auto()              # 상점까지 가서 산 것만 오늘 1회로 센다
             d = self.drv

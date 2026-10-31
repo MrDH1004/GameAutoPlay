@@ -3,6 +3,7 @@ import logging
 import re
 import time
 from dataclasses import dataclass, field
+from difflib import SequenceMatcher
 
 import cv2
 import numpy as np
@@ -55,6 +56,47 @@ class TrackerScanner:
         self.step = cfg.get("wheel_step", 3)
         self.entries = []
         self.scanned_at = 0.0
+        self.main_tab = cfg.get("main_tab", [0.975, 0.113])
+        self.main_tab_wait = float(cfg.get("main_tab_wait", 0.6))
+        self._main_tab_selected = False
+
+    def _main_tab_active(self, frame):
+        """Return True when the right-side main quest icon has its gold selected glow."""
+        if frame is None or not hasattr(frame, "shape") or len(frame.shape) < 2:
+            return False
+        h, w = frame.shape[:2]
+        main_tab = getattr(self, "main_tab", [0.975, 0.113])
+        cx, cy = int(float(main_tab[0]) * w), int(float(main_tab[1]) * h)
+        roi = frame[max(0, cy - 35):min(h, cy + 35),
+                    max(0, cx - 30):min(w, cx + 30)]
+        if roi.size == 0:
+            return False
+        b, g, r = (roi[..., i].astype(int) for i in range(3))
+        gold = (r > 180) & (g > 140) & (b < 130) & ((r - b) > 70)
+        return int(np.count_nonzero(gold)) >= 50
+
+    def ensure_main_tab(self, frame=None, force=False):
+        """우측 세로 메뉴의 첫 번째 ? 두루마리 아이콘으로 메인 퀘스트 목록을 표시한다."""
+        if frame is None:
+            live = getattr(self.bot, "live", None)
+            frame = getattr(live, "_latest_frame", None)
+        if self._main_tab_active(frame):
+            self._main_tab_selected = True
+            return False
+        if getattr(self, "_main_tab_selected", False) and not force and frame is None:
+            return False
+        main_tab = getattr(self, "main_tab", None)
+        if not main_tab or len(main_tab) != 2:
+            return False
+        w, h = self.bot.window.frame_w, self.bot.window.frame_h
+        x, y = int(float(main_tab[0]) * w), int(float(main_tab[1]) * h)
+        log.info("트래커 메인 퀘스트 탭 선택 (%d,%d)", x, y)
+        self.bot._click_frame("트래커 메인 퀘스트 탭", x, y)
+        self._main_tab_selected = True
+        wait = float(getattr(self, "main_tab_wait", 0.0))
+        if wait > 0:
+            time.sleep(wait)
+        return True
 
     # ---------- 화면/스크롤 ----------
     def _rect(self):
@@ -118,7 +160,14 @@ class TrackerScanner:
         c1, _, _ = self._crop()
         dy, score = self._measure_shift(c0, c1)
         if score < 0.5:
-            return None                                  # 측정 불가
+            # 글줄 매칭이 실패했다는 이유만으로 맨 아래로 판단하면 목록 중간에서
+            # 스캔이 끝난다. 화면 자체가 같을 때만 끝으로 보고, 달라졌다면 한
+            # 페이지 이동한 것으로 추정해 계속 스크롤한다.
+            if self._same(c0, c1):
+                return 0
+            estimated = max(3, int(c0.shape[0] * 0.65))
+            log.debug("트래커 스크롤 이동량 측정 실패(score=%.2f) → %dpx 이동으로 계속", score, estimated)
+            return estimated
         return dy
 
     def _to_top(self):
@@ -130,6 +179,7 @@ class TrackerScanner:
     def scan(self):
         """맨 위 → 아래로 스크롤하며 읽고 다시 맨 위로. Entry 목록을 반환 (화면에 안 보이던 퀘스트 포함)."""
         t0 = time.monotonic()
+        self.ensure_main_tab(force=True)
         self._to_top()
         entries, cum, ticks = [], 0.0, 0
         absy = []
@@ -182,8 +232,153 @@ class TrackerScanner:
 
     def click(self, entry):
         """그 항목이 보이는 위치까지 스크롤한 뒤 클릭."""
+        self.ensure_main_tab(force=True)
         self._to_top()
         if entry.ticks:
             self._wheel(-entry.ticks)
         log.info("트래커 퀘스트 클릭: [%s] %s (%d,%d)", entry.kind, entry.text, entry.x, entry.y)
         self.bot._click_frame("트래커 퀘스트", entry.x, entry.y)
+
+    def click_text(self, marker):
+        """끝까지 스크롤하며 현재 화면에서 marker를 다시 OCR해 그 줄만 클릭한다.
+
+        사전 스캔 좌표는 원위치 복귀와 재스크롤 과정에서 어긋날 수 있으므로
+        일일 전용처럼 오선택이 치명적인 경우에는 저장 좌표를 사용하지 않는다.
+        """
+        self.ensure_main_tab(force=True)
+        wanted = re.sub(r"\s+", "", marker)
+        self._to_top()
+        step = self.cfg.get("page_notches", 36)
+        for _page in range(self.max_pages):
+            crop, ox, oy = self._crop()
+            try:
+                lines = read_text(crop, scale=2)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("트래커 '%s' OCR 실패: %s", marker, exc)
+                lines = []
+            for line in lines:
+                compact = re.sub(r"\s+", "", str(line.get("text", "")))
+                if wanted not in compact:
+                    continue
+                # 긴 목표 문구 중앙보다 행 아이콘 바로 오른쪽이 실제 선택 영역으로 안정적이다.
+                x = int(ox + max(float(line["x"]) + 40, 80))
+                y = int(oy + float(line["y"]) + float(line["h"]) / 2)
+                log.info("트래커 문구 확인 클릭: %s (%d,%d)", line["text"], x, y)
+                self.bot._click_frame(f"트래커 {marker}", x, y)
+                return str(line["text"])
+            dy = self._scroll_measured(-step)
+            if dy is not None and dy < 3:
+                break
+        log.info("트래커를 끝까지 확인했지만 '%s' 항목을 찾지 못함", marker)
+        self._to_top()
+        return ""
+
+    def click_suitable_story_accept(self):
+        """필드 트래커의 초록 ``서사 임무 수락 가능!`` 행만 클릭한다.
+
+        빨간 ``위험`` 외전과 임무창의 서사 탭은 건드리지 않는다.
+        """
+        self.ensure_main_tab(force=True)
+        crop, ox, oy = self._crop()
+        try:
+            lines = read_text(crop, scale=2)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("서사 수락 항목 OCR 실패: %s", exc)
+            return False
+        for line in lines:
+            raw = str(line.get("text", ""))
+            compact = re.sub(r"[^0-9A-Za-z가-힣]", "", raw)
+            if not ("서사" in compact and "수락" in compact and "가능" in compact):
+                continue
+            cy = float(line["y"]) + float(line["h"]) / 2
+            if self._badge(crop, cy, float(line.get("x", 0))) != "ok":
+                log.info("서사 수락 가능 행은 보이지만 초록 '적합'이 아니므로 건너뜀")
+                return False
+            x = int(ox + max(float(line["x"]) + 90, 100))
+            y = int(oy + cy)
+            log.info("트래커 초록 '서사 임무 수락 가능' 클릭 (%d,%d)", x, y)
+            self.bot._click_frame("적합 서사 임무 수락 진입", x, y)
+            time.sleep(1.2)
+            return True
+        return False
+
+    def click_daily(self, expected_title="", strict=False, allowed_titles=None):
+        """OCR이 ``[일일]`` 머리말을 깨뜨려도 수행형 일일 행을 찾아 클릭한다.
+
+        임무 화면에서 막 수락한 제목이 있으면 그 낱말 일치도를 우선 사용한다. 제목을
+        모르는 재시작 직후에는 요귀 처치·비경 탐험·낙화 전장 문구만 일일 후보로 본다.
+        allowed_titles가 있으면 헬퍼에서 체크한 제목과 일치하는 행만 선택한다.
+        """
+        self.ensure_main_tab(force=True)
+        expected = re.sub(r"[^0-9A-Za-z가-힣]", "", str(expected_title or ""))
+        ignored = {"일일", "요귀", "처치", "참여", "하기"}
+        tokens = [t for t in re.findall(r"[가-힣]{2,}", str(expected_title or ""))
+                  if t not in ignored]
+        allowed = []
+        for title in allowed_titles or []:
+            key = re.sub(r"[^0-9A-Za-z가-힣]", "", str(title or ""))
+            title_tokens = [t for t in re.findall(r"[가-힣]{2,}", str(title or ""))
+                            if t not in ignored]
+            if key:
+                allowed.append((str(title), key, title_tokens))
+        step = self.cfg.get("page_notches", 36)
+        for expand_attempt in range(2):
+            self._to_top()
+            collapsed_header = None
+            saw_daily_row = False
+            for page in range(self.max_pages):
+                crop, ox, oy = self._crop()
+                try:
+                    lines = read_text(crop, scale=2)
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("일일 트래커 OCR 실패: %s", exc)
+                    lines = []
+                for line in lines:
+                    raw = str(line.get("text", ""))
+                    compact = re.sub(r"[^0-9A-Za-z가-힣]", "", raw)
+                    token_hits = sum(token in compact for token in tokens)
+                    expected_match = bool(expected and (token_hits >= min(2, len(tokens))
+                                                         or SequenceMatcher(None, expected, compact).ratio() >= 0.58))
+                    allowed_match = None
+                    for allowed_title, allowed_key, allowed_tokens in allowed:
+                        hits = sum(token in compact for token in allowed_tokens)
+                        if (hits >= min(2, len(allowed_tokens))
+                                or SequenceMatcher(None, allowed_key, compact).ratio() >= 0.58):
+                            allowed_match = allowed_title
+                            break
+                    # '비경탐험 시간이 남아 있어요' 같은 콘텐츠 알림은 퀘스트 행이 아니다.
+                    # 머리말 OCR이 깨진 경우에는 실제 수행 목표만 보조 후보로 허용한다.
+                    active_daily = bool(re.search(r"요귀.*처치|낙화.*전장.*(?:요귀|처치|참여)", compact))
+                    generic_daily_ui = ("일일임무" in compact)
+                    explicit_daily_row = ("일일" in compact and not generic_daily_ui and len(compact) >= 6)
+                    if page == 0 and generic_daily_ui and collapsed_header is None:
+                        collapsed_header = (
+                            int(ox + max(float(line["x"]) + 40, 80)),
+                            int(oy + float(line["y"]) + float(line["h"]) / 2),
+                        )
+                    saw_daily_row = saw_daily_row or active_daily or explicit_daily_row
+                    if strict and expected and not expected_match:
+                        continue
+                    if allowed and not allowed_match:
+                        continue
+                    if not expected_match and not active_daily and not explicit_daily_row:
+                        continue
+                    x = int(ox + max(float(line["x"]) + 40, 80))
+                    y = int(oy + float(line["y"]) + float(line["h"]) / 2)
+                    title = str(expected_title or allowed_match or raw)
+                    log.info("트래커 일일 행 확인 클릭: %s (%d,%d)", raw, x, y)
+                    self.bot._click_frame("트래커 [일일]", x, y)
+                    return title
+                dy = self._scroll_measured(-step)
+                if dy is not None and dy < 3:
+                    break
+            if expand_attempt == 0 and collapsed_header and not saw_daily_row:
+                self._to_top()
+                log.info("접힌 일일 임무 그룹 펼치기")
+                self.bot._click_frame("트래커 일일 그룹 펼치기", *collapsed_header)
+                time.sleep(1.0)
+                continue
+            break
+        log.info("트래커를 끝까지 확인했지만 수행형 일일 항목을 찾지 못함")
+        self._to_top()
+        return ""

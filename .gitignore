@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 logs/
 screenshots/
+runs/
 .omc/
 .claude/
 .idea/
@@ -24,3 +25,4 @@ dist/
 # 화첩/유물 수집 스캔 데이터(재생성 가능)
 collect_db.json
 collect_db.backup*.json
+collect_done.json

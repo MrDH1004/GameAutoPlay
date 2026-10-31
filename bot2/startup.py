@@ -41,7 +41,8 @@ def is_secret_realm_name(name):
     compact = re.sub(r"[\s\[\](){}]", "", str(name or ""))
     # 좌상단의 작은 '[비경]' 글자가 아이콘과 겹쳐 영문/기호로 깨져도
     # 고유 지도명 '영험한 청산' 부분은 안정적으로 남는다.
-    return "비경" in compact or "영험한청산" in compact or "험한청산" in compact
+    return ("비경" in compact or "영험한청산" in compact or "험한청산" in compact
+            or "망자의마을" in compact or "망자마을" in compact)
 
 
 def is_hunt_only_content_name(name):
@@ -135,8 +136,8 @@ def warnings(st, below_potion=50):
     if st["screen"] != "필드":
         out.append(f"필드가 아님 ({st['screen']}) — 먼저 필드로 돌아가야 시작할 수 있음")
         return out
-    if st.get("potions") is not None and st["potions"] < below_potion:
-        out.append(f"물약 {st['potions']}개 (< {below_potion}) — 곧 자동 구매 대상")
+    if st.get("potions") is not None and st["potions"] <= below_potion:
+        out.append(f"물약 {st['potions']}개 (<= {below_potion}) — 곧 자동 구매 대상")
     if st.get("hp") and st["hp"] < 0.5:
         out.append(f"HP {st['hp'] * 100:.0f}% — 낮은 상태로 시작")
     if st.get("potions") == 0:

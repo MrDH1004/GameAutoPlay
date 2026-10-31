@@ -17,6 +17,7 @@ class Snapshot:
     combat: bool = False            # 대상 몬스터 체력 바가 보임
     dead: bool = False              # 사망 화면
     dialog: Optional[Match] = None  # 대화 넘기기 버튼
+    dialog_name: str = ""           # 대화 넘기기 / 대화 다음 / 컷신 스킵
     walking: bool = False           # 하단 '자동 이동 중 N m' 바가 보임 (웨이포인트 이동 중)
     auto_on: bool = False           # 하단 T 슬롯이 주황색으로 켜져 있음 (자동 사냥/자동 퀘스트)
     tracker_changed: bool = False   # 직전 스냅샷보다 퀘스트 목록이 바뀜
@@ -67,6 +68,16 @@ def _thumb(frame, region, width=96):
     return cv2.GaussianBlur(small, (3, 3), 0)
 
 
+def autohunt_on(frame, cfg):
+    """하단 AUTO 버튼의 주황색 점유율로 실제 활성 상태를 읽는다."""
+    ah = cfg.get("autohunt") or {}
+    area, _, _ = crop_ratio(frame, ah.get("region", [0.851, 0.922, 0.0167, 0.0315]))
+    if not area.size:
+        return False
+    b, g, r = (area[..., i].astype(int) for i in range(3))
+    return float(np.mean((r > 200) & (g > 120) & (b < 130)) * 100) > ah.get("on_percent", 5.0)
+
+
 class Perceiver:
     def __init__(self, matcher, cfg):
         self.m = matcher
@@ -107,15 +118,14 @@ class Perceiver:
         snap.dead = bool(self._find(frame, death.get("template"), death.get("region")))
 
         for popup in c.get("popups", []):
-            if popup.get("name") == "대화 넘기기":
-                snap.dialog = self._find(frame, popup["template"], popup.get("region"),
-                                         popup.get("threshold"))
+            if popup.get("name") in ("대화 넘기기", "대화 다음", "컷신 스킵"):
+                match = self._find(frame, popup["template"], popup.get("region"),
+                                   popup.get("threshold"))
+                if match:
+                    snap.dialog = match
+                    snap.dialog_name = popup["name"]
 
-        ah = c.get("autohunt") or {}
-        area, _, _ = crop_ratio(frame, ah.get("region", [0.851, 0.922, 0.0167, 0.0315]))
-        if area.size:
-            b, g, r = (area[..., i].astype(int) for i in range(3))
-            snap.auto_on = float(np.mean((r > 200) & (g > 120) & (b < 130)) * 100) > ah.get("on_percent", 5.0)
+        snap.auto_on = autohunt_on(frame, c)
 
         qt = c.get("quest_tracker") or {}
         sig = tracker_text_mask(frame, qt.get("text_region", [0.80, 0.05, 0.155, 0.40]))

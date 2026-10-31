@@ -1,10 +1,12 @@
 """게임 창 찾기와 클라이언트 영역 캡처."""
 import ctypes
+import logging
 from ctypes import wintypes
 
 import cv2
 import mss
 import numpy as np
+from mss.exception import ScreenShotError
 
 # 템플릿·좌표는 모두 이 기준 해상도에서 만들었다. 창 크기가 달라도 캡처를 이 크기로 정규화해서 쓴다.
 REF_W, REF_H = 1920, 1080
@@ -87,6 +89,8 @@ class GameWindow:
         self.title = ""
         self.left = self.top = self.width = self.height = 0
         self._sct = mss.MSS()
+        self.capture_fallback = None
+        self._capture_fallback_active = False
 
     def locate(self):
         """창을 찾고 클라이언트 영역 위치를 갱신. 성공하면 True."""
@@ -127,10 +131,27 @@ class GameWindow:
 
     def grab(self):
         """클라이언트 영역을 BGR numpy 배열로 캡처. 창 크기가 기준 해상도와 다르면 1920x1080으로 리사이즈."""
-        shot = self._sct.grab({
-            "left": self.left, "top": self.top,
-            "width": self.width, "height": self.height,
-        })
+        backend = getattr(self, "capture_backend", None)
+        if backend is not None:
+            return backend()
+        try:
+            shot = self._sct.grab({
+                "left": self.left, "top": self.top,
+                "width": self.width, "height": self.height,
+            })
+        except ScreenShotError:
+            fallback = getattr(self, "capture_fallback", None)
+            if fallback is None:
+                raise
+            # 관리자 게임 창은 Windows GDI BitBlt가 갑자기 WinError 5를
+            # 반환할 수 있다. 한 번 발생하면 Cua 창 캡처로 승격해 다음 틱도
+            # 같은 치명 오류를 반복하지 않는다.
+            self.capture_backend = fallback
+            self.background_capture = True
+            self._capture_fallback_active = True
+            logging.getLogger(__name__).warning(
+                "Windows BitBlt 캡처 접근 거부 → Cua 창 캡처로 자동 전환")
+            return fallback()
         frame = np.ascontiguousarray(np.asarray(shot)[:, :, :3])
         if (self.width, self.height) != (REF_W, REF_H):
             interp = cv2.INTER_AREA if self.width > REF_W else cv2.INTER_CUBIC

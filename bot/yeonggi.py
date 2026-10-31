@@ -1,9 +1,11 @@
 """영기 수련 자동 진행.
 
-일정 간격마다: ☰ 메뉴 → 영기 수련 → (진행 중이면 바로 나감) → 비어 있는(0/1) 노드 클릭 → 수련 → 필드로 복귀.
+일정 간격마다: ☰ 메뉴 → 영기 수련 → 진행 중 카드의 바로가기 → 문파 도움 →
+(진행 중이 아니면) 비어 있는(0/1) 노드 클릭 → 수련 → 필드로 복귀.
 """
 import logging
 import time
+from datetime import datetime, timedelta
 
 log = logging.getLogger(__name__)
 
@@ -35,8 +37,65 @@ class YeonggiTask:
         self.cfg = cfg
         self.interval = cfg.get("interval", 180)
         self.next_check = 0.0       # 시작 직후 한 번 확인
+        self.next_check_wall = 0.0
+        self.clan_help_interval = float(cfg.get("clan_help_interval", 0))
+        self.next_clan_help = 0.0
+        self.next_clan_help_wall = 0.0
         self.t = cfg["templates"]
         self.regions = cfg.get("regions", {})
+        self._restore_schedule()
+
+    def _restore_schedule(self):
+        """재시작 전 저장한 종료 예정 시각이 미래면 그때까지 영기 화면을 열지 않는다."""
+        try:
+            from bot2.rewards import _load_state
+            saved = (_load_state().get("yeonggi_schedule") or {})
+        except (AttributeError, TypeError, OSError):
+            return
+        try:
+            target = datetime.fromisoformat(str(saved.get("next_check_at", ""))).timestamp()
+        except (TypeError, ValueError):
+            target = 0.0
+        left = target - time.time()
+        if left > 0:
+            self.next_check_wall = target
+            self.next_check = time.monotonic() + left
+            log.info("영기 수련 저장 일정 복원 → %d분 뒤 확인", int(left // 60))
+        try:
+            target = datetime.fromisoformat(str(saved.get("clan_help_next_at", ""))).timestamp()
+        except (TypeError, ValueError):
+            return
+        left = target - time.time()
+        if left > 0:
+            # 예전 긴 주기로 저장된 일정도 현재 설정 주기를 넘기지 않는다.
+            if self.clan_help_interval > 0:
+                left = min(left, self.clan_help_interval)
+                target = time.time() + left
+            self.next_clan_help_wall = target
+            self.next_clan_help = time.monotonic() + left
+            log.info("문파 도움 저장 일정 복원 → %d분 뒤 확인", int(left // 60))
+
+    def _schedule_from_remaining(self, remaining):
+        """확인 시각과 남은 시간을 저장하고, 종료 전 재확인을 차단한다."""
+        remaining = max(1, int(remaining))
+        wait = max(float(self.interval), remaining + 15.0)
+        checked = datetime.now()
+        target = checked + timedelta(seconds=wait)
+        self.next_check = time.monotonic() + wait
+        self.next_check_wall = target.timestamp()
+        try:
+            from bot2.rewards import _load_state, _save_state
+            state = _load_state()
+            schedule = state.setdefault("yeonggi_schedule", {})
+            schedule.update({
+                "checked_at": checked.isoformat(timespec="seconds"),
+                "remaining_seconds": remaining,
+                "next_check_at": target.isoformat(timespec="seconds"),
+            })
+            _save_state(state)
+        except OSError as exc:
+            log.warning("영기 수련 일정 저장 실패: %s", exc)
+        return wait
 
     # ---------- 도우미 ----------
     def _find(self, frame, key, threshold=None):
@@ -116,12 +175,61 @@ class YeonggiTask:
             time.sleep(1.0)
 
     # ---------- 본체 ----------
+    def _training_due(self, now):
+        return now >= self.next_check and (not self.next_check_wall or time.time() >= self.next_check_wall)
+
+    def _clan_help_due(self, now):
+        return (self.clan_help_interval > 0 and now >= self.next_clan_help
+                and (not self.next_clan_help_wall or time.time() >= self.next_clan_help_wall))
+
     def due(self, now):
-        return now >= self.next_check
+        return self._training_due(now) or self._clan_help_due(now)
+
+    def _schedule_clan_help(self, wait):
+        wait = max(1.0, float(wait))
+        target = datetime.now() + timedelta(seconds=wait)
+        self.next_clan_help = time.monotonic() + wait
+        self.next_clan_help_wall = target.timestamp()
+        try:
+            from bot2.rewards import _load_state, _save_state
+            state = _load_state()
+            schedule = state.setdefault("yeonggi_schedule", {})
+            schedule["clan_help_checked_at"] = datetime.now().isoformat(timespec="seconds")
+            schedule["clan_help_next_at"] = target.isoformat(timespec="seconds")
+            _save_state(state)
+        except OSError as exc:
+            log.warning("문파 도움 일정 저장 실패: %s", exc)
+
+    def _clan_help(self, frame, now):
+        if not self._clan_help_due(now):
+            return False
+        match = None
+        # 진행 중인 수련은 첫 화면의 다른 지원 아이콘을 누르지 않도록
+        # 하단 카드의 '바로가기'를 항상 먼저 열고 해당 수련의 지원 버튼을 찾는다.
+        if "current_go" in self.t:
+            go = self._find(frame, "current_go")
+            if go:
+                self._click("진행 중인 수련 바로가기", go, 0.8)
+                frame, match = self._wait_for("clan_help", 5.0)
+        if not match:
+            match = self._find(frame, "clan_help")
+        if not match:
+            retry = float(self.cfg.get("clan_help_retry", 300))
+            self.next_clan_help = now + retry
+            self.next_clan_help_wall = time.time() + retry
+            log.info("문파 도움 버튼 없음 → %d분 뒤 다시 확인", int(retry // 60))
+            return False
+        self._click("영기 수련 문파 도움", match, 1.0)
+        self._schedule_clan_help(self.clan_help_interval)
+        log.info("영기 수련 문파 도움 클릭 → %d분 뒤 다시 확인", int(self.clan_help_interval // 60))
+        return True
 
     def run(self, now):
         """필드 화면에서 호출된다. 끝나면 필드로 돌아온 상태여야 한다."""
-        self.next_check = now + self.interval
+        training_due = self._training_due(now)
+        clan_help_due = self._clan_help_due(now)
+        if training_due:
+            self.next_check = now + self.interval
         if self.bot.dry_run:
             log.info("[dry-run] 영기 수련 확인 시점 (메뉴를 열어야 해서 dry-run에서는 건너뜀)")
             return
@@ -130,14 +238,24 @@ class YeonggiTask:
         try:
             frame = self._open()
             if frame is not None:
-                self._start_next(frame)
+                self._clan_help(frame, now)
+                if training_due:
+                    self._start_next(self.bot.window.grab())
         except Exception:
             # 사용자 조작으로 중단되면 화면은 사용자에게 맡기고 바로 빠진다
-            self.next_check = time.monotonic() + self.cfg.get("retry_delay", 30)
+            retry = self.cfg.get("retry_delay", 30)
+            if training_due:
+                self.next_check = time.monotonic() + retry
+            if clan_help_due:
+                self.next_clan_help = time.monotonic() + retry
             raise
         if frame is None:
-            self.next_check = time.monotonic() + self.cfg.get("retry_delay", 30)
-            log.info("  %d초 뒤 다시 시도", self.cfg.get("retry_delay", 30))
+            retry = self.cfg.get("retry_delay", 30)
+            if training_due:
+                self.next_check = time.monotonic() + retry
+            if clan_help_due:
+                self.next_clan_help = time.monotonic() + retry
+            log.info("  %d초 뒤 다시 시도", retry)
         self._leave()
 
     def _open(self):
@@ -147,7 +265,10 @@ class YeonggiTask:
         if not menu:
             log.warning("☰ 메뉴 버튼을 찾지 못함")
             return None
-        self._click("☰ 메뉴", menu, 0.3)
+        # Unity 전체 화면은 백그라운드 마우스 클릭 좌표를 무시한다.
+        # ESC는 동일 메뉴를 열면서 물리 커서를 점유하지 않는다.
+        self.bot._press("☰ 메뉴", "esc")
+        time.sleep(0.3)
 
         frame, entry = self._wait_for("menu_entry", 5.0)       # 메뉴가 늦게 뜨는 경우를 위해 여유
         if not entry:
@@ -171,8 +292,7 @@ class YeonggiTask:
         if prog:
             left = self._remaining(frame, prog)
             if left:
-                wait = max(self.interval, min(left + 15, 6 * 3600))
-                self.next_check = time.monotonic() + wait
+                wait = self._schedule_from_remaining(left)
                 log.info("영기 수련 진행 중 (남은 시간 %d분) → %d분 뒤 다시 확인", left // 60, wait // 60)
             else:
                 log.info("영기 수련 진행 중 → %d초 뒤 다시 확인", self.interval)
@@ -221,8 +341,15 @@ class YeonggiTask:
             self._close_popup(frame)
 
             frame = self.bot.window.grab()
-            if self._find(frame, "progress"):
-                log.info("영기 수련 시작 성공")
+            progress = self._find(frame, "progress")
+            if progress:
+                left = self._remaining(frame, progress)
+                if left:
+                    wait = self._schedule_from_remaining(left)
+                    log.info("영기 수련 시작 성공 (남은 시간 %d분) → %d분 뒤 확인",
+                             left // 60, wait // 60)
+                else:
+                    log.info("영기 수련 시작 성공")
             else:
                 log.warning("수련을 눌렀지만 진행 표시가 보이지 않음. 화면 확인 필요")
                 self.bot._save_screen(frame, "yeonggi")
