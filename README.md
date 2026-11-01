@@ -104,6 +104,7 @@ v1.28에서는 **도움말 → 환경 점검**으로 권한·설정·인식 파�
 
 빌드 환경은 Windows 64비트 / Python 3.14.6이다. `requirements-build.txt`에 검증한 의존성 버전을 고정했다.
 `build_exe.bat`는 버전별 `dist\1.28.0\GameAutoPlay\GameAutoPlay.exe`를 만든다. 기존 배포 디렉터리는 보존한다.
+`build_installer.ps1`은 검증된 배포 폴더를 Inno Setup으로 묶어 같은 버전 폴더에 `GameAutoPlay-Setup-버전.exe`와 SHA-256 파일을 만든다. 설치 위치는 사용자별 `%LOCALAPPDATA%\Programs\DokkaebiHelper`라서 UAC 없이 설치·자동 패치할 수 있다.
 배포판은 설정·로그·프로필·학습 숫자를 `%LOCALAPPDATA%\DokkaebiHelper`에 보관한다.
 배포본은 실행 시 GitHub Releases의 최신 정식 버전을 자동 확인한다. 새 버전이 있으면 버전과 변경 내용을 담은 팝업을 표시하고, 사용자가 설치를 선택하면 ZIP과 SHA-256을 검증한 뒤 앱을 교체·재실행한다. 정적 인식 파일을 갱신하면서 기존 설정·사냥터 DB·학습 숫자는 유지한다.
 이는 [PyInstaller의 번들 리소스 경로](https://pyinstaller.org/en/stable/runtime-information.html)와 영구 데이터 경로를 구분한 설계다.
